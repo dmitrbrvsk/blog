@@ -1374,6 +1374,19 @@ catalog=fresh</textarea>
         n.style.display = !q || hay.includes(q) ? "" : "none";
       });
     });
+
+    // Deep-link for prototypes/screenshots: ?view=scenarios|profiles|create|m2|settings
+    const view = new URLSearchParams(location.search).get("view");
+    if (view) {
+      const tab = document.querySelector(`.tab[data-tab="${view}"]`);
+      if (tab) {
+        tab.style.display = "";
+        activateTab(view);
+      }
+      if (new URLSearchParams(location.search).get("journal") === "0") {
+        layout.classList.remove("journal-open");
+      }
+    }
   </script>
 </body>
 </html>
