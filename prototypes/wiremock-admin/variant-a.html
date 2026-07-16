@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Вариант A — IDE / wiremock-ui</title>
+  <title>Вариант A — IDE / WireMock</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -11,13 +11,13 @@
     :root {
       --bg: #002b36;
       --bg2: #073642;
-      --bg3: #0a4452;
       --ink: #eee8d5;
       --muted: #93a1a1;
-      --line: #586e75;
+      --line: #134653;
       --accent: #2aa198;
       --warn: #b58900;
       --danger: #dc322f;
+      --violet: #6c71c4;
       --method-get: #859900;
       --method-post: #268bd2;
       --method-put: #b58900;
@@ -45,71 +45,103 @@
     }
     button { cursor: pointer; }
     button:hover { border-color: var(--accent); }
+    button:disabled { opacity: 0.45; cursor: default; border-color: var(--line); }
 
     .topbar {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       padding: 0 0.75rem;
       background: var(--bg2);
-      border-bottom: 1px solid #134653;
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
     }
 
     .brand {
       font-family: "IBM Plex Mono", monospace;
       font-weight: 600;
       font-size: 0.85rem;
-      letter-spacing: 0.02em;
       color: var(--accent);
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .topbar .spacer { flex: 1; }
     .chip {
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       padding: 0.2rem 0.45rem;
-      border: 1px solid #134653;
+      border: 1px solid var(--line);
       color: var(--muted);
+      white-space: nowrap;
+    }
+    .chip.accent { color: var(--accent); border-color: rgba(42,161,152,.45); }
+
+    .top-select {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      padding: 0.25rem 0.4rem;
+      background: rgba(0,0,0,.18);
+      max-width: 160px;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 290px 1fr;
+      grid-template-rows: 1fr auto;
       min-height: 0;
+    }
+    .layout.journal-open {
+      grid-template-rows: 1fr 240px;
     }
 
     .explorer {
-      border-right: 1px solid #134653;
+      grid-row: 1 / -1;
+      border-right: 1px solid var(--line);
       background: linear-gradient(180deg, var(--bg2), var(--bg));
       display: flex;
       flex-direction: column;
       min-height: 0;
     }
 
-    .explorer-head {
+    .explorer-head, .section-label {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.65rem 0.75rem;
-      border-bottom: 1px solid #134653;
+      gap: 0.4rem;
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid var(--line);
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--muted);
     }
-
-    .explorer-head button {
+    .explorer-head button, .section-label button {
       border: none;
       color: var(--accent);
-      font-size: 0.8rem;
-      padding: 0.1rem 0.35rem;
+      font-size: 0.72rem;
+      padding: 0.1rem 0.25rem;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .filter {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .filter input {
+      width: 100%;
+      padding: 0.35rem 0.45rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      background: rgba(0,0,0,.18);
+      border-color: var(--line);
     }
 
     .tree {
       overflow: auto;
-      padding: 0.5rem 0;
+      padding: 0.35rem 0 0.75rem;
       flex: 1;
     }
 
@@ -117,30 +149,37 @@
       width: 100%;
       text-align: left;
       border: none;
-      padding: 0.4rem 0.75rem;
+      padding: 0.38rem 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.45rem;
-      font-size: 0.82rem;
+      gap: 0.4rem;
+      font-size: 0.8rem;
       color: var(--ink);
     }
-
     .node:hover { background: rgba(42, 161, 152, 0.08); }
     .node.active { background: rgba(42, 161, 152, 0.18); }
-    .node.indent-1 { padding-left: 1.4rem; }
-    .node.indent-2 { padding-left: 2.1rem; }
+    .node.indent-1 { padding-left: 1.35rem; }
+    .node.indent-2 { padding-left: 2.05rem; }
+    .node.indent-3 { padding-left: 2.7rem; }
+    .node .meta {
+      margin-left: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
 
     .dot {
       width: 7px; height: 7px; border-radius: 50%;
       background: var(--accent); flex-shrink: 0;
     }
     .dot.off { background: var(--danger); }
+    .dot.warn { background: var(--warn); }
 
     .method {
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.65rem;
+      font-size: 0.64rem;
       font-weight: 600;
-      min-width: 2.6rem;
+      min-width: 2.5rem;
     }
     .method.get { color: var(--method-get); }
     .method.post { color: var(--method-post); }
@@ -149,11 +188,19 @@
 
     .path {
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       color: #d7cbb0;
+    }
+
+    .folder {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .workspace {
@@ -168,120 +215,134 @@
       display: flex;
       align-items: stretch;
       gap: 1px;
-      background: #134653;
+      background: var(--line);
       overflow-x: auto;
     }
-
     .tab {
       border: none;
       background: var(--tab);
-      padding: 0 0.9rem;
+      padding: 0 0.75rem;
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
     .tab.active {
       background: var(--pane);
       color: var(--ink);
       box-shadow: inset 0 2px 0 var(--accent);
     }
-
-    .editor {
-      display: none;
-      grid-template-rows: auto 1fr;
-      min-height: 0;
+    .tab .x {
+      border: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 0;
+      line-height: 1;
     }
+    .tab .x:hover { color: var(--danger); border: none; }
+
+    .editor { display: none; grid-template-rows: auto 1fr; min-height: 0; }
     .editor.active { display: grid; }
 
     .toolbar {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.55rem 0.75rem;
-      border-bottom: 1px solid #134653;
-      background: rgba(0, 0, 0, 0.12);
+      gap: 0.45rem;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      flex-wrap: wrap;
     }
+    .toolbar .grow { flex: 1; }
 
-    .toolbar .mode {
+    .mode {
       display: inline-flex;
-      border: 1px solid #134653;
+      border: 1px solid var(--line);
     }
-    .toolbar .mode button {
+    .mode button {
       border: none;
-      padding: 0.3rem 0.65rem;
-      font-size: 0.72rem;
+      padding: 0.28rem 0.6rem;
+      font-size: 0.7rem;
       font-family: "IBM Plex Mono", monospace;
       color: var(--muted);
     }
-    .toolbar .mode button.on {
-      background: rgba(42, 161, 152, 0.2);
+    .mode button.on {
+      background: rgba(42,161,152,.2);
       color: var(--accent);
     }
 
-    .toolbar .grow { flex: 1; }
-
     .btn {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-family: "IBM Plex Mono", monospace;
-      padding: 0.35rem 0.7rem;
-      border-color: #134653;
+      padding: 0.32rem 0.65rem;
+      border-color: var(--line);
+      white-space: nowrap;
     }
     .btn.primary {
-      background: rgba(42, 161, 152, 0.2);
+      background: rgba(42,161,152,.2);
       border-color: var(--accent);
       color: var(--accent);
     }
-    .btn.danger { color: #ff8a86; border-color: rgba(220, 50, 47, 0.45); }
+    .btn.danger { color: #ff8a86; border-color: rgba(220,50,47,.45); }
+    .btn.warn { color: #ffd56a; border-color: rgba(181,137,0,.5); }
 
     .panels {
       display: grid;
       grid-template-columns: 1fr 1fr;
       min-height: 0;
     }
-
     .panel {
       min-height: 0;
       overflow: auto;
-      padding: 0.9rem;
-      border-right: 1px solid #134653;
+      padding: 0.85rem;
+      border-right: 1px solid var(--line);
     }
     .panel:last-child { border-right: none; }
 
     .section-title {
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 0 0 0.7rem;
+      margin: 0 0 0.65rem;
     }
 
-    .field {
-      display: grid;
-      gap: 0.3rem;
-      margin-bottom: 0.75rem;
-    }
+    .field { display: grid; gap: 0.28rem; margin-bottom: 0.7rem; }
     .field label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--muted);
       font-family: "IBM Plex Mono", monospace;
     }
     .field input, .field select, .field textarea {
       width: 100%;
-      padding: 0.45rem 0.55rem;
-      background: rgba(0, 0, 0, 0.2);
-      border-color: #134653;
+      padding: 0.42rem 0.5rem;
+      background: rgba(0,0,0,.2);
+      border-color: var(--line);
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
     }
-    .field textarea { min-height: 140px; resize: vertical; }
+    .field textarea { min-height: 130px; resize: vertical; line-height: 1.45; }
+    .row { display: grid; grid-template-columns: 110px 1fr; gap: 0.45rem; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.45rem; }
 
-    .row {
+    .kv {
       display: grid;
-      grid-template-columns: 110px 1fr;
-      gap: 0.5rem;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
     }
+    .kv input {
+      padding: 0.32rem 0.4rem;
+      background: rgba(0,0,0,.2);
+      border-color: var(--line);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+    }
+    .kv button { border: none; color: var(--muted); }
 
     .json {
       display: none;
@@ -289,7 +350,7 @@
       padding: 1rem;
       overflow: auto;
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       line-height: 1.55;
       color: #d7cbb0;
       white-space: pre;
@@ -297,35 +358,114 @@
     .json.show { display: block; }
     .visual.hide { display: none; }
 
-    .kv {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
-    }
-    .kv input {
-      padding: 0.35rem 0.45rem;
-      background: rgba(0, 0, 0, 0.2);
-      border-color: #134653;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.74rem;
-    }
-    .kv button {
-      border: none;
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
     .empty {
       display: grid;
       place-items: center;
       color: var(--muted);
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       padding: 2rem;
       text-align: center;
       gap: 0.75rem;
+      line-height: 1.5;
     }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.62rem;
+      padding: 0.12rem 0.35rem;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .badge.ok { color: var(--method-get); border-color: rgba(133,153,0,.45); }
+    .badge.err { color: #ff8a86; border-color: rgba(220,50,47,.45); }
+    .badge.scenario { color: #c4c7ff; border-color: rgba(108,113,196,.55); }
+    .badge.warn { color: #ffd56a; border-color: rgba(181,137,0,.5); }
+
+    .scenario-box {
+      border: 1px solid var(--line);
+      padding: 0.7rem;
+      margin-bottom: 0.65rem;
+      background: rgba(0,0,0,.12);
+    }
+    .scenario-box h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .scenario-box p {
+      margin: 0 0 0.55rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+    .state-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .state-row button.on {
+      background: rgba(108,113,196,.25);
+      border-color: var(--violet);
+      color: #c4c7ff;
+    }
+
+    .journal {
+      display: none;
+      border-top: 1px solid var(--line);
+      background: var(--bg2);
+      min-height: 0;
+      grid-template-rows: auto 1fr;
+    }
+    .layout.journal-open .journal { display: grid; }
+
+    .journal-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .journal-head .spacer { flex: 1; }
+    .journal-head button {
+      border: none;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .journal-table-wrap { overflow: auto; }
+    table.journal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+    .journal-table th, .journal-table td {
+      text-align: left;
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid rgba(19,70,83,.8);
+      white-space: nowrap;
+    }
+    .journal-table th {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      position: sticky;
+      top: 0;
+      background: var(--bg2);
+    }
+    .journal-table tr:hover td { background: rgba(42,161,152,.08); }
+    .journal-table .actions { display: flex; gap: 0.3rem; }
 
     .toast {
       position: fixed;
@@ -336,18 +476,66 @@
       color: var(--accent);
       padding: 0.65rem 0.9rem;
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       opacity: 0;
       transform: translateY(8px);
       transition: .2s ease;
       pointer-events: none;
+      z-index: 40;
+      max-width: min(420px, calc(100vw - 2rem));
     }
     .toast.show { opacity: 1; transform: none; }
 
-    @media (max-width: 900px) {
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,20,24,.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      padding: 1rem;
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      width: min(480px, 100%);
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      padding: 1rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .modal-card h3 {
+      margin: 0;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.45rem;
+    }
+
+    .split-settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      min-height: 0;
+      height: 100%;
+    }
+    .split-settings > div {
+      padding: 1rem;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+    }
+    .split-settings > div:last-child { border-right: none; }
+
+    @media (max-width: 980px) {
       .layout { grid-template-columns: 1fr; }
       .explorer { display: none; }
-      .panels { grid-template-columns: 1fr; }
+      .panels, .split-settings, .row, .row-3 { grid-template-columns: 1fr; }
+      .top-select { max-width: 110px; }
     }
   </style>
 </head>
@@ -355,44 +543,98 @@
   <header class="topbar">
     <a class="brand" href="./index.html">← WireMock UI</a>
     <span class="chip">Вариант A · IDE</span>
+    <select class="top-select" id="profileSelect" title="Profile pack">
+      <option value="checkout-chaos">profile: checkout-chaos</option>
+      <option value="happy-path">profile: happy-path</option>
+      <option value="kyc-blocked">profile: kyc-blocked</option>
+      <option value="empty">profile: (none)</option>
+    </select>
     <div class="spacer"></div>
-    <span class="chip">theme: solarized dark</span>
+    <button class="btn" id="btnToggleJournal" title="Request journal">Journal</button>
+    <button class="btn" id="btnImport">Import</button>
+    <button class="btn" id="btnExport">Export</button>
+    <span class="chip accent" id="profileChip">pack · 4 stubs</span>
     <button class="btn" id="btnSettings">Settings</button>
   </header>
 
-  <div class="layout">
+  <div class="layout journal-open" id="layout">
     <aside class="explorer">
       <div class="explorer-head">
         <span>Explorer</span>
         <button id="btnAddServer" title="Add server">＋ server</button>
+      </div>
+      <div class="filter">
+        <input id="treeFilter" placeholder="Filter mappings…" />
       </div>
       <div class="tree" id="tree">
         <button class="node active" data-server="local">
           <span class="dot"></span>
           <span>local · localhost:8080</span>
         </button>
-        <button class="node indent-1" data-action="create" data-server="local">
-          <span style="color:var(--accent)">＋</span>
-          <span class="path">Create mapping</span>
-        </button>
-        <button class="node indent-2 active-map" data-mapping="m1">
+
+        <div class="section-label">
+          <span>Mappings</span>
+          <button data-open="create">＋ mapping</button>
+        </div>
+
+        <button class="node indent-1 mapping" data-mapping="m1" data-search="get /api/users/me auth">
           <span class="method get">GET</span>
           <span class="path">/api/users/me</span>
+          <span class="meta">p5</span>
         </button>
-        <button class="node indent-2" data-mapping="m2">
+        <button class="node indent-1 mapping" data-mapping="m2" data-search="post /api/payments pay failed">
           <span class="method post">POST</span>
           <span class="path">/api/payments</span>
+          <span class="meta">p1</span>
         </button>
-        <button class="node indent-2" data-mapping="m3">
+        <button class="node indent-1 mapping" data-mapping="m3" data-search="get /api/kyc/status blocked">
+          <span class="method get">GET</span>
+          <span class="path">/api/kyc/status</span>
+          <span class="meta">p2</span>
+        </button>
+        <button class="node indent-1 mapping" data-mapping="m4" data-search="put /api/orders">
           <span class="method put">PUT</span>
           <span class="path">/api/orders/{id}</span>
+          <span class="meta">p10</span>
         </button>
 
-        <button class="node" data-server="stage" style="margin-top:0.5rem">
+        <div class="section-label" style="margin-top:0.35rem">
+          <span>Scenarios</span>
+          <button data-open="scenarios">open</button>
+        </div>
+        <button class="node indent-1" data-open="scenarios">
+          <span class="badge scenario">pay</span>
+          <span class="path">payment lifecycle</span>
+          <span class="meta">failed</span>
+        </button>
+        <button class="node indent-1" data-open="scenarios">
+          <span class="badge scenario">kyc</span>
+          <span class="path">verification gate</span>
+          <span class="meta">blocked</span>
+        </button>
+        <button class="node indent-1" data-open="scenarios">
+          <span class="badge">catalog</span>
+          <span class="path">eventual consistency</span>
+          <span class="meta">fresh</span>
+        </button>
+
+        <div class="section-label" style="margin-top:0.35rem">
+          <span>Profile pack</span>
+          <button data-open="profiles">manage</button>
+        </div>
+        <button class="node indent-1" data-open="profiles">
+          <span class="folder">checkout-chaos</span>
+          <span class="meta">active</span>
+        </button>
+        <button class="node indent-2" data-open="profiles">
+          <span class="path">includes pay+kyc presets</span>
+        </button>
+
+        <button class="node" data-server="stage" style="margin-top:0.55rem">
           <span class="dot off"></span>
           <span>stage · wm.stage.local:8089</span>
         </button>
-        <button class="node indent-1" data-action="create" data-server="stage">
+        <button class="node indent-1" data-open="create">
           <span style="color:var(--accent)">＋</span>
           <span class="path">Create mapping</span>
         </button>
@@ -401,36 +643,35 @@
 
     <section class="workspace">
       <div class="tabs" id="tabs">
-        <button class="tab active" data-tab="m1">GET /api/users/me</button>
-        <button class="tab" data-tab="create">New mapping</button>
-        <button class="tab" data-tab="settings">Settings</button>
+        <button class="tab active" data-tab="m1">GET /api/users/me <span class="x" data-close="m1">×</span></button>
+        <button class="tab" data-tab="m2">POST /api/payments <span class="x" data-close="m2">×</span></button>
+        <button class="tab" data-tab="create">New mapping <span class="x" data-close="create">×</span></button>
+        <button class="tab" data-tab="scenarios">Scenarios <span class="x" data-close="scenarios">×</span></button>
+        <button class="tab" data-tab="profiles">Profiles <span class="x" data-close="profiles">×</span></button>
+        <button class="tab" data-tab="settings">Settings <span class="x" data-close="settings">×</span></button>
       </div>
 
-      <!-- Mapping editor -->
-      <div class="editor active" id="editor-m1">
+      <!-- Mapping m1 -->
+      <div class="editor active" id="editor-m1" data-editor>
         <div class="toolbar">
           <div class="mode">
             <button class="on" data-mode="visual" data-target="m1">Visual</button>
             <button data-mode="json" data-target="m1">JSON</button>
           </div>
+          <span class="badge">priority 5</span>
+          <span class="badge">tag: auth</span>
           <div class="grow"></div>
-          <button class="btn danger" data-toast="Mapping deleted (mock)">Delete</button>
-          <button class="btn primary" data-toast="Mapping saved to local WireMock">Save</button>
+          <button class="btn" data-toast="Duplicated mapping">Duplicate</button>
+          <button class="btn danger" data-delete="m1">Delete</button>
+          <button class="btn primary" data-toast="Saved GET /api/users/me → local">Save</button>
         </div>
-
         <div class="panels visual" id="visual-m1">
           <div class="panel">
             <h3 class="section-title">Request</h3>
             <div class="field row">
               <div>
                 <label>Method</label>
-                <select>
-                  <option selected>GET</option>
-                  <option>POST</option>
-                  <option>PUT</option>
-                  <option>DELETE</option>
-                  <option>PATCH</option>
-                </select>
+                <select><option selected>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option></select>
               </div>
               <div>
                 <label>URL</label>
@@ -439,36 +680,28 @@
             </div>
             <div class="field">
               <label>URL match type</label>
-              <select>
-                <option>urlPath</option>
-                <option selected>urlPathPattern</option>
-                <option>urlPattern</option>
-                <option>url</option>
-              </select>
+              <select><option>urlPath</option><option selected>urlPathPattern</option><option>urlPattern</option><option>url</option></select>
             </div>
             <div class="field">
               <label>Headers</label>
-              <div class="kv">
-                <input value="Authorization" />
-                <input value="contains Bearer" />
-                <button title="remove">×</button>
-              </div>
-              <div class="kv">
-                <input placeholder="Header" />
-                <input placeholder="Matcher / value" />
-                <button title="add">＋</button>
-              </div>
+              <div class="kv"><input value="Authorization" /><input value="contains Bearer" /><button>×</button></div>
+              <div class="kv"><input placeholder="Header" /><input placeholder="Matcher / value" /><button>＋</button></div>
             </div>
             <div class="field">
               <label>Query params</label>
-              <div class="kv">
-                <input placeholder="Name" />
-                <input placeholder="equalTo / matches ..." />
-                <button>＋</button>
+              <div class="kv"><input placeholder="Name" /><input placeholder="equalTo / matches …" /><button>＋</button></div>
+            </div>
+            <div class="field row">
+              <div>
+                <label>Priority</label>
+                <input value="5" />
+              </div>
+              <div>
+                <label>Scenario / required state</label>
+                <input placeholder="optional" value="" />
               </div>
             </div>
           </div>
-
           <div class="panel">
             <h3 class="section-title">Response</h3>
             <div class="field row">
@@ -478,11 +711,7 @@
               </div>
               <div>
                 <label>Content-Type</label>
-                <select>
-                  <option selected>application/json</option>
-                  <option>text/plain</option>
-                  <option>application/xml</option>
-                </select>
+                <select><option selected>application/json</option><option>text/plain</option><option>application/xml</option></select>
               </div>
             </div>
             <div class="field">
@@ -493,45 +722,54 @@
   "role": "admin"
 }</textarea>
             </div>
-            <div class="field">
-              <label>Fixed delay (ms)</label>
-              <input value="0" />
+            <div class="field row-3">
+              <div>
+                <label>Fixed delay (ms)</label>
+                <input value="0" />
+              </div>
+              <div>
+                <label>New scenario state</label>
+                <input placeholder="optional" />
+              </div>
+              <div>
+                <label>Tags</label>
+                <input value="auth" />
+              </div>
             </div>
           </div>
         </div>
-
         <pre class="json" id="json-m1">{
   "id": "8b1c2e3a-1111-2222-3333-444455556666",
+  "priority": 5,
   "request": {
     "method": "GET",
     "urlPath": "/api/users/me",
-    "headers": {
-      "Authorization": { "contains": "Bearer" }
-    }
+    "headers": { "Authorization": { "contains": "Bearer" } }
   },
   "response": {
     "status": 200,
     "headers": { "Content-Type": "application/json" },
-    "jsonBody": {
-      "id": "u_1024",
-      "email": "dev@example.com",
-      "role": "admin"
-    }
-  }
+    "jsonBody": { "id": "u_1024", "email": "dev@example.com", "role": "admin" }
+  },
+  "metadata": { "tags": ["auth"] }
 }</pre>
       </div>
 
-      <!-- Create mapping -->
-      <div class="editor" id="editor-create">
+      <!-- Mapping m2 -->
+      <div class="editor" id="editor-m2" data-editor>
         <div class="toolbar">
           <div class="mode">
-            <button class="on" data-mode="visual" data-target="create">Visual</button>
-            <button data-mode="json" data-target="create">JSON</button>
+            <button class="on" data-mode="visual" data-target="m2">Visual</button>
+            <button data-mode="json" data-target="m2">JSON</button>
           </div>
+          <span class="badge scenario">scenario: pay · failed</span>
+          <span class="badge err">402</span>
           <div class="grow"></div>
-          <button class="btn primary" data-toast="New mapping created (mock)">Create</button>
+          <button class="btn" data-toast="Duplicated mapping">Duplicate</button>
+          <button class="btn danger" data-delete="m2">Delete</button>
+          <button class="btn primary" data-toast="Saved POST /api/payments → local">Save</button>
         </div>
-        <div class="panels visual" id="visual-create">
+        <div class="panels visual" id="visual-m2">
           <div class="panel">
             <h3 class="section-title">Request</h3>
             <div class="field row">
@@ -541,12 +779,24 @@
               </div>
               <div>
                 <label>URL</label>
-                <input placeholder="/api/..." />
+                <input value="/api/payments" />
               </div>
             </div>
             <div class="field">
               <label>Body patterns</label>
-              <textarea placeholder='{"equalToJson": "{...}"}'></textarea>
+              <textarea>{
+  "matchesJsonPath": "$.amount"
+}</textarea>
+            </div>
+            <div class="field row">
+              <div>
+                <label>Priority</label>
+                <input value="1" />
+              </div>
+              <div>
+                <label>Scenario / required state</label>
+                <input value="pay / failed" />
+              </div>
             </div>
           </div>
           <div class="panel">
@@ -554,7 +804,7 @@
             <div class="field row">
               <div>
                 <label>Status</label>
-                <input value="201" />
+                <input value="402" />
               </div>
               <div>
                 <label>Content-Type</label>
@@ -563,7 +813,92 @@
             </div>
             <div class="field">
               <label>Body</label>
-              <textarea>{\n  "ok": true\n}</textarea>
+              <textarea>{
+  "error": "INSUFFICIENT_FUNDS",
+  "message": "Not enough balance"
+}</textarea>
+            </div>
+            <div class="field row">
+              <div>
+                <label>Fixed delay (ms)</label>
+                <input value="200" />
+              </div>
+              <div>
+                <label>Tags</label>
+                <input value="payments, chaos" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <pre class="json" id="json-m2">{
+  "priority": 1,
+  "scenarioName": "pay",
+  "requiredScenarioState": "failed",
+  "request": { "method": "POST", "urlPath": "/api/payments" },
+  "response": {
+    "status": 402,
+    "fixedDelayMilliseconds": 200,
+    "jsonBody": { "error": "INSUFFICIENT_FUNDS" }
+  }
+}</pre>
+      </div>
+
+      <!-- Create -->
+      <div class="editor" id="editor-create" data-editor>
+        <div class="toolbar">
+          <div class="mode">
+            <button class="on" data-mode="visual" data-target="create">Visual</button>
+            <button data-mode="json" data-target="create">JSON</button>
+          </div>
+          <span class="badge warn" id="createSourceBadge" hidden>from journal</span>
+          <div class="grow"></div>
+          <button class="btn primary" id="btnCreateMapping">Create</button>
+        </div>
+        <div class="panels visual" id="visual-create">
+          <div class="panel">
+            <h3 class="section-title">Request</h3>
+            <div class="field row">
+              <div>
+                <label>Method</label>
+                <select id="createMethod"><option>GET</option><option selected>POST</option><option>PUT</option><option>DELETE</option></select>
+              </div>
+              <div>
+                <label>URL</label>
+                <input id="createUrl" placeholder="/api/..." />
+              </div>
+            </div>
+            <div class="field">
+              <label>Body patterns</label>
+              <textarea id="createReqBody" placeholder='{"equalToJson": "{...}"}'></textarea>
+            </div>
+            <div class="field row">
+              <div>
+                <label>Priority</label>
+                <input value="5" />
+              </div>
+              <div>
+                <label>Scenario / required state</label>
+                <input placeholder="optional" />
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3 class="section-title">Response</h3>
+            <div class="field row">
+              <div>
+                <label>Status</label>
+                <input id="createStatus" value="201" />
+              </div>
+              <div>
+                <label>Content-Type</label>
+                <input value="application/json" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Body</label>
+              <textarea id="createBody">{
+  "ok": true
+}</textarea>
             </div>
           </div>
         </div>
@@ -573,23 +908,271 @@
 }</pre>
       </div>
 
-      <!-- Settings -->
-      <div class="editor" id="editor-settings">
-        <div class="empty">
+      <!-- Scenarios -->
+      <div class="editor" id="editor-scenarios" data-editor>
+        <div class="toolbar">
+          <span class="chip">Stateful WireMock scenarios</span>
+          <div class="grow"></div>
+          <button class="btn" data-toast="Reset all scenario states → Started">Reset all</button>
+          <button class="btn primary" data-toast="Scenario states applied">Apply states</button>
+        </div>
+        <div style="overflow:auto; padding:0.9rem;">
+          <div class="scenario-box">
+            <h4>pay · payment lifecycle</h4>
+            <p>Started → Authorized → Captured / Failed. Влияет на POST /api/payments и webhooks.</p>
+            <div class="state-row" data-scenario="pay">
+              <span class="badge scenario">current: failed</span>
+              <button class="btn" data-state="Started">Started</button>
+              <button class="btn" data-state="Authorized">Authorized</button>
+              <button class="btn" data-state="Captured">Captured</button>
+              <button class="btn on" data-state="Failed">Failed</button>
+            </div>
+          </div>
+          <div class="scenario-box">
+            <h4>kyc · verification gate</h4>
+            <p>Pending → Review → Blocked / Approved. Checkout guard + /api/kyc/*.</p>
+            <div class="state-row" data-scenario="kyc">
+              <span class="badge scenario">current: blocked</span>
+              <button class="btn" data-state="Pending">Pending</button>
+              <button class="btn" data-state="Review">Review</button>
+              <button class="btn" data-state="Approved">Approved</button>
+              <button class="btn on" data-state="Blocked">Blocked</button>
+            </div>
+          </div>
+          <div class="scenario-box">
+            <h4>catalog · eventual consistency</h4>
+            <p>Fresh → Stale → Unavailable. Для ретраев витрины.</p>
+            <div class="state-row" data-scenario="catalog">
+              <span class="badge">current: fresh</span>
+              <button class="btn on" data-state="Fresh">Fresh</button>
+              <button class="btn" data-state="Stale">Stale</button>
+              <button class="btn" data-state="Unavailable">Unavailable</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profiles -->
+      <div class="editor" id="editor-profiles" data-editor>
+        <div class="toolbar">
+          <span class="chip">Lightweight stub packs over WireMock</span>
+          <div class="grow"></div>
+          <button class="btn" id="btnNewProfile">New pack</button>
+          <button class="btn primary" data-toast="Active profile applied to local">Apply to server</button>
+        </div>
+        <div class="split-settings">
           <div>
-            <strong style="color:var(--ink)">Settings</strong><br /><br />
-            Theme · Editor font size · Persist servers in localStorage<br /><br />
-            <span style="color:var(--muted)">Как в wiremock-ui: минимум настроек, фокус на редакторе stubs.</span>
+            <h3 class="section-title">Packs</h3>
+            <div class="scenario-box" data-pack="checkout-chaos">
+              <h4>checkout-chaos <span class="badge warn">active</span></h4>
+              <p>pay=failed · kyc=blocked · slow payments 200ms · 4 stubs overlay</p>
+              <div class="state-row">
+                <button class="btn primary" data-activate-pack="checkout-chaos">Activate</button>
+                <button class="btn" data-toast="Exported checkout-chaos.json">Export JSON</button>
+              </div>
+            </div>
+            <div class="scenario-box" data-pack="happy-path">
+              <h4>happy-path</h4>
+              <p>Все critical paths → 200. Сценарии в Started/Approved.</p>
+              <div class="state-row">
+                <button class="btn" data-activate-pack="happy-path">Activate</button>
+                <button class="btn" data-toast="Exported happy-path.json">Export JSON</button>
+              </div>
+            </div>
+            <div class="scenario-box" data-pack="kyc-blocked">
+              <h4>kyc-blocked</h4>
+              <p>Только KYC gate. Минимальный набор для FE checkout.</p>
+              <div class="state-row">
+                <button class="btn" data-activate-pack="kyc-blocked">Activate</button>
+                <button class="btn" data-toast="Exported kyc-blocked.json">Export JSON</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="section-title">Active pack contents</h3>
+            <p style="color:var(--muted); font-size:0.78rem; line-height:1.45; margin:0 0 0.75rem;">
+              Профиль — тонкий слой: список mapping ids + scenario states + метаданные.
+              Под капотом обычный WireMock Admin API.
+            </p>
+            <div class="field">
+              <label>Mappings in pack</label>
+              <textarea readonly style="min-height:160px;">m1  GET  /api/users/me
+m2  POST /api/payments     (pay/failed)
+m3  GET  /api/kyc/status   (kyc/blocked)
+m4  PUT  /api/orders/{id}</textarea>
+            </div>
+            <div class="field">
+              <label>Scenario states</label>
+              <textarea readonly>pay=failed
+kyc=blocked
+catalog=fresh</textarea>
+            </div>
+            <div class="state-row">
+              <button class="btn" data-toast="Share link copied">Copy share link</button>
+              <button class="btn warn" data-toast="Profile reset on local server">Reset server to pack</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="editor" id="editor-settings" data-editor>
+        <div class="split-settings">
+          <div>
+            <h3 class="section-title">UI</h3>
+            <div class="field">
+              <label>Theme</label>
+              <select><option selected>solarized dark</option><option>solarized light</option><option>mono</option></select>
+            </div>
+            <div class="field">
+              <label>Editor font size</label>
+              <input type="number" value="13" />
+            </div>
+            <div class="field">
+              <label>Journal panel</label>
+              <select id="journalDefault">
+                <option selected>open by default</option>
+                <option>collapsed</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <h3 class="section-title">Servers</h3>
+            <div class="field">
+              <label>Persist servers</label>
+              <select><option selected>localStorage</option><option>session only</option></select>
+            </div>
+            <div class="field">
+              <label>Default server URL</label>
+              <input value="http://localhost:8080" />
+            </div>
+            <p style="color:var(--muted); font-size:0.75rem; line-height:1.45;">
+              Как в wiremock-ui: IDE-first. Profiles/scenarios/journal — надстройки, не отдельный продукт.
+            </p>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Journal bottom panel -->
+    <section class="journal" id="journal">
+      <div class="journal-head">
+        <span>Request journal</span>
+        <span class="badge err" id="unmatchedCount">1 unmatched</span>
+        <div class="spacer"></div>
+        <button id="btnClearJournal">Clear</button>
+        <button id="btnHideJournal">Hide</button>
+      </div>
+      <div class="journal-table-wrap">
+        <table class="journal-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Request</th>
+              <th>Matched</th>
+              <th>Response</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="journalBody">
+            <tr data-method="POST" data-url="/api/payments" data-status="402" data-matched="m2">
+              <td class="path">12:04:11</td>
+              <td><span class="method post">POST</span> <span class="path">/api/payments</span></td>
+              <td><span class="badge">m2 pay-fail</span></td>
+              <td><span class="badge err">402</span></td>
+              <td class="actions">
+                <button class="btn" data-open-mapping="m2">Edit stub</button>
+              </td>
+            </tr>
+            <tr data-method="GET" data-url="/api/wallet/balance" data-status="200" data-matched="">
+              <td class="path">12:04:09</td>
+              <td><span class="method get">GET</span> <span class="path">/api/wallet/balance</span></td>
+              <td><span class="badge err">unmatched</span></td>
+              <td><span class="badge err">404</span></td>
+              <td class="actions">
+                <button class="btn primary" data-stub-from-request>Stub from request</button>
+              </td>
+            </tr>
+            <tr data-method="GET" data-url="/api/users/me" data-status="200" data-matched="m1">
+              <td class="path">12:03:58</td>
+              <td><span class="method get">GET</span> <span class="path">/api/users/me</span></td>
+              <td><span class="badge ok">m1 users-me</span></td>
+              <td><span class="badge ok">200</span></td>
+              <td class="actions">
+                <button class="btn" data-open-mapping="m1">Edit stub</button>
+              </td>
+            </tr>
+            <tr data-method="PUT" data-url="/api/orders/42" data-status="200" data-matched="m4">
+              <td class="path">12:03:41</td>
+              <td><span class="method put">PUT</span> <span class="path">/api/orders/42</span></td>
+              <td><span class="badge">m4 orders</span></td>
+              <td><span class="badge ok">200</span></td>
+              <td class="actions">
+                <button class="btn" data-toast="Opened PUT /api/orders/{id} (prototype)">Edit stub</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Add server modal -->
+  <div class="modal" id="modalServer">
+    <div class="modal-card">
+      <h3>Add WireMock server</h3>
+      <div class="field">
+        <label>Name</label>
+        <input id="serverName" placeholder="local-2" />
+      </div>
+      <div class="field">
+        <label>URL</label>
+        <input id="serverUrl" value="http://localhost:8081" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" data-close-modal>Cancel</button>
+        <button class="btn primary" id="btnConfirmServer">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div class="modal" id="modalImport">
+    <div class="modal-card">
+      <h3>Import stub pack / mappings</h3>
+      <div class="field">
+        <label>Format</label>
+        <select>
+          <option>WireMock mappings JSON</option>
+          <option>Profile pack</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Payload</label>
+        <textarea style="min-height:140px;">{
+  "mappings": [],
+  "meta": { "name": "checkout-chaos", "version": 3 }
+}</textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" data-close-modal>Cancel</button>
+        <button class="btn primary" id="btnConfirmImport">Import</button>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
+    const layout = document.getElementById("layout");
     const toast = document.getElementById("toast");
+    const profileMeta = {
+      "checkout-chaos": "pack · 4 stubs",
+      "happy-path": "pack · 6 stubs",
+      "kyc-blocked": "pack · 2 stubs",
+      empty: "pack · none",
+    };
+
     function showToast(msg) {
       toast.textContent = msg;
       toast.classList.add("show");
@@ -598,39 +1181,65 @@
     }
 
     document.querySelectorAll("[data-toast]").forEach((el) => {
-      el.addEventListener("click", () => showToast(el.dataset.toast));
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showToast(el.dataset.toast);
+      });
     });
 
     function activateTab(id) {
+      const tab = document.querySelector(`.tab[data-tab="${id}"]`);
+      const editor = document.getElementById(`editor-${id}`);
+      if (!tab || !editor) {
+        showToast(`Tab ${id} unavailable`);
+        return;
+      }
       document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === id));
-      document.querySelectorAll(".editor").forEach((e) => e.classList.toggle("active", e.id === `editor-${id}`));
+      document.querySelectorAll("[data-editor]").forEach((e) => e.classList.toggle("active", e.id === `editor-${id}`));
     }
 
     document.getElementById("tabs").addEventListener("click", (e) => {
+      const close = e.target.closest("[data-close]");
+      if (close) {
+        e.stopPropagation();
+        const id = close.dataset.close;
+        const tab = document.querySelector(`.tab[data-tab="${id}"]`);
+        if (tab) tab.style.display = "none";
+        if (tab && tab.classList.contains("active")) {
+          const next = [...document.querySelectorAll(".tab")].find((t) => t.style.display !== "none");
+          if (next) activateTab(next.dataset.tab);
+        }
+        return;
+      }
       const tab = e.target.closest(".tab");
-      if (!tab) return;
-      activateTab(tab.dataset.tab);
+      if (tab) activateTab(tab.dataset.tab);
     });
 
     document.getElementById("tree").addEventListener("click", (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
+
       if (btn.dataset.mapping) {
         document.querySelectorAll("[data-mapping]").forEach((n) => n.classList.remove("active"));
         btn.classList.add("active");
-        activateTab(btn.dataset.mapping === "m1" ? "m1" : "m1");
-        if (btn.dataset.mapping !== "m1") showToast(`Open mapping ${btn.dataset.mapping} (prototype)`);
+        const tab = document.querySelector(`.tab[data-tab="${btn.dataset.mapping}"]`);
+        if (tab) tab.style.display = "";
+        activateTab(btn.dataset.mapping);
+        return;
       }
-      if (btn.dataset.action === "create") activateTab("create");
-      if (btn.dataset.server && !btn.dataset.action) {
+
+      if (btn.dataset.open) {
+        const tab = document.querySelector(`.tab[data-tab="${btn.dataset.open}"]`);
+        if (tab) tab.style.display = "";
+        activateTab(btn.dataset.open);
+        return;
+      }
+
+      if (btn.dataset.server) {
         document.querySelectorAll("[data-server]").forEach((n) => n.classList.remove("active"));
         btn.classList.add("active");
+        showToast(`Server selected: ${btn.dataset.server}`);
       }
-    });
-
-    document.getElementById("btnSettings").addEventListener("click", () => activateTab("settings"));
-    document.getElementById("btnAddServer").addEventListener("click", () => {
-      showToast("Add server dialog (prototype)");
     });
 
     document.querySelectorAll("[data-mode]").forEach((btn) => {
@@ -638,11 +1247,131 @@
         const target = btn.dataset.target;
         const mode = btn.dataset.mode;
         btn.parentElement.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b === btn));
-        const visual = document.getElementById(`visual-${target}`);
-        const json = document.getElementById(`json-${target}`);
-        if (!visual || !json) return;
-        visual.classList.toggle("hide", mode === "json");
-        json.classList.toggle("show", mode === "json");
+        document.getElementById(`visual-${target}`)?.classList.toggle("hide", mode === "json");
+        document.getElementById(`json-${target}`)?.classList.toggle("show", mode === "json");
+      });
+    });
+
+    document.getElementById("btnSettings").addEventListener("click", () => {
+      document.querySelector('.tab[data-tab="settings"]').style.display = "";
+      activateTab("settings");
+    });
+
+    document.getElementById("btnToggleJournal").addEventListener("click", () => {
+      layout.classList.toggle("journal-open");
+      showToast(layout.classList.contains("journal-open") ? "Journal shown" : "Journal hidden");
+    });
+    document.getElementById("btnHideJournal").addEventListener("click", () => {
+      layout.classList.remove("journal-open");
+    });
+    document.getElementById("btnClearJournal").addEventListener("click", () => {
+      document.getElementById("journalBody").innerHTML = "";
+      document.getElementById("unmatchedCount").textContent = "0 unmatched";
+      showToast("Journal cleared");
+    });
+
+    document.getElementById("journalBody").addEventListener("click", (e) => {
+      const openMap = e.target.closest("[data-open-mapping]");
+      if (openMap) {
+        const id = openMap.dataset.openMapping;
+        document.querySelector(`.tab[data-tab="${id}"]`).style.display = "";
+        activateTab(id);
+        return;
+      }
+      const fromReq = e.target.closest("[data-stub-from-request]");
+      if (fromReq) {
+        const row = fromReq.closest("tr");
+        document.getElementById("createMethod").value = row.dataset.method;
+        document.getElementById("createUrl").value = row.dataset.url;
+        document.getElementById("createStatus").value = "200";
+        document.getElementById("createBody").value = '{\n  "currency": "USD",\n  "available": 120.5\n}';
+        const badge = document.getElementById("createSourceBadge");
+        badge.hidden = false;
+        document.querySelector('.tab[data-tab="create"]').style.display = "";
+        activateTab("create");
+        showToast("Prefilled from unmatched request");
+      }
+    });
+
+    document.getElementById("btnCreateMapping").addEventListener("click", () => {
+      const method = document.getElementById("createMethod").value;
+      const url = document.getElementById("createUrl").value || "/api/...";
+      showToast(`Created ${method} ${url}`);
+    });
+
+    document.querySelectorAll("[data-delete]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.delete;
+        document.querySelector(`[data-mapping="${id}"]`)?.remove();
+        document.querySelector(`.tab[data-tab="${id}"]`).style.display = "none";
+        activateTab("create");
+        showToast(`Deleted ${id}`);
+      });
+    });
+
+    document.querySelectorAll(".state-row[data-scenario]").forEach((row) => {
+      row.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-state]");
+        if (!b) return;
+        row.querySelectorAll("[data-state]").forEach((x) => x.classList.remove("on"));
+        b.classList.add("on");
+        const badge = row.querySelector(".badge");
+        if (badge) badge.textContent = `current: ${b.dataset.state.toLowerCase()}`;
+        showToast(`${row.dataset.scenario} → ${b.dataset.state}`);
+      });
+    });
+
+    const profileSelect = document.getElementById("profileSelect");
+    const profileChip = document.getElementById("profileChip");
+    function activatePack(name) {
+      profileSelect.value = name;
+      profileChip.textContent = profileMeta[name] || "pack";
+      document.querySelectorAll("[data-pack]").forEach((box) => {
+        const active = box.dataset.pack === name;
+        const badge = box.querySelector(".badge.warn");
+        if (active && !badge) {
+          box.querySelector("h4").insertAdjacentHTML("beforeend", ' <span class="badge warn">active</span>');
+        }
+        if (!active && badge) badge.remove();
+      });
+      showToast(`Profile: ${name}`);
+    }
+    profileSelect.addEventListener("change", () => activatePack(profileSelect.value));
+    document.querySelectorAll("[data-activate-pack]").forEach((btn) => {
+      btn.addEventListener("click", () => activatePack(btn.dataset.activatePack));
+    });
+    document.getElementById("btnNewProfile").addEventListener("click", () => {
+      showToast("New pack draft created");
+    });
+
+    function openModal(id) { document.getElementById(id).classList.add("open"); }
+    function closeModals() { document.querySelectorAll(".modal").forEach((m) => m.classList.remove("open")); }
+    document.querySelectorAll("[data-close-modal]").forEach((b) => b.addEventListener("click", closeModals));
+    document.querySelectorAll(".modal").forEach((m) => {
+      m.addEventListener("click", (e) => { if (e.target === m) closeModals(); });
+    });
+
+    document.getElementById("btnAddServer").addEventListener("click", () => openModal("modalServer"));
+    document.getElementById("btnConfirmServer").addEventListener("click", () => {
+      const name = document.getElementById("serverName").value || "server";
+      showToast(`Server added: ${name}`);
+      closeModals();
+    });
+
+    document.getElementById("btnImport").addEventListener("click", () => openModal("modalImport"));
+    document.getElementById("btnConfirmImport").addEventListener("click", () => {
+      showToast("Imported pack (mock)");
+      closeModals();
+    });
+    document.getElementById("btnExport").addEventListener("click", () => {
+      showToast(`Exported profile ${profileSelect.value}.json`);
+    });
+
+    document.getElementById("treeFilter").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      document.querySelectorAll(".mapping").forEach((n) => {
+        const hay = (n.dataset.search || n.textContent).toLowerCase();
+        n.style.display = !q || hay.includes(q) ? "" : "none";
       });
     });
   </script>

@@ -1,29 +1,30 @@
 # WireMock Admin — HTML-прототипы
 
-Два кликабельных макета для сравнения подходов к админке моков.
+Выбранный курс: **вариант A (IDE)** — layout как [plouc/wiremock-ui](https://github.com/plouc/wiremock-ui), расширенный под сложный проект.
 
 ## Как открыть
-
-Откройте в браузере:
-
-- [`index.html`](./index.html) — сравнение вариантов
-- [`variant-a.html`](./variant-a.html) — IDE / как [plouc/wiremock-ui](https://github.com/plouc/wiremock-ui)
-- [`variant-b.html`](./variant-b.html) — Team Admin (профили, сценарии, journal, пресеты)
-
-Локально:
 
 ```bash
 cd prototypes/wiremock-admin
 python3 -m http.server 4173
 ```
 
-Затем http://localhost:4173
+- [`index.html`](./index.html) — сравнение
+- [`variant-a.html`](./variant-a.html) — **выбранный** IDE-прототип
+- [`variant-b.html`](./variant-b.html) — референс Team Admin
 
-## Что сравниваем
+## Что есть в A
 
-| | A · IDE | B · Team Admin |
-|---|---|---|
-| Модель | сервер → stubs → visual/JSON | env/profile → stubs/scenarios/presets |
-| Фокус | быстрый CRUD mappings | операционные сценарии команды |
-| Journal | нет | есть, stub from request |
-| Сценарии | нет в UI | stateful scenarios + presets |
+| Область | Возможности в прототипе |
+|---|---|
+| Explorer | servers, mappings, scenarios, profile packs |
+| Editor | visual / JSON, priority, tags, scenario state, delay |
+| CRUD | create, save, duplicate, delete, filter |
+| Journal | нижняя панель, unmatched, **stub from request** |
+| Scenarios | переключение stateful states (pay / kyc / catalog) |
+| Profiles | packs overlay, activate, import/export, share link |
+| UX | tabs, modals add-server/import, toasts |
+
+## Почему не чистый B
+
+B остаётся референсом «операционной админки». Нужные идеи (journal, scenarios, packs) встроены в IDE-модель A, без смены парадигмы.

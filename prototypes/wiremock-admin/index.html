@@ -148,45 +148,45 @@
   <main class="wrap">
     <h1 class="brand">WireMock Admin</h1>
     <p class="lead">
-      Два HTML-прототипа админки для гибкого мокирования.
-      Откройте оба варианта рядом и сравните рабочие сценарии.
+      Выбран базовый курс — <strong style="color:var(--a); font-weight:600">вариант A (IDE)</strong>.
+      В него добавлены journal, scenarios и profile packs. Вариант B оставлен для сравнения.
     </p>
 
     <div class="grid">
       <a class="card" href="./variant-a.html">
-        <span class="tag a">Вариант A</span>
-        <h2>IDE / wiremock-ui</h2>
+        <span class="tag a">Выбран · A</span>
+        <h2>IDE / wiremock-ui+</h2>
         <p class="desc">
-          Знакомый редакторский layout: серверы слева, stubs в дереве,
-          visual/JSON редактор справа. Близко к plouc/wiremock-ui.
+          IDE-layout как plouc/wiremock-ui, плюс request journal,
+          stateful scenarios, лёгкие profile packs и import/export.
         </p>
         <ul>
-          <li>Multi-server explorer</li>
-          <li>Visual + JSON mapping editor</li>
-          <li>Быстрый CRUD stubs</li>
+          <li>Explorer: servers · mappings · scenarios · packs</li>
+          <li>Visual + JSON editor, CRUD, duplicate/delete</li>
+          <li>Journal → stub from request</li>
+          <li>Profiles overlay + import/export</li>
         </ul>
-        <div class="cta">Открыть прототип A →</div>
+        <div class="cta">Открыть выбранный прототип A →</div>
       </a>
 
       <a class="card" href="./variant-b.html">
-        <span class="tag b">Вариант B</span>
+        <span class="tag b">Референс · B</span>
         <h2>Team Admin</h2>
         <p class="desc">
-          Операционная админка для сложного проекта: профили, сценарии,
-          request journal, пресеты ошибок и импорт наборов.
+          Альтернативная операционная админка. Оставляем как референс
+          по профилям/пресетам — идеи перенесены в A.
         </p>
         <ul>
           <li>Environments / profiles</li>
           <li>Scenarios + presets</li>
           <li>Journal → stub from request</li>
         </ul>
-        <div class="cta">Открыть прототип B →</div>
+        <div class="cta">Открыть референс B →</div>
       </a>
     </div>
 
     <p class="note">
-      Это кликабельные макеты без бэкенда. Данные статичны, переходы и панели
-      имитируют ключевые UX-потоки для выбора направления.
+      Кликабельные макеты без бэкенда. Актуальная ветка продукта — variant-a.html.
     </p>
   </main>
 </body>
