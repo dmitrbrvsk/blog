@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вариант B — Team Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --bg2: #fffdf8;
+      --ink: #1c2420;
+      --muted: #5f6b63;
+      --line: #d9d0c0;
+      --accent: #0f6a56;
+      --accent-soft: #d7efe7;
+      --warn: #9a5b12;
+      --warn-soft: #f4e2c8;
+      --danger: #9b2c2c;
+      --danger-soft: #f5d6d6;
+      --info: #1f4f7a;
+      --info-soft: #d9e7f4;
+      --sidebar: #18221e;
+      --sidebar-ink: #e7efe9;
+      --sidebar-muted: #9aaba0;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(15, 106, 86, 0.05), transparent 35%),
+        linear-gradient(180deg, #efe8d8 0%, var(--bg) 45%, #ebe4d6 100%);
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 232px 1fr;
+      overflow: hidden;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+    }
+    button { cursor: pointer; }
+    button:hover { border-color: #b7ad9a; }
+
+    .sidebar {
+      background:
+        radial-gradient(500px 280px at 20% 0%, rgba(126, 200, 163, 0.18), transparent 60%),
+        var(--sidebar);
+      color: var(--sidebar-ink);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 1rem 0.85rem;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .brand small {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--sidebar-muted);
+    }
+
+    .nav {
+      display: grid;
+      gap: 0.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .nav button {
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--sidebar-ink);
+      padding: 0.55rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .nav button:hover { background: rgba(255,255,255,0.05); border-color: transparent; }
+    .nav button.active {
+      background: rgba(126, 200, 163, 0.16);
+      border-color: rgba(126, 200, 163, 0.35);
+    }
+    .nav .hint {
+      font-size: 0.7rem;
+      color: var(--sidebar-muted);
+      display: block;
+      margin-top: 0.1rem;
+    }
+
+    .side-foot {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.75rem;
+      color: var(--sidebar-muted);
+      line-height: 1.4;
+    }
+
+    .main {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .top h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+    .top .spacer { flex: 1; }
+
+    .select, .search {
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .search { min-width: 220px; }
+
+    .btn {
+      padding: 0.42rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--bg2);
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #f4fff9;
+    }
+    .btn.ghost { background: transparent; }
+
+    .content {
+      overflow: auto;
+      padding: 1.1rem;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      padding: 0.85rem 0.95rem;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    .stat .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .stat .value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 0.9rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .panel-head .spacer { flex: 1; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid #ebe3d4;
+      vertical-align: top;
+    }
+    th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 600;
+      background: #faf6ee;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr.clickable { cursor: pointer; }
+    tr.clickable:hover td { background: #f7f2e8; }
+
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.get { background: #e4f3d8; color: #2f6b12; }
+    .badge.post { background: var(--info-soft); color: var(--info); }
+    .badge.put { background: var(--warn-soft); color: var(--warn); }
+    .badge.delete { background: var(--danger-soft); color: var(--danger); }
+    .badge.ok { background: var(--accent-soft); color: var(--accent); }
+    .badge.err { background: var(--danger-soft); color: var(--danger); }
+    .badge.idle { background: #ece7db; color: #5d5648; }
+    .badge.scenario { background: #e8e0f4; color: #5b3f8c; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 0.85rem;
+    }
+
+    .stack { display: grid; gap: 0.85rem; }
+
+    .card-list {
+      display: grid;
+      gap: 0.65rem;
+      padding: 0.85rem;
+    }
+
+    .preset, .scenario {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.8rem 0.85rem;
+      background: #fffcf6;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .preset h3, .scenario h3 {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+    .preset p, .scenario p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .actions {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 34, 30, 0.35);
+      display: none;
+      justify-content: flex-end;
+      z-index: 20;
+    }
+    .drawer.open { display: flex; }
+    .drawer-panel {
+      width: min(480px, 100%);
+      background: var(--bg2);
+      height: 100%;
+      border-left: 1px solid var(--line);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      animation: slide .2s ease;
+    }
+    @keyframes slide {
+      from { transform: translateX(16px); opacity: 0.6; }
+      to { transform: none; opacity: 1; }
+    }
+    .drawer-head, .drawer-foot {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .drawer-foot { border-bottom: none; border-top: 1px solid var(--line); }
+    .drawer-body {
+      overflow: auto;
+      padding: 1rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .field { display: grid; gap: 0.3rem; }
+    .field label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .field input, .field select, .field textarea {
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.88rem;
+    }
+    .field textarea {
+      min-height: 120px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 1.1rem;
+      transform: translate(-50%, 10px);
+      background: var(--sidebar);
+      color: var(--sidebar-ink);
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      opacity: 0;
+      transition: .2s ease;
+      z-index: 30;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    @media (max-width: 980px) {
+      body { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .split { grid-template-columns: 1fr; }
+      .search { min-width: 140px; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="./index.html">
+      MockOps
+      <small>Вариант B · Team Admin ← назад</small>
+    </a>
+
+    <nav class="nav">
+      <button class="active" data-view="stubs">
+        Stubs
+        <span class="hint">mappings / фильтры</span>
+      </button>
+      <button data-view="scenarios">
+        Scenarios
+        <span class="hint">stateful flows</span>
+      </button>
+      <button data-view="journal">
+        Journal
+        <span class="hint">requests → stub</span>
+      </button>
+      <button data-view="presets">
+        Presets
+        <span class="hint">доменные ошибки</span>
+      </button>
+      <button data-view="import">
+        Import / Export
+        <span class="hint">наборы моков</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      WireMock · payments-mock:8080<br />
+      Profile: <strong style="color:#cfe9dc">checkout-chaos</strong>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <h1 id="pageTitle">Stubs</h1>
+      <div class="spacer"></div>
+      <select class="select" id="envSelect" title="Environment">
+        <option>local / payments-mock</option>
+        <option>dev / shared-wm</option>
+        <option>stage / wm-stage</option>
+      </select>
+      <select class="select" id="profileSelect" title="Profile">
+        <option>checkout-chaos</option>
+        <option>happy-path</option>
+        <option>kyc-blocked</option>
+      </select>
+      <button class="btn primary" id="btnNewStub">+ Stub</button>
+    </header>
+
+    <div class="content">
+      <!-- STUBS -->
+      <section class="view active" id="view-stubs">
+        <div class="stats">
+          <div class="stat"><div class="label">Active stubs</div><div class="value">128</div></div>
+          <div class="stat"><div class="label">Scenarios</div><div class="value">14</div></div>
+          <div class="stat"><div class="label">Hits / 1h</div><div class="value">3.4k</div></div>
+          <div class="stat"><div class="label">Unmatched</div><div class="value" style="color:var(--danger)">27</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Mappings</h2>
+            <input class="search" placeholder="Filter method, path, tag…" id="stubFilter" />
+            <div class="spacer"></div>
+            <button class="btn ghost" data-toast="Reset mappings in current profile (mock)">Reset profile</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Path</th>
+                <th>Status</th>
+                <th>Scenario / state</th>
+                <th>Tags</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody id="stubRows">
+              <tr class="clickable" data-stub="users">
+                <td><span class="badge get">GET</span></td>
+                <td class="mono">/api/users/me</td>
+                <td><span class="badge ok">200</span></td>
+                <td class="mono">—</td>
+                <td><span class="badge idle">auth</span></td>
+                <td class="mono">5</td>
+              </tr>
+              <tr class="clickable" data-stub="pay-fail">
+                <td><span class="badge post">POST</span></td>
+                <td class="mono">/api/payments</td>
+                <td><span class="badge err">402</span></td>
+                <td><span class="badge scenario">pay · failed</span></td>
+                <td><span class="badge idle">payments</span></td>
+                <td class="mono">1</td>
+              </tr>
+              <tr class="clickable" data-stub="kyc">
+                <td><span class="badge get">GET</span></td>
+                <td class="mono">/api/kyc/status</td>
+                <td><span class="badge err">403</span></td>
+                <td><span class="badge scenario">kyc · blocked</span></td>
+                <td><span class="badge idle">kyc</span></td>
+                <td class="mono">2</td>
+              </tr>
+              <tr class="clickable" data-stub="orders">
+                <td><span class="badge put">PUT</span></td>
+                <td class="mono">/api/orders/{id}</td>
+                <td><span class="badge ok">200</span></td>
+                <td class="mono">—</td>
+                <td><span class="badge idle">orders</span></td>
+                <td class="mono">10</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SCENARIOS -->
+      <section class="view" id="view-scenarios">
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h2>Stateful scenarios</h2></div>
+            <div class="card-list">
+              <article class="scenario">
+                <h3>pay · payment lifecycle</h3>
+                <p>Started → Authorized → Captured / Failed. Переключает ответы POST /api/payments и webhooks.</p>
+                <div class="actions">
+                  <span class="badge scenario">state: failed</span>
+                  <button class="btn" data-toast="State → Started">Started</button>
+                  <button class="btn" data-toast="State → Authorized">Authorized</button>
+                  <button class="btn" data-toast="State → Failed">Failed</button>
+                </div>
+              </article>
+              <article class="scenario">
+                <h3>kyc · verification gate</h3>
+                <p>Pending → Review → Blocked / Approved. Влияет на /api/kyc/* и checkout guard.</p>
+                <div class="actions">
+                  <span class="badge scenario">state: blocked</span>
+                  <button class="btn" data-toast="State → Pending">Pending</button>
+                  <button class="btn" data-toast="State → Approved">Approved</button>
+                  <button class="btn" data-toast="State → Blocked">Blocked</button>
+                </div>
+              </article>
+              <article class="scenario">
+                <h3>catalog · eventual consistency</h3>
+                <p>Fresh → Stale → Unavailable. Для проверки ретраев витрины.</p>
+                <div class="actions">
+                  <span class="badge idle">state: fresh</span>
+                  <button class="btn" data-toast="State → Stale">Stale</button>
+                  <button class="btn" data-toast="State → Unavailable">Unavailable</button>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Profile overlay</h2></div>
+            <div class="card-list">
+              <p class="note">
+                Профиль <strong>checkout-chaos</strong> активирует набор сценариев и пресетов
+                поверх базовых stubs. Удобно шарить одной ссылкой команде QA/FE.
+              </p>
+              <article class="preset">
+                <h3>Included presets</h3>
+                <p>payment-insufficient-funds · kyc-blocked · slow-3s</p>
+              </article>
+              <article class="preset">
+                <h3>Apply to env</h3>
+                <div class="actions">
+                  <button class="btn primary" data-toast="Profile applied to local">Apply to local</button>
+                  <button class="btn" data-toast="Profile exported as JSON">Export profile</button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- JOURNAL -->
+      <section class="view" id="view-journal">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Request journal</h2>
+            <div class="spacer"></div>
+            <button class="btn ghost" data-toast="Journal cleared (mock)">Clear</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Request</th>
+                <th>Matched</th>
+                <th>Response</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">12:04:11</td>
+                <td><span class="badge post">POST</span> <span class="mono">/api/payments</span></td>
+                <td class="mono">pay-fail</td>
+                <td><span class="badge err">402</span></td>
+                <td><button class="btn" data-toast="Opened stub editor from journal">Edit stub</button></td>
+              </tr>
+              <tr>
+                <td class="mono">12:04:09</td>
+                <td><span class="badge get">GET</span> <span class="mono">/api/wallet/balance</span></td>
+                <td><span class="badge err">unmatched</span></td>
+                <td><span class="badge err">404</span></td>
+                <td><button class="btn primary" id="btnFromRequest">Stub from request</button></td>
+              </tr>
+              <tr>
+                <td class="mono">12:03:58</td>
+                <td><span class="badge get">GET</span> <span class="mono">/api/users/me</span></td>
+                <td class="mono">users-me</td>
+                <td><span class="badge ok">200</span></td>
+                <td><button class="btn" data-toast="Opened stub editor from journal">Edit stub</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PRESETS -->
+      <section class="view" id="view-presets">
+        <div class="stack">
+          <p class="note">Доменные пресеты — один клик вместо ручной сборки JSON. Генерируют/патчат WireMock mappings.</p>
+          <div class="split">
+            <div class="card-list" style="padding:0; gap:0.65rem;">
+              <article class="preset">
+                <h3>payment-insufficient-funds</h3>
+                <p>POST /api/payments → 402 + код INSUFFICIENT_FUNDS, delay 200ms.</p>
+                <div class="actions">
+                  <button class="btn primary" data-toast="Preset applied">Apply</button>
+                  <button class="btn" data-toast="Preset preview JSON">Preview JSON</button>
+                </div>
+              </article>
+              <article class="preset">
+                <h3>kyc-blocked</h3>
+                <p>Блокирует checkout: /api/kyc/status → 403, /api/checkout → 409.</p>
+                <div class="actions">
+                  <button class="btn primary" data-toast="Preset applied">Apply</button>
+                  <button class="btn" data-toast="Preset preview JSON">Preview JSON</button>
+                </div>
+              </article>
+              <article class="preset">
+                <h3>upstream-timeout</h3>
+                <p>Любой /api/partners/* → fixedDelay 15000 + 504.</p>
+                <div class="actions">
+                  <button class="btn primary" data-toast="Preset applied">Apply</button>
+                  <button class="btn" data-toast="Preset preview JSON">Preview JSON</button>
+                </div>
+              </article>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Why presets</h2></div>
+              <div class="card-list">
+                <p class="note">Для сложного проекта команда думает сценариями продукта («карта отклонена», «KYC не пройден»), а не matcher-ами WireMock. Пресеты — слой над raw stubs.</p>
+                <p class="note">Под капотом всё равно WireMock mappings + scenarios API.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- IMPORT -->
+      <section class="view" id="view-import">
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h2>Import stub pack</h2></div>
+            <div class="card-list">
+              <div class="field">
+                <label>Source</label>
+                <select>
+                  <option>WireMock mappings JSON</option>
+                  <option>Recorded stub pack (.zip)</option>
+                  <option>Profile bundle</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Payload</label>
+                <textarea>{
+  "mappings": [],
+  "meta": { "name": "checkout-chaos", "version": 3 }
+}</textarea>
+              </div>
+              <div class="actions">
+                <button class="btn primary" data-toast="Imported 0 mappings (mock)">Import</button>
+                <button class="btn" data-toast="Validated OK">Validate</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Export</h2></div>
+            <div class="card-list">
+              <article class="preset">
+                <h3>Current profile</h3>
+                <p>checkout-chaos → mappings + scenario states + preset refs</p>
+                <div class="actions">
+                  <button class="btn primary" data-toast="Exported profile JSON">Export JSON</button>
+                  <button class="btn" data-toast="Copied share link">Copy share link</button>
+                </div>
+              </article>
+              <article class="preset">
+                <h3>Proxy record</h3>
+                <p>Включить record/playback для выбранного upstream.</p>
+                <div class="actions">
+                  <button class="btn" data-toast="Recording started (mock)">Start recording</button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer-panel">
+      <div class="drawer-head">
+        <strong id="drawerTitle">Edit stub</strong>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btnCloseDrawer">Close</button>
+      </div>
+      <div class="drawer-body">
+        <div class="field">
+          <label>Method</label>
+          <select id="dMethod">
+            <option>GET</option>
+            <option selected>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Path</label>
+          <input class="mono" id="dPath" value="/api/payments" />
+        </div>
+        <div class="field">
+          <label>Response status</label>
+          <input id="dStatus" value="402" />
+        </div>
+        <div class="field">
+          <label>Scenario</label>
+          <select>
+            <option>pay · failed</option>
+            <option>pay · authorized</option>
+            <option>— none —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tags</label>
+          <input value="payments, chaos" />
+        </div>
+        <div class="field">
+          <label>Response body</label>
+          <textarea id="dBody">{
+  "error": "INSUFFICIENT_FUNDS",
+  "message": "Not enough balance"
+}</textarea>
+        </div>
+        <p class="note">Сохранение идёт в выбранный WireMock server через Admin API. Профиль запоминает overlay.</p>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn" data-toast="Stub duplicated">Duplicate</button>
+        <div class="spacer"></div>
+        <button class="btn primary" data-toast="Stub saved">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const titles = {
+      stubs: "Stubs",
+      scenarios: "Scenarios",
+      journal: "Journal",
+      presets: "Presets",
+      import: "Import / Export",
+    };
+
+    const toast = document.getElementById("toast");
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    document.querySelectorAll("[data-toast]").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showToast(el.dataset.toast);
+      });
+    });
+
+    document.querySelectorAll(".nav button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const view = btn.dataset.view;
+        document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+        document.getElementById(`view-${view}`).classList.add("active");
+        document.getElementById("pageTitle").textContent = titles[view];
+      });
+    });
+
+    const drawer = document.getElementById("drawer");
+    function openDrawer(title, data = {}) {
+      document.getElementById("drawerTitle").textContent = title;
+      if (data.method) document.getElementById("dMethod").value = data.method;
+      if (data.path) document.getElementById("dPath").value = data.path;
+      if (data.status) document.getElementById("dStatus").value = data.status;
+      if (data.body) document.getElementById("dBody").value = data.body;
+      drawer.classList.add("open");
+    }
+    function closeDrawer() { drawer.classList.remove("open"); }
+
+    document.getElementById("btnCloseDrawer").addEventListener("click", closeDrawer);
+    drawer.addEventListener("click", (e) => { if (e.target === drawer) closeDrawer(); });
+
+    document.getElementById("btnNewStub").addEventListener("click", () => {
+      openDrawer("New stub", {
+        method: "GET",
+        path: "/api/",
+        status: "200",
+        body: '{\n  "ok": true\n}',
+      });
+    });
+
+    document.getElementById("stubRows").addEventListener("click", (e) => {
+      const row = e.target.closest("tr[data-stub]");
+      if (!row) return;
+      const map = {
+        users: { method: "GET", path: "/api/users/me", status: "200", body: '{\n  "id": "u_1024"\n}' },
+        "pay-fail": { method: "POST", path: "/api/payments", status: "402", body: '{\n  "error": "INSUFFICIENT_FUNDS"\n}' },
+        kyc: { method: "GET", path: "/api/kyc/status", status: "403", body: '{\n  "status": "blocked"\n}' },
+        orders: { method: "PUT", path: "/api/orders/{id}", status: "200", body: '{\n  "ok": true\n}' },
+      };
+      openDrawer("Edit stub", map[row.dataset.stub]);
+    });
+
+    document.getElementById("btnFromRequest").addEventListener("click", () => {
+      openDrawer("Stub from request", {
+        method: "GET",
+        path: "/api/wallet/balance",
+        status: "200",
+        body: '{\n  "currency": "USD",\n  "available": 120.5\n}',
+      });
+      showToast("Prefilled from unmatched request");
+    });
+
+    document.getElementById("stubFilter").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll("#stubRows tr").forEach((tr) => {
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+
+    document.getElementById("profileSelect").addEventListener("change", (e) => {
+      showToast(`Profile switched: ${e.target.value}`);
+    });
+    document.getElementById("envSelect").addEventListener("change", (e) => {
+      showToast(`Environment: ${e.target.value}`);
+    });
+  </script>
+</body>
+</html>
