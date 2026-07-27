@@ -1,0 +1,190 @@
+From dfb95cc397c9d1525b5a1ab9f9416e2f4203dac4 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Mon, 27 Jul 2026 07:29:43 +0000
+Subject: [PATCH] =?UTF-8?q?feat(eslint):=20=D0=B7=D0=B0=D0=BF=D1=80=D0=B5?=
+ =?UTF-8?q?=D1=82=D0=B8=D1=82=D1=8C=20non-ASCII=20=D0=B2=20=D0=B8=D0=B4?=
+ =?UTF-8?q?=D0=B5=D0=BD=D1=82=D0=B8=D1=84=D0=B8=D0=BA=D0=B0=D1=82=D0=BE?=
+ =?UTF-8?q?=D1=80=D0=B0=D1=85?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Добавлен custom-паттерн ASCII-only в @typescript-eslint/naming-convention,
+чтобы ловить кириллицу и прочий Unicode в именах переменных, функций,
+типов и остальных идентификаторов (closes #33, часть 1).
+---
+ .changeset/ascii-identifiers-naming.md        |  5 +
+ .../eslint/rules/typescript.ts                | 39 ++++++--
+ .../rules/naming-convention-ascii.test.ts     | 91 +++++++++++++++++++
+ 3 files changed, 129 insertions(+), 6 deletions(-)
+ create mode 100644 .changeset/ascii-identifiers-naming.md
+ create mode 100644 packages/arui-presets-lint/test/rules/naming-convention-ascii.test.ts
+
+diff --git a/.changeset/ascii-identifiers-naming.md b/.changeset/ascii-identifiers-naming.md
+new file mode 100644
+index 0000000..016a998
+--- /dev/null
++++ b/.changeset/ascii-identifiers-naming.md
+@@ -0,0 +1,5 @@
++---
++'arui-presets-lint': minor
++---
++
++Запрет non-ASCII символов (в т.ч. кириллицы) в идентификаторах через `@typescript-eslint/naming-convention`
+diff --git a/packages/arui-presets-lint/eslint/rules/typescript.ts b/packages/arui-presets-lint/eslint/rules/typescript.ts
+index fbaf76d..6274bf9 100644
+--- a/packages/arui-presets-lint/eslint/rules/typescript.ts
++++ b/packages/arui-presets-lint/eslint/rules/typescript.ts
+@@ -14,6 +14,36 @@ const bestPracticesRules = bestPracticesConfig.rules as Record<string, Linter.Ru
+ const importsRules = importsConfig.rules as Record<string, Linter.RuleEntry>;
+ const variablesRules = variablesConfig.rules as Record<string, Linter.RuleEntry>;
+ 
++/** Идентификатор должен состоять только из ASCII (без кириллицы и прочего Unicode). */
++export const ASCII_ONLY_PATTERN = {
++    regex: String.raw`^[\x00-\x7F]+$`,
++    match: true,
++} as const;
++
++/** Опции naming-convention с запретом non-ASCII (см. issue #33). */
++export const namingConventionOptions = [
++    {
++        selector: 'default',
++        format: null,
++        custom: ASCII_ONLY_PATTERN,
++    },
++    {
++        selector: 'variable',
++        format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
++        custom: ASCII_ONLY_PATTERN,
++    },
++    {
++        selector: 'function',
++        format: ['camelCase', 'PascalCase'],
++        custom: ASCII_ONLY_PATTERN,
++    },
++    {
++        selector: 'typeLike',
++        format: ['PascalCase'],
++        custom: ASCII_ONLY_PATTERN,
++    },
++] as const;
++
+ export const typescriptConfig: Linter.Config = {
+     name: 'arui-presets-lint/typescript',
+     files: [TYPESCRIPT_SCRIPTS_SCOPE],
+@@ -78,12 +108,9 @@ export const typescriptConfig: Linter.Config = {
+ 
+         // Определяет правила именования
+         // https://typescript-eslint.io/rules/naming-convention
+-        '@typescript-eslint/naming-convention': [
+-            'error',
+-            { selector: 'variable', format: ['camelCase', 'PascalCase', 'UPPER_CASE'] },
+-            { selector: 'function', format: ['camelCase', 'PascalCase'] },
+-            { selector: 'typeLike', format: ['PascalCase'] },
+-        ],
++        // custom ASCII-only: format camelCase/PascalCase допускает Unicode (кириллицу и т.п.)
++        // https://github.com/core-ds/arui-presets-lint/issues/33
++        '@typescript-eslint/naming-convention': ['error', ...namingConventionOptions],
+ 
+         // Запрещает вызов require()
+         // https://typescript-eslint.io/rules/no-require-imports
+diff --git a/packages/arui-presets-lint/test/rules/naming-convention-ascii.test.ts b/packages/arui-presets-lint/test/rules/naming-convention-ascii.test.ts
+new file mode 100644
+index 0000000..c38a7d0
+--- /dev/null
++++ b/packages/arui-presets-lint/test/rules/naming-convention-ascii.test.ts
+@@ -0,0 +1,91 @@
++import { ESLint } from 'eslint';
++import tseslint from 'typescript-eslint';
++import { describe, expect, it } from 'vitest';
++
++import { namingConventionOptions } from '../../eslint/rules/typescript.js';
++
++const eslint = new ESLint({
++    overrideConfigFile: true,
++    overrideConfig: [
++        {
++            files: ['**/*.ts'],
++            languageOptions: {
++                parser: tseslint.parser,
++                parserOptions: {
++                    projectService: {
++                        allowDefaultProject: ['*.ts'],
++                    },
++                    ecmaVersion: 'latest',
++                    sourceType: 'module',
++                },
++            },
++            plugins: {
++                '@typescript-eslint': tseslint.plugin,
++            },
++            rules: {
++                '@typescript-eslint/naming-convention': ['error', ...namingConventionOptions],
++            },
++        },
++    ],
++});
++
++async function lint(code: string) {
++    const [result] = await eslint.lintText(code, { filePath: 'file.ts' });
++
++    return result.messages.filter(
++        (message) => message.ruleId === '@typescript-eslint/naming-convention',
++    );
++}
++
++describe('naming-convention ascii identifiers', () => {
++    it('принимает ascii-идентификаторы и ascii-ключи с дефисами', async () => {
++        const messages = await lint(`
++            const userName = 1;
++            const MAX_COUNT = 10;
++            const $element = null;
++            function loadData() {}
++            class UserCard {}
++            type UserId = string;
++            const rules = { 'no-console': 'off', '@typescript-eslint/no-explicit-any': 'off' };
++        `);
++
++        expect(messages).toEqual([]);
++    });
++
++    it('запрещает кириллицу в имени переменной', async () => {
++        const messages = await lint('const пользователь = 1;');
++
++        expect(messages).toHaveLength(1);
++        expect(messages[0].message).toMatch(/RegExp/i);
++    });
++
++    it('запрещает кириллицу в имени функции', async () => {
++        const messages = await lint('function загрузить() {}');
++
++        expect(messages).toHaveLength(1);
++    });
++
++    it('запрещает кириллицу в имени класса', async () => {
++        const messages = await lint('class Компонент {}');
++
++        expect(messages).toHaveLength(1);
++    });
++
++    it('запрещает кириллицу в параметре', async () => {
++        const messages = await lint('function load(параметр: string) { return параметр; }');
++
++        expect(messages).toHaveLength(1);
++    });
++
++    it('запрещает кириллицу в свойстве объекта', async () => {
++        const messages = await lint('const data = { имя: 1 };');
++
++        expect(messages).toHaveLength(1);
++    });
++
++    it('запрещает кириллицу в члене enum', async () => {
++        const messages = await lint('enum Status { Активный = 1 }');
++
++        expect(messages).toHaveLength(1);
++    });
++});
+-- 
+2.43.0
+
