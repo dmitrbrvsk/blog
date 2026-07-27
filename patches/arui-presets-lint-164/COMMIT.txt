@@ -1,0 +1,18 @@
+commit 80fb3785f9816a937315f101fb272f3983679ea5
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Jul 27 07:44:57 2026 +0000
+
+    feat(arui-presets-lint): add eslint-plugin-react-you-might-not-need-an-effect
+    
+    Подключает recommended-правила плагина как warn для поиска ненужных useEffect.
+    Скоуп — GLOBAL_SCRIPTS_SCOPE, чтобы ловить кастомные хуки в .ts файлах.
+
+ .../add-react-you-might-not-need-an-effect.md      |  5 +++++
+ .../_internal/duplicates-checker.ts                |  7 +++++++
+ packages/arui-presets-lint/eslint/index.ts         |  4 ++++
+ packages/arui-presets-lint/eslint/rules.ts         |  1 +
+ packages/arui-presets-lint/eslint/rules/index.ts   |  1 +
+ .../rules/react-you-might-not-need-an-effect.ts    | 22 ++++++++++++++++++++++
+ packages/arui-presets-lint/package.json            |  1 +
+ yarn.lock                                          | 19 +++++++++++++++++++
+ 8 files changed, 60 insertions(+)

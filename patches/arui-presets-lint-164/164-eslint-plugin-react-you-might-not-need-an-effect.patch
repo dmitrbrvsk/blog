@@ -1,0 +1,214 @@
+From 80fb3785f9816a937315f101fb272f3983679ea5 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Mon, 27 Jul 2026 07:44:57 +0000
+Subject: [PATCH] feat(arui-presets-lint): add
+ eslint-plugin-react-you-might-not-need-an-effect
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Подключает recommended-правила плагина как warn для поиска ненужных useEffect.
+Скоуп — GLOBAL_SCRIPTS_SCOPE, чтобы ловить кастомные хуки в .ts файлах.
+---
+ .../add-react-you-might-not-need-an-effect.md |  5 +++++
+ .../_internal/duplicates-checker.ts           |  7 ++++++
+ packages/arui-presets-lint/eslint/index.ts    |  4 ++++
+ packages/arui-presets-lint/eslint/rules.ts    |  1 +
+ .../arui-presets-lint/eslint/rules/index.ts   |  1 +
+ .../react-you-might-not-need-an-effect.ts     | 22 +++++++++++++++++++
+ packages/arui-presets-lint/package.json       |  1 +
+ yarn.lock                                     | 19 ++++++++++++++++
+ 8 files changed, 60 insertions(+)
+ create mode 100644 .changeset/add-react-you-might-not-need-an-effect.md
+ create mode 100644 packages/arui-presets-lint/eslint/rules/react-you-might-not-need-an-effect.ts
+
+diff --git a/.changeset/add-react-you-might-not-need-an-effect.md b/.changeset/add-react-you-might-not-need-an-effect.md
+new file mode 100644
+index 0000000..9c596dd
+--- /dev/null
++++ b/.changeset/add-react-you-might-not-need-an-effect.md
+@@ -0,0 +1,5 @@
++---
++'arui-presets-lint': minor
++---
++
++Добавлен eslint-plugin-react-you-might-not-need-an-effect: правила recommended включены как warn для поиска ненужных useEffect
+diff --git a/packages/arui-presets-lint/_internal/duplicates-checker.ts b/packages/arui-presets-lint/_internal/duplicates-checker.ts
+index fd22c80..81dbd8d 100644
+--- a/packages/arui-presets-lint/_internal/duplicates-checker.ts
++++ b/packages/arui-presets-lint/_internal/duplicates-checker.ts
+@@ -7,6 +7,7 @@ import { markdownConfig } from '../eslint/rules/markdown.js';
+ import { nodeRulesConfig } from '../eslint/rules/node.js';
+ import { reactConfig } from '../eslint/rules/react.js';
+ import { reactA11yConfig } from '../eslint/rules/react-a11y.js';
++import { reactYouMightNotNeedAnEffectConfig } from '../eslint/rules/react-you-might-not-need-an-effect.js';
+ import { testsConfig } from '../eslint/rules/tests.js';
+ import { typescriptConfig } from '../eslint/rules/typescript.js';
+ import { variablesConfig } from '../eslint/rules/variables.js';
+@@ -70,6 +71,11 @@ const markdown = {
+     name: markdownConfig.name,
+ };
+ 
++const reactYouMightNotNeedAnEffect = {
++    rules: Object.keys(reactYouMightNotNeedAnEffectConfig.rules || {}),
++    name: reactYouMightNotNeedAnEffectConfig.name,
++};
++
+ const configs: Array<{
+     rules: string[];
+     name?: string;
+@@ -79,6 +85,7 @@ const configs: Array<{
+     node,
+     react,
+     reactA11y,
++    reactYouMightNotNeedAnEffect,
+     tests,
+     typescript,
+     variables,
+diff --git a/packages/arui-presets-lint/eslint/index.ts b/packages/arui-presets-lint/eslint/index.ts
+index f7a68ce..4bc40c4 100644
+--- a/packages/arui-presets-lint/eslint/index.ts
++++ b/packages/arui-presets-lint/eslint/index.ts
+@@ -10,6 +10,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+ import nodePlugin from 'eslint-plugin-n';
+ import reactPlugin from 'eslint-plugin-react';
+ import reactHooksPlugin from 'eslint-plugin-react-hooks';
++import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect';
+ import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+ import unicornPlugin from 'eslint-plugin-unicorn';
+ import globals from 'globals';
+@@ -27,6 +28,7 @@ import {
+     nodeRulesConfig,
+     reactA11yConfig,
+     reactConfig,
++    reactYouMightNotNeedAnEffectConfig,
+     testsConfig,
+     typescriptConfig,
+     variablesConfig,
+@@ -80,6 +82,7 @@ export const eslintConfig = [
+             'check-file': checkFilePlugin,
+             react: reactPlugin,
+             'react-hooks': reactHooksPlugin,
++            'react-you-might-not-need-an-effect': reactYouMightNotNeedAnEffect,
+             'jsx-a11y': jsxA11yPlugin,
+             unicorn: unicornPlugin,
+             'disable-comments': disableCommentsPlugin,
+@@ -97,6 +100,7 @@ export const eslintConfig = [
+     bestPracticesConfig,
+     nodeRulesConfig,
+     reactConfig,
++    reactYouMightNotNeedAnEffectConfig,
+     reactA11yConfig,
+     variablesConfig,
+     testsConfig,
+diff --git a/packages/arui-presets-lint/eslint/rules.ts b/packages/arui-presets-lint/eslint/rules.ts
+index 9473f3b..98378cf 100644
+--- a/packages/arui-presets-lint/eslint/rules.ts
++++ b/packages/arui-presets-lint/eslint/rules.ts
+@@ -6,6 +6,7 @@ export {
+     nodeRulesConfig,
+     reactA11yConfig,
+     reactConfig,
++    reactYouMightNotNeedAnEffectConfig,
+     testsConfig,
+     typescriptConfig,
+     variablesConfig,
+diff --git a/packages/arui-presets-lint/eslint/rules/index.ts b/packages/arui-presets-lint/eslint/rules/index.ts
+index baadaee..b5eba14 100644
+--- a/packages/arui-presets-lint/eslint/rules/index.ts
++++ b/packages/arui-presets-lint/eslint/rules/index.ts
+@@ -5,6 +5,7 @@ export { markdownConfig } from './markdown.js';
+ export { nodeRulesConfig } from './node.js';
+ export { reactA11yConfig } from './react-a11y.js';
+ export { reactConfig } from './react.js';
++export { reactYouMightNotNeedAnEffectConfig } from './react-you-might-not-need-an-effect.js';
+ export { testsConfig } from './tests.js';
+ export { typescriptConfig } from './typescript.js';
+ export { variablesConfig } from './variables.js';
+diff --git a/packages/arui-presets-lint/eslint/rules/react-you-might-not-need-an-effect.ts b/packages/arui-presets-lint/eslint/rules/react-you-might-not-need-an-effect.ts
+new file mode 100644
+index 0000000..9c4ad97
+--- /dev/null
++++ b/packages/arui-presets-lint/eslint/rules/react-you-might-not-need-an-effect.ts
+@@ -0,0 +1,22 @@
++import { type Linter } from 'eslint';
++import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect';
++
++import { GLOBAL_SCRIPTS_SCOPE } from '../constants.js';
++
++/**
++ * Ловит ненужные useEffect по гайду React "You Might Not Need an Effect".
++ * Правила из recommended включены как warn, чтобы не ломать существующие проекты.
++ * https://github.com/nickjvandyke/eslint-plugin-react-you-might-not-need-an-effect
++ */
++export const reactYouMightNotNeedAnEffectConfig: Linter.Config = {
++    name: 'arui-presets-lint/react-you-might-not-need-an-effect',
++    files: [GLOBAL_SCRIPTS_SCOPE],
++    plugins: {
++        'react-you-might-not-need-an-effect': reactYouMightNotNeedAnEffect,
++    },
++
++    rules: {
++        // https://github.com/nickjvandyke/eslint-plugin-react-you-might-not-need-an-effect#rules
++        ...reactYouMightNotNeedAnEffect.configs.recommended.rules,
++    },
++};
+diff --git a/packages/arui-presets-lint/package.json b/packages/arui-presets-lint/package.json
+index 9cca038..8c76d87 100644
+--- a/packages/arui-presets-lint/package.json
++++ b/packages/arui-presets-lint/package.json
+@@ -30,6 +30,7 @@
+         "eslint-plugin-n": "18.1.0",
+         "eslint-plugin-react": "7.37.5",
+         "eslint-plugin-react-hooks": "7.1.1",
++        "eslint-plugin-react-you-might-not-need-an-effect": "1.0.1",
+         "eslint-plugin-simple-import-sort": "13.0.0",
+         "eslint-plugin-unicorn": "65.0.1",
+         "execa": "^9.6.1",
+diff --git a/yarn.lock b/yarn.lock
+index 2ad0614..de6736e 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -5140,6 +5140,7 @@ __metadata:
+     eslint-plugin-n: "npm:18.1.0"
+     eslint-plugin-react: "npm:7.37.5"
+     eslint-plugin-react-hooks: "npm:7.1.1"
++    eslint-plugin-react-you-might-not-need-an-effect: "npm:1.0.1"
+     eslint-plugin-simple-import-sort: "npm:13.0.0"
+     eslint-plugin-unicorn: "npm:65.0.1"
+     eslint-vitest-rule-tester: "npm:3.1.0"
+@@ -6632,6 +6633,17 @@ __metadata:
+   languageName: node
+   linkType: hard
+ 
++"eslint-plugin-react-you-might-not-need-an-effect@npm:1.0.1":
++  version: 1.0.1
++  resolution: "eslint-plugin-react-you-might-not-need-an-effect@npm:1.0.1"
++  dependencies:
++    globals: "npm:^16.2.0"
++  peerDependencies:
++    eslint: ">=8.40.0"
++  checksum: 10c0/f63fa35818f860f5bfcdd4249bd5632ebf80aeddac6eb12876348e2dd72d7559b82ae213e0a768e9102ea282b9140d3e2f9fda6d8a4bc77f47bbb6414166a04e
++  languageName: node
++  linkType: hard
++
+ "eslint-plugin-react@npm:7.37.5":
+   version: 7.37.5
+   resolution: "eslint-plugin-react@npm:7.37.5"
+@@ -7399,6 +7411,13 @@ __metadata:
+   languageName: node
+   linkType: hard
+ 
++"globals@npm:^16.2.0":
++  version: 16.5.0
++  resolution: "globals@npm:16.5.0"
++  checksum: 10c0/615241dae7851c8012f5aa0223005b1ed6607713d6813de0741768bd4ddc39353117648f1a7086b4b0fa45eae733f1c0a0fe369aa4e543bb63f8de8990178ea9
++  languageName: node
++  linkType: hard
++
+ "globals@npm:^17.0.0, globals@npm:^17.4.0":
+   version: 17.4.0
+   resolution: "globals@npm:17.4.0"
+-- 
+2.43.0
+

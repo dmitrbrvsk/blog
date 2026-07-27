@@ -1,0 +1,41 @@
+commit 80fb3785f9816a937315f101fb272f3983679ea5
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Jul 27 07:44:57 2026 +0000
+
+    feat(arui-presets-lint): add eslint-plugin-react-you-might-not-need-an-effect
+    
+    Подключает recommended-правила плагина как warn для поиска ненужных useEffect.
+    Скоуп — GLOBAL_SCRIPTS_SCOPE, чтобы ловить кастомные хуки в .ts файлах.
+
+diff --git a/packages/arui-presets-lint/_internal/duplicates-checker.ts b/packages/arui-presets-lint/_internal/duplicates-checker.ts
+index fd22c80..81dbd8d 100644
+--- a/packages/arui-presets-lint/_internal/duplicates-checker.ts
++++ b/packages/arui-presets-lint/_internal/duplicates-checker.ts
+@@ -7,6 +7,7 @@ import { markdownConfig } from '../eslint/rules/markdown.js';
+ import { nodeRulesConfig } from '../eslint/rules/node.js';
+ import { reactConfig } from '../eslint/rules/react.js';
+ import { reactA11yConfig } from '../eslint/rules/react-a11y.js';
++import { reactYouMightNotNeedAnEffectConfig } from '../eslint/rules/react-you-might-not-need-an-effect.js';
+ import { testsConfig } from '../eslint/rules/tests.js';
+ import { typescriptConfig } from '../eslint/rules/typescript.js';
+ import { variablesConfig } from '../eslint/rules/variables.js';
+@@ -70,6 +71,11 @@ const markdown = {
+     name: markdownConfig.name,
+ };
+ 
++const reactYouMightNotNeedAnEffect = {
++    rules: Object.keys(reactYouMightNotNeedAnEffectConfig.rules || {}),
++    name: reactYouMightNotNeedAnEffectConfig.name,
++};
++
+ const configs: Array<{
+     rules: string[];
+     name?: string;
+@@ -79,6 +85,7 @@ const configs: Array<{
+     node,
+     react,
+     reactA11y,
++    reactYouMightNotNeedAnEffect,
+     tests,
+     typescript,
+     variables,

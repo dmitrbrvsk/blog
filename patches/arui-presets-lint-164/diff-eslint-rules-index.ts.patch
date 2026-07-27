@@ -1,0 +1,21 @@
+commit 80fb3785f9816a937315f101fb272f3983679ea5
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Jul 27 07:44:57 2026 +0000
+
+    feat(arui-presets-lint): add eslint-plugin-react-you-might-not-need-an-effect
+    
+    Подключает recommended-правила плагина как warn для поиска ненужных useEffect.
+    Скоуп — GLOBAL_SCRIPTS_SCOPE, чтобы ловить кастомные хуки в .ts файлах.
+
+diff --git a/packages/arui-presets-lint/eslint/rules/index.ts b/packages/arui-presets-lint/eslint/rules/index.ts
+index baadaee..b5eba14 100644
+--- a/packages/arui-presets-lint/eslint/rules/index.ts
++++ b/packages/arui-presets-lint/eslint/rules/index.ts
+@@ -5,6 +5,7 @@ export { markdownConfig } from './markdown.js';
+ export { nodeRulesConfig } from './node.js';
+ export { reactA11yConfig } from './react-a11y.js';
+ export { reactConfig } from './react.js';
++export { reactYouMightNotNeedAnEffectConfig } from './react-you-might-not-need-an-effect.js';
+ export { testsConfig } from './tests.js';
+ export { typescriptConfig } from './typescript.js';
+ export { variablesConfig } from './variables.js';
