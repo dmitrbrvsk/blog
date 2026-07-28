@@ -10,7 +10,7 @@
 | **UI-kit** | Корпоративная DS (если есть) / Ant Design / MUI | Таблицы, формы, журнал — из коробки; не кастомный дизайн-лендинг |
 | **BFF / API** | Kotlin + Spring Boot 3 **или** Java 21 + Spring Boot 3 | Типичный банковский backend; транзакции, security, observability |
 | **Альтернатива API** | Go (chi/echo) + pgx | Если команда Go-native и уже так устроен конвейер |
-| **Auth** | OIDC (Keycloak / Entra ID / корпоративный IdP) | `sub` = `actor_id`, роли в realm/client roles |
+| **Auth** | **Банковский Keycloak** (OIDC) + federation к **AD** | AD-учётки; `sub` = `actor_id`; роли client roles из AD-групп |
 | **БД** | PostgreSQL 15+ | JSONB для `changes`, надёжные транзакции, append-only audit |
 | **Миграции** | Flyway / Liquibase | Обязательный versioned schema |
 | **API-контракт** | OpenAPI 3 + oapi-codegen / springdoc | Контракт-first между UI и backend |
@@ -43,9 +43,9 @@
 ```
 product-admin-service/
   api/          # controllers, DTOs, OpenAPI
-  app/          # use-cases: UpdateProduct, ListAudit
-  domain/       # CreditProduct, AuditEvent, invariants
-  infra/        # JPA/JDBC, security, clock, id generator
+  app/          # use-cases: CreateProduct, UpdateProduct, DeleteProduct, ListAudit
+  domain/       # CreditProduct, AuditEvent, invariants, roles
+  infra/        # JPA/JDBC, Keycloak resource-server, clock, id generator
 ```
 
 Доступ к БД:
@@ -53,30 +53,34 @@ product-admin-service/
 - **JDBC / jOOQ / MyBatis** предпочтительнее «магии» для явного `FOR UPDATE` + insert audit.
 - JPA допустим, если команда так живёт; критичный use-case писать нативно/явно.
 
-Транзакция update:
+Транзакция update (create/delete — аналогично с другим `operation`):
 
 ```text
 @Transactional
 updateProduct(cmd):
+  requireRole(EDITOR or FS_ADMIN)
   product = repo.lockById(cmd.id)
   assert product.version == cmd.version else Conflict
   diff = Diff.calculate(product, cmd)
   if diff.isEmpty → return NoOp
   product.apply(cmd); product.version++
   repo.save(product)
-  auditRepo.append(AuditEvent.from(actor, diff, actionId))
+  auditRepo.append(AuditEvent.from(actor, UPDATE, diff, actionId))
   return Result(product, actionId)
 ```
+
+Security: Spring Security OAuth2 Resource Server → issuer банковского Keycloak, маппинг authorities из realm/client roles (`credit-admin.*`).
 
 ---
 
 ## 3. Frontend
 
-- React + TypeScript, React Query/TanStack Query для GET/PATCH.
-- Форма: controlled fields + отображение серверных ошибок валидации.
+- React + TypeScript, React Query/TanStack Query для GET/POST/PATCH/DELETE.
+- Логин: OIDC Authorization Code + PKCE против Keycloak.
+- Форма create/edit + подтверждение delete (только для `fs-admin`).
 - При `409` — toast «продукт изменили параллельно» + refetch.
-- Экран аудита: таблица + expandable row с before/after; колонка `action_id` с copy.
-- Никакой бизнес-логики «что писать в audit» на клиенте — только отображение ответа API.
+- Журнал аудита: operation + before/after; колонка `action_id` с copy.
+- Никакой бизнес-логики аудита на клиенте — только отображение ответа API.
 
 ---
 
@@ -98,8 +102,8 @@ updateProduct(cmd):
 
 | Механизм | Реализация |
 |---|---|
-| AuthN | OIDC Authorization Code + PKCE (UI), JWT resource-server (API) |
-| AuthZ | Spring Security method/HTTP security по ролям |
+| AuthN | Keycloak OIDC Code + PKCE (UI), JWT resource-server (API); пользователи из AD |
+| AuthZ | Spring Security по ролям `viewer` / `editor` / `fs-admin` |
 | DB | роль приложения: `SELECT/INSERT/UPDATE` на products; `SELECT/INSERT` на audit |
 | Secrets | Vault / платформенный secret store |
 | Network | mTLS mesh или сетевые политики namespace |
@@ -109,13 +113,13 @@ updateProduct(cmd):
 ## 6. Локальная разработка
 
 ```text
-docker compose: PostgreSQL + (опционально Keycloak)
+docker compose: PostgreSQL + Keycloak (с тестовым AD/LDAP mock или in-memory users под AD-логины)
 make migrate
 make run-api
 make run-ui
 ```
 
-Seed: 3–5 демо-продуктов + фиктивный IdP user для viewer/editor.
+Seed: 3–5 демо-продуктов + пользователи с ролями viewer / editor / fs-admin.
 
 ---
 
@@ -123,10 +127,11 @@ Seed: 3–5 демо-продуктов + фиктивный IdP user для vie
 
 Если кредитный контур уже на **.NET / Node / Go** — **не плодить второй стек**. Переносим те же архитектурные инварианты:
 
-1. Одна транзакция product + audit.
-2. `actor_id` из IdP.
-3. `action_id` на каждое изменение.
+1. Одна транзакция product + audit на CREATE/UPDATE/DELETE.
+2. `actor_id` из Keycloak (`sub`), login из AD.
+3. `action_id` на каждое действие.
 4. Optimistic locking.
 5. Append-only audit table.
+6. Роль `fs-admin` для удаления и админских операций ФС.
 
 Технологии вторичны относительно этих инвариантов.

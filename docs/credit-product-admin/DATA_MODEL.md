@@ -17,15 +17,26 @@ CREATE TABLE credit_products (
     currency          CHAR(3) NOT NULL DEFAULT 'RUB',
     status            TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE', 'ARCHIVED')),
     version           INT  NOT NULL DEFAULT 1 CHECK (version > 0),
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by        TEXT NOT NULL,  -- actor_id
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_by        TEXT NOT NULL,  -- actor_id
+    deleted_at        TIMESTAMPTZ NULL,
+    deleted_by        TEXT NULL,      -- actor_id; заполняется при soft-delete
     CONSTRAINT chk_amount_range CHECK (amount_max >= amount_min)
 );
 
 CREATE INDEX idx_credit_products_status ON credit_products (status);
+CREATE UNIQUE INDEX uq_credit_products_code_active
+    ON credit_products (code)
+    WHERE deleted_at IS NULL;  -- альтернатива: оставить UNIQUE(code) глобально
 ```
 
-MVP: UI/API редактируют только продукты в `ACTIVE` (или явно разрешённые статусы).
+Рекомендация MVP: **глобально уникальный `code`** (даже после archive), чтобы не путать потребителей ФС/конвейера. Тогда достаточно `UNIQUE (code)` без partial index.
+
+Списки по умолчанию: `WHERE deleted_at IS NULL` (или `status <> 'ARCHIVED'` — выбрать один канонический признак удаления и не дублировать семантику).
+
+Канон MVP: удаление = `status = 'ARCHIVED'` **и** `deleted_at = now()`.
 
 ## 2. Таблица `audit_events` (append-only)
 
@@ -35,7 +46,7 @@ CREATE TABLE audit_events (
     action_id           UUID NOT NULL,
     occurred_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
     actor_id            TEXT NOT NULL,
-    actor_login         TEXT NOT NULL,
+    actor_login         TEXT NOT NULL,          -- AD login / UPN на момент события
     actor_display_name  TEXT NULL,
     source              TEXT NOT NULL,           -- admin-ui | api | migration
     ip                  TEXT NULL,
@@ -48,68 +59,92 @@ CREATE TABLE audit_events (
     request_id          TEXT NULL
 );
 
--- один save продукта = один action_id; в MVP обычно одна строка на action
 CREATE INDEX idx_audit_action_id ON audit_events (action_id);
 CREATE INDEX idx_audit_entity ON audit_events (entity_type, entity_id, occurred_at DESC);
 CREATE INDEX idx_audit_actor ON audit_events (actor_id, occurred_at DESC);
 CREATE INDEX idx_audit_occurred_at ON audit_events (occurred_at DESC);
 
--- запрет изменения/удаления на уровне прав:
 -- GRANT SELECT, INSERT ON audit_events TO product_admin_app;
 -- REVOKE UPDATE, DELETE ON audit_events FROM product_admin_app;
 ```
 
 ### Формат `changes`
 
+UPDATE:
+
 ```json
 [
   { "field": "rate_annual_pct", "before": 18.5, "after": 17.9 },
-  { "field": "amount_max", "before": 5000000.00, "after": 7000000.00 },
-  { "field": "description", "before": "…", "after": "…" }
+  { "field": "amount_max", "before": 5000000.00, "after": 7000000.00 }
 ]
 ```
 
-Типы значений в JSON: числа как number, строки как string. Деньги — number с фиксированной точностью на уровне приложения (или string decimal — зафиксировать в OpenAPI один раз).
+CREATE (`before` = null):
 
-## 3. Транзакционный сценарий UPDATE
+```json
+[
+  { "field": "code", "before": null, "after": "SMB_OVERDRAFT_12M" },
+  { "field": "rate_annual_pct", "before": null, "after": 17.9 }
+]
+```
+
+DELETE (`after` = null, полный snapshot ключевых полей в `before`):
+
+```json
+[
+  { "field": "status", "before": "ACTIVE", "after": "ARCHIVED" },
+  { "field": "code", "before": "SMB_OVERDRAFT_12M", "after": null }
+]
+```
+
+## 3. Транзакции
+
+### CREATE
 
 ```sql
 BEGIN;
+INSERT INTO credit_products (…, created_by, updated_by, status, version)
+VALUES (…, :actor_id, :actor_id, 'ACTIVE', 1);
+INSERT INTO audit_events (…, operation, changes)
+VALUES (…, 'CREATE', :changes::jsonb);
+COMMIT;
+```
 
-SELECT id, version, description, term_months, rate_annual_pct,
-       amount_min, amount_max, …
-  FROM credit_products
- WHERE id = :id
- FOR UPDATE;
+### UPDATE
 
--- если version <> :client_version → ROLLBACK; 409
-
+```sql
+BEGIN;
+SELECT … FROM credit_products WHERE id = :id FOR UPDATE;
+-- version mismatch → ROLLBACK; 409
 UPDATE credit_products
-   SET description     = :description,
-       term_months     = :term_months,
-       rate_annual_pct = :rate_annual_pct,
-       amount_min      = :amount_min,
-       amount_max      = :amount_max,
-       version         = version + 1,
-       updated_at      = now(),
-       updated_by      = :actor_id
- WHERE id = :id
-   AND version = :client_version;
+   SET …, version = version + 1, updated_at = now(), updated_by = :actor_id
+ WHERE id = :id AND version = :client_version;
+INSERT INTO audit_events (…, operation, changes)
+VALUES (…, 'UPDATE', :changes::jsonb);
+COMMIT;
+```
 
-INSERT INTO audit_events (
-    id, action_id, actor_id, actor_login, actor_display_name,
-    source, entity_type, entity_id, operation, changes, reason, request_id
-) VALUES (
-    :event_id, :action_id, :actor_id, :actor_login, :actor_display_name,
-    'admin-ui', 'credit_product', :id, 'UPDATE', :changes::jsonb, :reason, :request_id
-);
+### DELETE (soft, только fs-admin)
 
+```sql
+BEGIN;
+SELECT … FROM credit_products WHERE id = :id FOR UPDATE;
+-- already archived → ROLLBACK; 404/410
+-- version mismatch → 409
+UPDATE credit_products
+   SET status = 'ARCHIVED',
+       deleted_at = now(),
+       deleted_by = :actor_id,
+       version = version + 1,
+       updated_at = now(),
+       updated_by = :actor_id
+ WHERE id = :id AND version = :client_version AND deleted_at IS NULL;
+INSERT INTO audit_events (…, operation, changes)
+VALUES (…, 'DELETE', :changes::jsonb);
 COMMIT;
 ```
 
 ## 4. Чтение аудита
-
-По продукту:
 
 ```sql
 SELECT *
@@ -120,20 +155,12 @@ SELECT *
  LIMIT :limit;
 ```
 
-Глобальный журнал — фильтры по `actor_id`, `occurred_at` range, опционально `entity_id`. Пагинация: keyset (`occurred_at`, `id`), не OFFSET.
+Глобальный журнал — фильтры по `actor_id`, `operation`, `occurred_at`. Пагинация keyset, не OFFSET.
 
 ## 5. Расширение на другие сущности
 
-Новые типы параметров процессов:
-
-- `entity_type = 'scoring_policy' | 'fee_schedule' | 'process_cutoff' | …`
-- те же колонки аудита;
-- отдельные таблицы сущностей + те же use-case паттерны.
-
-Менять модель аудита не требуется.
+`entity_type = 'scoring_policy' | 'fee_schedule' | 'process_cutoff' | …` — та же таблица аудита.
 
 ## 6. Retention (после MVP)
 
-- Горячий слой: N месяцев в primary PG.
-- Архив: партиции по `occurred_at` + выгрузка в холодное хранилище / DWH.
-- Для MVP достаточно одной таблицы без партиций.
+Партиции по `occurred_at` + выгрузка в DWH. Для MVP — одна таблица.

@@ -2,21 +2,24 @@
 
 Архитектура внутренней админки для изменения параметров кредитования бизнеса.
 
-**Фокус MVP:** редактирование параметров кредитного продукта + аудит «кто / что / когда» с `action_id`.
+**Фокус MVP:** CRUD кредитного продукта + аудит «кто / что / когда» с `action_id`.  
+**Auth:** банковский Keycloak + AD-учётки.  
+**Роли:** `viewer` / `editor` / `fs-admin` (админ ФС).
 
 ## Содержание
 
 | Документ | Описание |
 |---|---|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Контекст, компоненты, API, NFR, roadmap |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Контекст, Auth, RBAC, API, NFR, roadmap |
 | [TECH_STACK.md](./TECH_STACK.md) | Стек и обоснование |
-| [DATA_MODEL.md](./DATA_MODEL.md) | PostgreSQL-схема, транзакция update, индексы |
+| [DATA_MODEL.md](./DATA_MODEL.md) | PostgreSQL-схема, транзакции CREATE/UPDATE/DELETE |
 | [adr/](./adr/) | Архитектурные решения |
 
 ## Быстрый конспект для ревью
 
-1. Один сервис **Product Admin** + PostgreSQL + SPA за SSO.
-2. `PATCH` продукта и `INSERT` в `audit_events` — **одна транзакция**.
-3. В аудите обязательны `actor_id` (IdP `sub`), `actor_login`, `action_id`, field-level `changes`.
-4. Конфликты параллельных правок — через `version` → HTTP 409.
-5. Стек выравниваем с платформой; default — Spring Boot + React + PostgreSQL + OIDC.
+1. Один сервис **Product Admin** + PostgreSQL + SPA.
+2. AuthN через **банковский Keycloak**, пользователи из **AD**.
+3. CRUD продукта: create / update / **soft-delete**; мутация + audit в одной транзакции.
+4. Роли: `viewer` (чтение), `editor` (создание/изменение), **`fs-admin`** (удаление + админ ФС).
+5. В аудите: `actor_id` (Keycloak `sub`), `actor_login` (AD), `action_id`, `operation`, field-level `changes`.
+6. Конфликты — `version` → HTTP 409.

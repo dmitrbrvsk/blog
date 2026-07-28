@@ -15,7 +15,7 @@ Accepted (рекомендация; выравнивать с платформо
 - **API:** Kotlin/Java 21 + Spring Boot 3
 - **UI:** TypeScript + React (Vite) + корпоративная DS / Ant Design
 - **DB:** PostgreSQL 15+
-- **Auth:** OIDC (корпоративный IdP)
+- **Auth:** банковский Keycloak (OIDC) + AD-учётки
 - **Migrations:** Flyway/Liquibase
 - **Obs:** OpenTelemetry + Micrometer
 
