@@ -29,7 +29,7 @@
 - [x] 1. Persistent cache + `compiler.close()` — **только dev**
 - [x] 2. Brotli quality 5–6, не сжимать PNG — **не делаем**
 - [x] 3. Урезать `stats` в prod и watch
-- [ ] 4. `builtin:swc-loader` для `node_modules`
+- [x] 4. `builtin:swc-loader` для `node_modules`
 - [ ] 5. Починить печать gzip-размеров
 - [ ] 6. Поправить доку
 
@@ -157,22 +157,9 @@ Rspack умеет `experiments.lazyCompilation`. Клиентские роуты
 
 ### 8. `node_modules` клиента идут через JS `swc-loader`
 
-Код приложения:
+**Решение: делаем.** На клиенте `getExternalCodeLoader` переведён на `builtin:swc-loader` без опций — как уже сделано на сервере. `cacheDirectory` / `cacheCompression` не переносим: это опции babel-loader, у SWC их нет. `swcClientConfig` не добавляем — его и раньше здесь не было.
 
-```ts
-loader: 'builtin:swc-loader'
-```
-
-Внешний код:
-
-```ts
-loader: require.resolve('swc-loader'),
-options: { cacheDirectory: mode === 'dev', cacheCompression: false }
-```
-
-`builtin:swc-loader` — нативный, в том же процессе, что и Rspack. `swc-loader` — JS-обёртка, отдельный worker-пул, лишний IPC. Для `node_modules` это как раз горячий путь на первом старте. Плюс `cacheDirectory` у `swc-loader` в этой связке почти ничего не даёт по сравнению с persistent cache бандлера.
-
-И `babel-loader` для `experimentalReactCompiler` удваивает работу на каждом `tsx`: SWC + Babel. В Rspack 2.1 React Compiler уже встроен в SWC. Имеет смысл поднять `@rspack/core` с `2.0.0` на 2.1.x и убрать Babel из этого пути.
+Патч: [`src/arui-scripts-patches/04-builtin-swc-loader-externals.patch`](./arui-scripts-patches/04-builtin-swc-loader-externals.patch).
 
 ### 9. JS-плагины, которые можно заменить или выключить
 
@@ -333,8 +320,8 @@ export default { clientOnly: true };
 1. **Без breaking changes, большой профит**
    - persistent cache в dev + `compiler.close()` при остановке `yarn start`;
    - ~~brotli quality 5–6, не сжимать PNG~~ — решили не трогать;
-   - `stats.toJson` только errors/warnings, `modules: false` в watch;
-   - `builtin:swc-loader` для `node_modules`;
+   - `stats.toJson` только errors/warnings, `modules: false` в watch — сделано;
+   - `builtin:swc-loader` для `node_modules` — сделано;
    - починить печать gzip-размеров;
    - поправить доку (`devSourceMaps`, `commands.md`, ключи rspack).
 

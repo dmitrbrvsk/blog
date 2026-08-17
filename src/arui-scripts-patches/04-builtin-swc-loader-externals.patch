@@ -1,0 +1,16 @@
+diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+--- a/packages/arui-scripts/src/configs/rspack.client.ts
++++ b/packages/arui-scripts/src/configs/rspack.client.ts
+@@ -577,11 +577,7 @@ function getExternalCodeLoader(mode: 'dev' | 'prod'): RuleSetRule {
+     if (configs.codeLoader === 'swc') {
+         return {
+             ...baseLoaderConfig,
+-            loader: require.resolve('swc-loader'),
+-            options: {
+-                cacheDirectory: mode === 'dev',
+-                cacheCompression: false,
+-            },
++            loader: 'builtin:swc-loader',
+         };
+     }
+ 
