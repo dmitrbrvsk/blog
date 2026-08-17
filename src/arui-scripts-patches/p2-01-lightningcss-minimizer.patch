@@ -1,0 +1,21 @@
+diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+index 980e017..33c5c53 100644
+--- a/packages/arui-scripts/src/configs/rspack.client.ts
++++ b/packages/arui-scripts/src/configs/rspack.client.ts
+@@ -11,6 +11,7 @@ import {
+     NormalModuleReplacementPlugin,
+     type RspackPluginInstance,
+     type RuleSetRule,
++    LightningCssMinimizerRspackPlugin,
+     SwcJsMinimizerRspackPlugin,
+ } from '@rspack/core';
+ import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
+@@ -73,7 +74,7 @@ function getMinimizeConfig(mode: 'dev' | 'prod') {
+     if (mode === 'prod') {
+         return {
+             minimize: true,
+-            minimizer: [new SwcJsMinimizerRspackPlugin(), new CssMinimizerPlugin()].filter(Boolean),
++            minimizer: [new SwcJsMinimizerRspackPlugin(), new LightningCssMinimizerRspackPlugin()].filter(Boolean),
+         };
+     }
+ 

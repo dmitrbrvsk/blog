@@ -111,13 +111,17 @@ stats?.toJson({
 
 ### 5. CSS всё ещё на JS-стеке webpack-эпохи
 
+**Решение: делаем, только prod-minify.** `CssMinimizerPlugin` (cssnano) в production заменён на `LightningCssMinimizerRspackPlugin`. PostCSS-цепочка не трогалась. В dev при `keepCssVars` по-прежнему `CssMinimizerPlugin` + `postcss-discard-duplicates` — это не минификация, а схлопывание дублей переменных.
+
 JS уже на `builtin:swc-loader` + `SwcJsMinimizerRspackPlugin`. CSS — нет:
 
 - цепочка из ~15 PostCSS-плагинов, включая устаревшие `postcss-color-function` и `postcss-color-mod-function`;
 - `css-loader` + `postcss-loader` вместо native CSS Rspack (`experiments.css` явно выключен);
-- минификация через `css-minimizer-webpack-plugin` (cssnano), хотя у Rspack есть `LightningCssMinimizerRspackPlugin`.
+- ~~минификация через `css-minimizer-webpack-plugin` (cssnano)~~ — в prod теперь `LightningCssMinimizerRspackPlugin`.
 
-PostCSS полностью выкинуть нельзя: mixins / custom-media / тема `core-components` / `postcss-global-variables` — реальный контракт с дизайн-системой. Но **autoprefixer + minify** можно отдать Lightning CSS, а calc/nested — тоже: это обычно самая дорогая часть.
+PostCSS полностью выкинуть нельзя: mixins / custom-media / тема `core-components` / `postcss-global-variables` — реальный контракт с дизайн-системой.
+
+Патч: [`src/arui-scripts-patches/p2-01-lightningcss-minimizer.patch`](./arui-scripts-patches/p2-01-lightningcss-minimizer.patch).
 
 Отдельный runtime-эффект: `keepCssVars: false` по умолчанию. CSS-переменные инлайнятся (`postcss-custom-properties`, `preserve: false`). Это наследие IE11. При `iOS >= 14` переменные поддерживаются везде; инлайн раздувает CSS (особенно с `core-components`). Дефолт `keepCssVars: true` уменьшит CSS и уберёт два плагина из критического пути.
 
@@ -331,7 +335,7 @@ export default { clientOnly: true };
 
 Прогресс:
 
-- [ ] `LightningCssMinimizerRspackPlugin` вместо cssnano
+- [x] `LightningCssMinimizerRspackPlugin` вместо cssnano
 - [x] `HtmlRspackPlugin`
 - [ ] `keepCssVars: true` (или хотя бы предупреждение)
 - [ ] не вешать пустой `ProvideSharedPlugin`
@@ -340,7 +344,7 @@ export default { clientOnly: true };
 
 Пункты:
 
-   - `LightningCssMinimizerRspackPlugin` вместо cssnano;
+   - `LightningCssMinimizerRspackPlugin` вместо cssnano — сделано, патч [`p2-01-lightningcss-minimizer.patch`](./arui-scripts-patches/p2-01-lightningcss-minimizer.patch);
    - `HtmlRspackPlugin` — сделано, патч [`p2-02-html-rspack-plugin.patch`](./arui-scripts-patches/p2-02-html-rspack-plugin.patch);
    - `keepCssVars: true` (или хотя бы предупреждение);
    - не вешать пустой `ProvideSharedPlugin`;
