@@ -28,7 +28,7 @@
 
 - [x] 1. Persistent cache + `compiler.close()` — **только dev**
 - [x] 2. Brotli quality 5–6, не сжимать PNG — **не делаем**
-- [ ] 3. Урезать `stats` в prod и watch
+- [x] 3. Урезать `stats` в prod и watch
 - [ ] 4. `builtin:swc-loader` для `node_modules`
 - [ ] 5. Починить печать gzip-размеров
 - [ ] 6. Поправить доку
@@ -84,24 +84,28 @@ devtool: mode === 'dev' ? configs.devSourceMaps : 'source-map',
 
 ### 4. `stats.toJson({})` и болтливый вывод в dev
 
+**Решение: делаем.** Только эти два места: `toJson` в prod-сборке и `modules` в watch. `bundle-analyze` и печать размеров ассетов не трогаем.
+
 После успешной prod-сборки сообщения собираются так:
 
 ```ts
 const messages = formatWebpackMessages(stats?.toJson({}));
 ```
 
-В print на каждый rebuild:
+Стало:
 
 ```ts
-stats: {
-  modules: true,
-  moduleTrace: true,
-  errorDetails: true,
-  performance: true,
-}
+stats?.toJson({
+    all: false,
+    errors: true,
+    warnings: true,
+    errorDetails: true,
+})
 ```
 
-На приложении с тысячами модулей сериализация stats заметнее, чем сам incremental rebuild Rspack. Для ошибок/варнингов достаточно `{ all: false, errors: true, warnings: true, errorDetails: true }`. В `statsOptions` для watch — `modules: false`.
+В print на каждый rebuild `statsOptions.modules` с `true` на `false`.
+
+Патч: [`src/arui-scripts-patches/03-trim-stats.patch`](./arui-scripts-patches/03-trim-stats.patch).
 
 ### 5. CSS всё ещё на JS-стеке webpack-эпохи
 
