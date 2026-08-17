@@ -1,0 +1,66 @@
+diff --git a/packages/arui-scripts/docs/settings.md b/packages/arui-scripts/docs/settings.md
+index 0e39781..1ae937d 100644
+--- a/packages/arui-scripts/docs/settings.md
++++ b/packages/arui-scripts/docs/settings.md
+@@ -77,6 +77,11 @@ ARUI_SCRIPTS_CONFIG="{\"clientEntry\":{\"mobile\":\"./src/mobile\",\"desktop\":\
+ так как используется ТОЛЬКО в дев-режиме. Если по каким-то причинам вас такое поведение не устраивает - вы можете поменять
+ тип source-map на любой другой, не использующий eval.
+ 
++#### prodSourceMaps
++Какой вид source-map использовать в production-сборке. По умолчанию `source-map`.
++
++Подробнее можно почитать [здесь](https://webpack.js.org/configuration/devtool/).
++
+ #### devServerCors
+ Включает добавление CORS заголовков в ответы dev-сервера. По умолчанию `false`.
+ 
+diff --git a/packages/arui-scripts/src/configs/app-configs/get-defaults.ts b/packages/arui-scripts/src/configs/app-configs/get-defaults.ts
+index a50ba40..02e7b00 100644
+--- a/packages/arui-scripts/src/configs/app-configs/get-defaults.ts
++++ b/packages/arui-scripts/src/configs/app-configs/get-defaults.ts
+@@ -22,6 +22,7 @@ export function getDefaultAppConfig(): AppConfigs {
+         serverPort: 3000,
+         debug: false,
+         devSourceMaps: 'cheap-module-source-map', // так получаются нормальные сорсмапы, с eval - они не работают
++        prodSourceMaps: 'source-map',
+         devServerCors: false,
+         useServerHMR: false,
+         presets: configFile?.presets || appPackage?.aruiScripts?.presets || null,
+diff --git a/packages/arui-scripts/src/configs/app-configs/types.ts b/packages/arui-scripts/src/configs/app-configs/types.ts
+index 6a6929c..c9f9683 100644
+--- a/packages/arui-scripts/src/configs/app-configs/types.ts
++++ b/packages/arui-scripts/src/configs/app-configs/types.ts
+@@ -12,6 +12,7 @@ export type AppConfigs = {
+     serverPort: number;
+     debug: boolean;
+     devSourceMaps: DevTool;
++    prodSourceMaps: DevTool;
+     devServerCors: boolean;
+     useServerHMR: boolean;
+     presets: string | null;
+diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+index 980e017..f7e4d04 100644
+--- a/packages/arui-scripts/src/configs/rspack.client.ts
++++ b/packages/arui-scripts/src/configs/rspack.client.ts
+@@ -117,7 +117,7 @@ export const createSingleClientWebpackConfig = (
+     ...(configName ? { name: configName } : {}), // Если добавлять имя конфигурации всегда - могут ломаться оверрайды, которые считают что у дефолтной конфигурации нет имени
+     target: 'browserslist',
+     mode: mode === 'dev' ? 'development' : 'production',
+-    devtool: mode === 'dev' ? configs.devSourceMaps : 'source-map',
++    devtool: mode === 'dev' ? configs.devSourceMaps : configs.prodSourceMaps,
+     entry: getEntry(entry, getSingleEntry, mode),
+     // in production mode we need to fail on first error
+     bail: mode === 'prod',
+diff --git a/packages/arui-scripts/src/configs/rspack.server.ts b/packages/arui-scripts/src/configs/rspack.server.ts
+index da5b92d..173e76e 100644
+--- a/packages/arui-scripts/src/configs/rspack.server.ts
++++ b/packages/arui-scripts/src/configs/rspack.server.ts
+@@ -49,7 +49,7 @@ export const createServerConfig = (mode: 'dev' | 'prod'): Configuration => ({
+     mode: mode === 'dev' ? 'development' : 'production',
+     // fail on first error in production mode
+     bail: mode === 'prod',
+-    devtool: mode === 'dev' ? configs.devSourceMaps : 'source-map',
++    devtool: mode === 'dev' ? configs.devSourceMaps : configs.prodSourceMaps,
+     target: 'node',
+     node: {
+         __filename: true,

@@ -74,13 +74,15 @@ Quality 11 — максимальный, на больших JS/CSS это ми�
 
 ### 3. Полные `source-map` в production
 
+**Решение: делаем.** Дефолт не меняем: production по-прежнему `'source-map'`. Добавлена настройка `prodSourceMaps` (тип `DevTool`), по аналогии с `devSourceMaps`. Клиент и сервер читают её в `build` / `start:prod`.
+
 ```ts
-devtool: mode === 'dev' ? configs.devSourceMaps : 'source-map',
+devtool: mode === 'dev' ? configs.devSourceMaps : configs.prodSourceMaps,
 ```
 
 Полные source map — один из самых дорогих этапов prod-сборки (и по CPU, и по диску). Для клиента достаточно `hidden-source-map` (те же map-файлы, без `sourceMappingURL` в бандле). Для сервера — `cheap-module-source-map` или отдельный флаг.
 
-Имеет смысл вынести `prodSourceMaps` в настройки, по аналогии с `devSourceMaps`. Сейчас это можно поменять только оверрайдом.
+Патч: [`src/arui-scripts-patches/p2-05-prod-source-maps.patch`](./arui-scripts-patches/p2-05-prod-source-maps.patch).
 
 ### 4. `stats.toJson({})` и болтливый вывод в dev
 
@@ -165,7 +167,7 @@ Rspack умеет `experiments.lazyCompilation`. Клиентские роуты
 
 | Сейчас | Зачем | Что лучше |
 | --- | --- | --- |
-| `HtmlWebpackPlugin` | HTML в `clientOnly` | `HtmlRspackPlugin` (Rust) |
+| `HtmlWebpackPlugin` | HTML в `clientOnly` | `HtmlRspackPlugin` (Rust) — **сделано** |
 | `CaseSensitivePathsPlugin` | опечатки в регистре | встроенная проверка Rspack / `snapshot` |
 | `WatchMissingNodeModulesPlugin` | CRA-наследие | Rspack и так пересобирается после `yarn add` |
 | `WebpackDeduplicationPlugin` | дедуп по `yarn.lock` | полезен для **размера**, но парсит lockfile на каждую сборку; не работает с npm/pnpm |
@@ -282,10 +284,8 @@ const overrides: OverrideFile = {
 **Облегчить source map в prod:**
 
 ```ts
-rspackClientProd: (config) => {
-  const apply = (c: Configuration) => { c.devtool = 'hidden-source-map'; return c; };
-  return Array.isArray(config) ? config.map(apply) : apply(config);
-},
+// arui-scripts.config.ts
+export default { prodSourceMaps: 'hidden-source-map' };
 ```
 
 **Не инлайнить CSS-переменные:**
@@ -335,7 +335,7 @@ export default { clientOnly: true };
 - [x] `HtmlRspackPlugin`
 - [ ] `keepCssVars: true` (или хотя бы предупреждение)
 - [ ] не вешать пустой `ProvideSharedPlugin`
-- [ ] `prodSourceMaps` как настройка
+- [x] `prodSourceMaps` как настройка
 - [ ] поднять Rspack 2.0 → 2.1
 
 Пункты:
@@ -344,7 +344,7 @@ export default { clientOnly: true };
    - `HtmlRspackPlugin` — сделано, патч [`p2-02-html-rspack-plugin.patch`](./arui-scripts-patches/p2-02-html-rspack-plugin.patch);
    - `keepCssVars: true` (или хотя бы предупреждение);
    - не вешать пустой `ProvideSharedPlugin`;
-   - `prodSourceMaps` как настройка;
+   - `prodSourceMaps` как настройка — сделано, патч [`p2-05-prod-source-maps.patch`](./arui-scripts-patches/p2-05-prod-source-maps.patch);
    - поднять Rspack 2.0 → 2.1 (нативный React Compiler, cache cleanup).
 
 3. **Нужна миграция / мажор**
