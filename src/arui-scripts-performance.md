@@ -336,7 +336,7 @@ export default { clientOnly: true };
 - [ ] `keepCssVars: true` (или хотя бы предупреждение)
 - [ ] не вешать пустой `ProvideSharedPlugin`
 - [x] `prodSourceMaps` как настройка
-- [ ] поднять Rspack 2.0 → 2.1
+- [x] поднять Rspack 2.0 → 2.1
 
 Пункты:
 
@@ -345,7 +345,7 @@ export default { clientOnly: true };
    - `keepCssVars: true` (или хотя бы предупреждение);
    - не вешать пустой `ProvideSharedPlugin`;
    - `prodSourceMaps` как настройка — сделано, патч [`p2-05-prod-source-maps.patch`](./arui-scripts-patches/p2-05-prod-source-maps.patch);
-   - поднять Rspack 2.0 → 2.1 (нативный React Compiler, cache cleanup).
+   - поднять Rspack 2.0 → 2.1 — сделано, патч [`p2-06-rspack-2.1.patch`](./arui-scripts-patches/p2-06-rspack-2.1.patch). `@rspack/core` и `@rspack/cli` `2.0.0` → `2.1.10`, `@rspack/dev-server` `2.0.0` → `2.1.0` (не `2.2`). `@rspack/plugin-react-refresh` остаётся `2.0.0` — линейки 2.1 нет. `yarn.lock` в патч не входит, после применения нужен install. React Compiler на native SWC не переписываем.
 
 3. **Нужна миграция / мажор**
    - дефолтный `splitChunks` без единого `vendor`;
