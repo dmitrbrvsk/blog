@@ -1,0 +1,13 @@
+diff --git a/packages/arui-scripts/src/commands/util/client-assets-sizes.ts b/packages/arui-scripts/src/commands/util/client-assets-sizes.ts
+index 46e27a0..b8f7059 100644
+--- a/packages/arui-scripts/src/commands/util/client-assets-sizes.ts
++++ b/packages/arui-scripts/src/commands/util/client-assets-sizes.ts
+@@ -74,7 +74,7 @@ export function printAssetsSizes(webpackStats: Stats) {
+     Object.keys(assetsMap).forEach((assetName) => {
+         const asset = assetsMap[assetName];
+         const size = asset.size || 0;
+-        const gzipSize = asset.brSize || size;
++        const gzipSize = asset.gzipSize || size;
+         const brSize = asset.brSize || gzipSize;
+         const dcbSize = asset.dcbSize || brSize;
+ 

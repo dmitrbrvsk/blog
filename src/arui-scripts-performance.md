@@ -30,7 +30,7 @@
 - [x] 2. Brotli quality 5–6, не сжимать PNG — **не делаем**
 - [x] 3. Урезать `stats` в prod и watch
 - [x] 4. `builtin:swc-loader` для `node_modules`
-- [ ] 5. Починить печать gzip-размеров
+- [x] 5. Починить печать gzip-размеров
 - [ ] 6. Поправить доку
 
 ### 1. Persistent cache в Rspack 2 не включён
@@ -257,9 +257,9 @@ Android 6 (2015) тянет трансформы и (при `core-js`) поли�
 - `statsOptions` существует, но prod-сборка его не использует.
 - Баг в печати размеров: gzip берётся из `asset.brSize`, а не `gzipSize` — потребители видят неверные цифры и принимают решения по «сжатию» вслепую.
 
-```ts
-const gzipSize = asset.brSize || size;
-```
+**Решение: делаем.** `const gzipSize = asset.gzipSize || size`.
+
+Патч: [`src/arui-scripts-patches/05-fix-gzip-size-print.patch`](./arui-scripts-patches/05-fix-gzip-size-print.patch).
 
 - `overrides.md` до сих пор описывает ключи `webpack*`. В 23.x они deprecated.
 
@@ -322,7 +322,7 @@ export default { clientOnly: true };
    - ~~brotli quality 5–6, не сжимать PNG~~ — решили не трогать;
    - `stats.toJson` только errors/warnings, `modules: false` в watch — сделано;
    - `builtin:swc-loader` для `node_modules` — сделано;
-   - починить печать gzip-размеров;
+   - починить печать gzip-размеров — сделано;
    - поправить доку (`devSourceMaps`, `commands.md`, ключи rspack).
 
 2. **Совместимо, но уже заметно в бандле/CSS**
