@@ -31,7 +31,7 @@
 - [x] 3. Урезать `stats` в prod и watch
 - [x] 4. `builtin:swc-loader` для `node_modules`
 - [x] 5. Починить печать gzip-размеров
-- [ ] 6. Поправить доку
+- [x] 6. Поправить доку
 
 ### 1. Persistent cache в Rspack 2 не включён
 
@@ -250,7 +250,7 @@ Android 6 (2015) тянет трансформы и (при `core-js`) поли�
 
 Мелочи, из-за которых сложно ускорять дальше и легко словить ложные дефолты.
 
-- Документация говорит, что `devSourceMaps` по умолчанию `inline-cheap-source-map`. В коде — `cheap-module-source-map`.
+- Документация говорит, что `devSourceMaps` по умолчанию `inline-cheap-source-map`. В коде — `cheap-module-source-map`. **Сделано:** в `settings.md` указан `cheap-module-source-map`.
 - `style-loader` в зависимостях, в клиентском конфиге не используется (везде `CssExtractRspackPlugin`).
 - `@babel/core` запинен на `7.22.10`, остальной Babel — `^7.23` / `^7.26`.
 - `fs-extra@6`, `rimraf@2`, `chalk@2`, `null-loader@0.1.1` — не про скорость, но раздувают install у каждого потребителя.
@@ -261,7 +261,9 @@ Android 6 (2015) тянет трансформы и (при `core-js`) поли�
 
 Патч: [`src/arui-scripts-patches/05-fix-gzip-size-print.patch`](./arui-scripts-patches/05-fix-gzip-size-print.patch).
 
-- `overrides.md` до сих пор описывает ключи `webpack*`. В 23.x они deprecated.
+- `overrides.md` до сих пор описывает ключи `webpack*`. В 23.x они deprecated. **Сделано:** актуальные ключи `rspack*`, webpack* описаны как deprecated.
+
+Патч доки: [`src/arui-scripts-patches/06-fix-docs.patch`](./arui-scripts-patches/06-fix-docs.patch).
 
 ---
 
@@ -323,7 +325,7 @@ export default { clientOnly: true };
    - `stats.toJson` только errors/warnings, `modules: false` в watch — сделано;
    - `builtin:swc-loader` для `node_modules` — сделано;
    - починить печать gzip-размеров — сделано;
-   - поправить доку (`devSourceMaps`, `commands.md`, ключи rspack).
+   - поправить доку (`devSourceMaps`, `commands.md`, ключи rspack) — сделано.
 
 2. **Совместимо, но уже заметно в бандле/CSS**
    - `LightningCssMinimizerRspackPlugin` вместо cssnano;
