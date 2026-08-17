@@ -24,44 +24,33 @@
 
 Это изменения в дефолтах arui-scripts. Потребителю ничего делать не нужно, кроме обновления пакета.
 
+Прогресс:
+
+- [x] 1. Persistent cache + `compiler.close()` — **только dev**
+- [ ] 2. Brotli quality 5–6, не сжимать PNG
+- [ ] 3. Урезать `stats` в prod и watch
+- [ ] 4. `builtin:swc-loader` для `node_modules`
+- [ ] 5. Починить печать gzip-размеров
+- [ ] 6. Поправить доку
+
 ### 1. Persistent cache в Rspack 2 не включён
 
-В Rspack 2 `cache: true` — это **только memory-cache текущего процесса**. Диск появляется только при `{ type: 'persistent' }`.
+**Решение: делаем, только для dev.** `yarn build` / `start:prod` / CI без дискового кеша — сборка остаётся воспроизводимой.
 
-Сейчас в клиенте и сервере:
+В Rspack 2 `cache: true` — это **только memory-cache текущего процесса**. Диск появляется только при `{ type: 'persistent' }`. После рестарта `yarn start` компиляция снова холодная.
 
-```ts
-cache: mode === 'dev',
-```
+Что сделано:
 
-Последствия:
+- `getRspackCache(mode, name)` включает `{ type: 'persistent' }` только при `mode === 'dev'`, иначе `false`.
+- Отдельные имена кеша: `client-dev`, `client-dev-<configName>` для compat-модулей, `server-dev`.
+- `version` = версия arui-scripts; `buildDependencies` — конфиг, overrides, пресеты, `tsconfig.json`, `package.json` самого пакета.
+- Yarn cache помечен как `immutablePaths`, чтобы не хешировать `.yarn/cache`.
+- При Ctrl+C / SIGTERM компилятор закрывается (`compiler.close()`), иначе Rspack может не дописать кеш на диск.
+- `caveats.md` описывает путь `node_modules/.cache/rspack` и как сбросить кеш.
 
-- `yarn start` после рестарта процесса всегда холодный. Memory-cache помогает только HMR внутри уже запущенного процесса.
-- `yarn build` / CI **вообще без кеша** (`mode === 'prod'` → `false`).
-- В `caveats.md` написано, что кеш лежит в `node_modules/.cache`. Для Rspack 2 это уже не так: там живут кеши `babel-loader` и `webpack-deduplication-plugin`, но не сам Rspack.
-- Утилита `getWebpackCacheDependencies()` нигде не вызывается — остаток от webpack filesystem cache. Как раз её `buildDependencies` нужны persistent cache.
+Патч: [`src/arui-scripts-patches/01-dev-persistent-cache.patch`](./arui-scripts-patches/01-dev-persistent-cache.patch).
 
-Что дать потребителям:
-
-```ts
-cache: {
-  type: 'persistent',
-  name: `client-${mode}`,
-  version: require('arui-scripts/package.json').version,
-  buildDependencies: [
-    ...Object.values(getWebpackCacheDependencies()).flat(),
-    require.resolve('arui-scripts/package.json'),
-  ],
-  portable: Boolean(process.env.CI),
-  snapshot: {
-    immutablePaths: [/[\\/]\.yarn[\\/]cache[\\/]/],
-  },
-}
-```
-
-И обязательно закрывать компилятор: сейчас `build-wrapper` делает `compiler.run()` и **не вызывает `compiler.close()`**. Без `close()` persistent cache может не сброситься на диск.
-
-Ожидаемый эффект: повторный `yarn start` и инкрементальный CI (если кеш артефактов сохраняется) — секунды вместо десятков секунд / минут на крупных приложениях.
+Ожидаемый эффект: повторный `yarn start` на той же машине — секунды вместо холодной сборки. Production не меняется.
 
 ### 2. Brotli quality 11 в пайплайне сборки
 
@@ -336,7 +325,7 @@ export default { clientOnly: true };
 Сгруппировано по отношению «инвазивность → профит для всех потребителей».
 
 1. **Без breaking changes, большой профит**
-   - persistent cache + `compiler.close()`;
+   - persistent cache в dev + `compiler.close()` при остановке `yarn start`;
    - brotli quality 5–6, не сжимать PNG;
    - `stats.toJson` только errors/warnings, `modules: false` в watch;
    - `builtin:swc-loader` для `node_modules`;

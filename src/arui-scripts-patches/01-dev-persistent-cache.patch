@@ -1,0 +1,262 @@
+diff --git a/packages/arui-scripts/docs/caveats.md b/packages/arui-scripts/docs/caveats.md
+index 910b279..f4379d4 100644
+--- a/packages/arui-scripts/docs/caveats.md
++++ b/packages/arui-scripts/docs/caveats.md
+@@ -18,12 +18,14 @@
+ По умолчанию же все не-js файлы из внешних модулей будут проигнорированы.
+ 
+ ## Кеширование сборки
+-В dev сборке для сервера и клиента настроено кеширование. Оно должно нормально работать когда вы просто работаете
+-над проектом - меняете ваш код, ставите новые зависимости и тд.
++В **dev** сборке (`yarn start`) для сервера и клиента включён persistent cache Rspack.
++Кеш пишется на диск в `node_modules/.cache/rspack`, поэтому повторный запуск `yarn start` после рестарта
++процесса должен быть заметно быстрее холодного.
+ 
+-Но когда вы руками меняете код внутри node_modules - вы не сможете увидеть ваши изменения, так как rspack будет
+-использовать данные из кеша. Для того чтобы ваши изменения применились в сборке вам необходимо очистить кеш
+-rspack и перезапустить сборку. Кеши хранятся в папке `.cache` внутри `node_modules` вашего проекта.
++Production-сборка (`yarn build`, `yarn start:prod`) кеш не использует — CI остаётся воспроизводимым.
++
++Кеш инвалидируется при смене версии `arui-scripts`, `arui-scripts.config`, `arui-scripts.overrides`,
++пресетов и `tsconfig.json`. Если вы руками меняете код внутри `node_modules` — удалите кеш и перезапустите сборку:
+ 
+ ```
+ rm -rf ./node_modules/.cache
+diff --git a/packages/arui-scripts/src/commands/util/close-compiler-on-exit.ts b/packages/arui-scripts/src/commands/util/close-compiler-on-exit.ts
+new file mode 100644
+index 0000000..347efd4
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/close-compiler-on-exit.ts
+@@ -0,0 +1,37 @@
++import { type Compiler, type MultiCompiler } from '@rspack/core';
++
++type RspackCompiler = Compiler | MultiCompiler;
++
++/**
++ * Сбрасывает persistent cache на диск и освобождает компилятор при остановке процесса.
++ * Без close() Rspack может не дописать кеш после Ctrl+C.
++ */
++export function closeCompilerOnProcessExit(
++    compiler: RspackCompiler,
++    beforeClose?: () => Promise<void> | void,
++) {
++    let closing = false;
++
++    const shutdown = async () => {
++        if (closing) {
++            return;
++        }
++
++        closing = true;
++
++        try {
++            await beforeClose?.();
++        } finally {
++            compiler.close(() => {
++                process.exit(0);
++            });
++        }
++    };
++
++    process.once('SIGINT', () => {
++        void shutdown();
++    });
++    process.once('SIGTERM', () => {
++        void shutdown();
++    });
++}
+diff --git a/packages/arui-scripts/src/commands/util/run-client-dev-server.ts b/packages/arui-scripts/src/commands/util/run-client-dev-server.ts
+index d689444..2de9277 100644
+--- a/packages/arui-scripts/src/commands/util/run-client-dev-server.ts
++++ b/packages/arui-scripts/src/commands/util/run-client-dev-server.ts
+@@ -6,10 +6,14 @@ import { RspackDevServer } from '@rspack/dev-server';
+ import { devServerConfig } from '../../configs/dev-server';
+ import { printCompilerOutput } from '../start/print-compiler-output';
+ 
++import { closeCompilerOnProcessExit } from './close-compiler-on-exit';
++
+ export async function runClientDevServer(configuration: Configuration | Configuration[]) {
+     const clientCompiler = rspack(configuration);
+     const clientDevServer = new RspackDevServer(devServerConfig, clientCompiler);
+ 
++    closeCompilerOnProcessExit(clientCompiler, () => clientDevServer.stop());
++
+     clientCompiler.hooks.invalid.tap('client', () => console.log('Compiling client...'));
+     clientCompiler.hooks.done.tap('client', (stats) =>
+         printCompilerOutput('Client', stats as Stats),
+diff --git a/packages/arui-scripts/src/commands/util/run-server-watch-compiler.ts b/packages/arui-scripts/src/commands/util/run-server-watch-compiler.ts
+index 32eef7d..41ba241 100644
+--- a/packages/arui-scripts/src/commands/util/run-server-watch-compiler.ts
++++ b/packages/arui-scripts/src/commands/util/run-server-watch-compiler.ts
+@@ -4,6 +4,8 @@ import { configs } from '../../configs/app-configs';
+ import { createWatchIgnoreRegex } from '../../configs/util/create-watch-ignore-regex';
+ import { printCompilerOutput } from '../start/print-compiler-output';
+ 
++import { closeCompilerOnProcessExit } from './close-compiler-on-exit';
++
+ export function runServerWatchCompiler(config: Configuration) {
+     const serverCompiler = rspack(config);
+ 
+@@ -11,11 +13,19 @@ export function runServerWatchCompiler(config: Configuration) {
+     serverCompiler.hooks.invalid.tap('server', () => console.log('Compiling server...'));
+     serverCompiler.hooks.done.tap('server', (stats) => printCompilerOutput('Server', stats));
+ 
+-    serverCompiler.watch(
++    const watching = serverCompiler.watch(
+         {
+             aggregateTimeout: 50, // Делаем это значение меньше чем у клиента, чтобы сервер пересобирался быстрее
+             ignored: createWatchIgnoreRegex(configs.watchIgnorePath),
+         },
+         () => {},
+     );
++
++    closeCompilerOnProcessExit(
++        serverCompiler,
++        () =>
++            new Promise<void>((resolve) => {
++                watching.close(() => resolve());
++            }),
++    );
+ }
+diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+index 980e017..1841dc0 100644
+--- a/packages/arui-scripts/src/configs/rspack.client.ts
++++ b/packages/arui-scripts/src/configs/rspack.client.ts
+@@ -31,6 +31,7 @@ import { getImageMinLoader } from './config-extras/minimizers';
+ import { checkNodeVersion } from './util/check-node-version';
+ import { compressionPluginsForDictionaries } from './util/compression-plugins-for-dictionaries';
+ import { createWatchIgnoreRegex } from './util/create-watch-ignore-regex';
++import { getRspackCache } from './util/get-dev-persistent-cache';
+ import { type Entry, getEntry } from './util/get-entry';
+ import { configs } from './app-configs';
+ import { babelClientConfig as babelConf } from './babel-client';
+@@ -196,7 +197,7 @@ export const createSingleClientWebpackConfig = (
+         tsConfig: configs.tsconfig ? { configFile: configs.tsconfig } : undefined,
+     },
+     resolveLoader: {},
+-    cache: mode === 'dev',
++    cache: getRspackCache(mode, configName ? `client-dev-${configName}` : 'client-dev'),
+     module: {
+         rules: [
+             {
+diff --git a/packages/arui-scripts/src/configs/rspack.server.ts b/packages/arui-scripts/src/configs/rspack.server.ts
+index da5b92d..cb62424 100644
+--- a/packages/arui-scripts/src/configs/rspack.server.ts
++++ b/packages/arui-scripts/src/configs/rspack.server.ts
+@@ -17,6 +17,7 @@ import { ReloadServerPlugin } from '../plugins/reload-server-plugin';
+ import { WatchMissingNodeModulesPlugin } from '../plugins/watch-missing-node-modules-plugin';
+ 
+ import { createWatchIgnoreRegex } from './util/create-watch-ignore-regex';
++import { getRspackCache } from './util/get-dev-persistent-cache';
+ import { getEntry } from './util/get-entry';
+ import { configs } from './app-configs';
+ import { babelDependencies } from './babel-dependencies';
+@@ -69,7 +70,7 @@ export const createServerConfig = (mode: 'dev' | 'prod'): Configuration => ({
+         devtoolModuleFilenameTemplate: (info) =>
+             path.relative(configs.appSrc, info.absoluteResourcePath).replace(/\\/g, '/'),
+     },
+-    cache: mode === 'dev',
++    cache: getRspackCache(mode, 'server-dev'),
+     externalsPresets: { node: true },
+     externals: [
+         nodeExternals({
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/get-dev-persistent-cache.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/get-dev-persistent-cache.tests.ts
+new file mode 100644
+index 0000000..8167a51
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/__tests__/get-dev-persistent-cache.tests.ts
+@@ -0,0 +1,26 @@
++import { getDevPersistentCache, getRspackCache } from '../get-dev-persistent-cache';
++
++describe('getRspackCache', () => {
++    it('enables persistent cache only in dev', () => {
++        expect(getRspackCache('prod', 'client-dev')).toBe(false);
++
++        const cache = getRspackCache('dev', 'client-dev');
++
++        expect(cache).toMatchObject({
++            type: 'persistent',
++            name: 'client-dev',
++        });
++    });
++});
++
++describe('getDevPersistentCache', () => {
++    it('invalidates cache on arui-scripts version and project config files', () => {
++        const cache = getDevPersistentCache('server-dev');
++
++        expect(cache.version).toEqual(expect.any(String));
++        expect(cache.buildDependencies).toEqual(
++            expect.arrayContaining([expect.stringMatching(/package\.json$/)]),
++        );
++        expect(cache.snapshot?.immutablePaths).toEqual([/[\\/]\.yarn[\\/]cache[\\/]/]);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/util/get-dev-persistent-cache.ts b/packages/arui-scripts/src/configs/util/get-dev-persistent-cache.ts
+new file mode 100644
+index 0000000..b45b9aa
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/get-dev-persistent-cache.ts
+@@ -0,0 +1,32 @@
++import { type Configuration } from '@rspack/core';
++
++import { getWebpackCacheDependencies } from './get-webpack-cache-dependencies';
++
++// eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
++const aruiScriptsPackage = require('../../../package.json') as { version: string };
++
++type PersistentCache = Extract<NonNullable<Configuration['cache']>, { type: 'persistent' }>;
++
++/**
++ * Persistent cache только для dev. Prod намеренно остаётся без кеша:
++ * CI-сборка должна быть воспроизводимой и не зависеть от диска агента.
++ */
++export function getDevPersistentCache(name: string): PersistentCache {
++    return {
++        type: 'persistent',
++        name,
++        version: aruiScriptsPackage.version,
++        buildDependencies: getWebpackCacheDependencies(),
++        snapshot: {
++            immutablePaths: [/[\\/]\.yarn[\\/]cache[\\/]/],
++        },
++    };
++}
++
++export function getRspackCache(mode: 'dev' | 'prod', name: string): Configuration['cache'] {
++    if (mode !== 'dev') {
++        return false;
++    }
++
++    return getDevPersistentCache(name);
++}
+diff --git a/packages/arui-scripts/src/configs/util/get-webpack-cache-dependencies.ts b/packages/arui-scripts/src/configs/util/get-webpack-cache-dependencies.ts
+index ff1e58d..accd237 100644
+--- a/packages/arui-scripts/src/configs/util/get-webpack-cache-dependencies.ts
++++ b/packages/arui-scripts/src/configs/util/get-webpack-cache-dependencies.ts
+@@ -2,12 +2,17 @@ import { configs } from '../app-configs';
+ import { getConfigFilePath } from '../app-configs/read-config-file';
+ import { getPresetsConfigPath } from '../app-configs/update-with-presets';
+ 
+-export function getWebpackCacheDependencies(): Record<string, string[]> {
+-    return {
+-        overrides: configs.overridesPath,
+-        appConfigs: [
+-            getConfigFilePath(configs.cwd),
+-            getPresetsConfigPath(configs, configs.cwd),
+-        ].filter(Boolean) as string[],
+-    };
++/**
++ * Файлы, от которых зависит конфигурация сборки.
++ * Нужны Rspack persistent cache: при их изменении кеш инвалидируется.
++ */
++export function getWebpackCacheDependencies(): string[] {
++    return [
++        ...configs.overridesPath,
++        getConfigFilePath(configs.cwd),
++        getPresetsConfigPath(configs, configs.cwd),
++        configs.tsconfig,
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        require.resolve('../../../package.json'),
++    ].filter((filePath): filePath is string => Boolean(filePath));
+ }
