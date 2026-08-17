@@ -1,0 +1,63 @@
+diff --git a/packages/arui-scripts/docs/client-only.md b/packages/arui-scripts/docs/client-only.md
+--- a/packages/arui-scripts/docs/client-only.md
++++ b/packages/arui-scripts/docs/client-only.md
+@@ -1,7 +1,7 @@
+ ## Режим clientOnly
+ Если на вашем проекте не требуется иметь nodejs-сервер, то clientOnly режим работы - для вас.
+ 
+-Он полностью отключает сборку сервера, добавляет [HtmlWebpackPlugin](https://webpack.js.org/plugins/html-webpack-plugin/) для генерации
++Он полностью отключает сборку сервера, добавляет [HtmlRspackPlugin](https://rspack.rs/plugins/rspack/html-rspack-plugin) для генерации
+ простой html, а так же значительно упрощает докер-контейнер, собираемый в качестве артефакта.
+ 
+ По-умолчанию html, создаваемый скриптами будет иметь div с id `react-app`, подключенные скрипты, а так же специальный тег `<script>` для работы с конфигурацией.
+diff --git a/packages/arui-scripts/docs/overrides.md b/packages/arui-scripts/docs/overrides.md
+--- a/packages/arui-scripts/docs/overrides.md
++++ b/packages/arui-scripts/docs/overrides.md
+@@ -76,7 +76,7 @@ export default overrides;
+ - `start.sh` - шаблон entrypoint докер контейнера. Базовый шаблон [тут](../src/templates/start.template.ts).
+ - `serverExternalsExemptions` - список модулей, которые не будут добавлены в список внешних зависимостей сервера. [Подробнее](caveats.md#node-externals).
+-- `html` - шаблон для htmlWebpackPlugin, будет использоваться только в режиме [`clientOnly`](./settings.md#clientonly).
++- `html` - шаблон для HtmlRspackPlugin, будет использоваться только в режиме [`clientOnly`](./settings.md#clientonly).
+ - `swc-client` - конфигурация `swc` для клиентского кода. Ключи: `swc`, `swcClient`.
+ - `swc-server` - конфигурация `swc` для серверного кода. Ключи: `swc`, `swcServer`.
+ - `swc-jest` - конфигурация `swc` для тестов. Ключи: `swc`, `swcJest`.
+diff --git a/packages/arui-scripts/package.json b/packages/arui-scripts/package.json
+--- a/packages/arui-scripts/package.json
++++ b/packages/arui-scripts/package.json
+@@ -72,7 +72,6 @@
+         "filesize": "^6.4.0",
+         "fs-extra": "6.0.1",
+         "get-port": "7.2.0",
+-        "html-webpack-plugin": "^5.6.0",
+         "image-minimizer-webpack-plugin": "^3.8.3",
+         "imagemin": "^8.0.1",
+         "imagemin-svgo": "^12.0.0",
+diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+--- a/packages/arui-scripts/src/configs/rspack.client.ts
++++ b/packages/arui-scripts/src/configs/rspack.client.ts
+@@ -7,6 +7,7 @@ import {
+     CopyRspackPlugin,
+     CssExtractRspackPlugin,
+     DefinePlugin,
++    HtmlRspackPlugin,
+     IgnorePlugin,
+     NormalModuleReplacementPlugin,
+     type RspackPluginInstance,
+@@ -17,8 +18,7 @@ import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
+ import AssetsPlugin from 'assets-webpack-plugin';
+ import CaseSensitivePathsPlugin from 'case-sensitive-paths-webpack-plugin';
+ import CompressionPlugin from 'compression-webpack-plugin';
+ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
+-import HtmlWebpackPlugin from 'html-webpack-plugin';
+ import { RspackManifestPlugin } from 'rspack-manifest-plugin';
+ import { TsCheckerRspackPlugin } from 'ts-checker-rspack-plugin';
+ import { WebpackDeduplicationPlugin } from 'webpack-deduplication-plugin';
+@@ -351,7 +351,7 @@ export const createSingleClientWebpackConfig = (
+         mode === 'dev' && new CaseSensitivePathsPlugin(),
+         new AruiRuntimePlugin(),
+         configs.clientOnly &&
+-            new HtmlWebpackPlugin({
++            new HtmlRspackPlugin({
+                 templateContent: mode === 'dev' ? addEnvToHtmlTemplate(htmlTemplate) : htmlTemplate, // оставляем env шаблоны как есть для прод сборки - их будет менять start.sh
+                 filename: '../index.html',
+             }),

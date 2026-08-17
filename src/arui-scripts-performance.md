@@ -328,8 +328,20 @@ export default { clientOnly: true };
    - поправить доку (`devSourceMaps`, `commands.md`, ключи rspack) — сделано.
 
 2. **Совместимо, но уже заметно в бандле/CSS**
+
+Прогресс:
+
+- [ ] `LightningCssMinimizerRspackPlugin` вместо cssnano
+- [x] `HtmlRspackPlugin`
+- [ ] `keepCssVars: true` (или хотя бы предупреждение)
+- [ ] не вешать пустой `ProvideSharedPlugin`
+- [ ] `prodSourceMaps` как настройка
+- [ ] поднять Rspack 2.0 → 2.1
+
+Пункты:
+
    - `LightningCssMinimizerRspackPlugin` вместо cssnano;
-   - `HtmlRspackPlugin`;
+   - `HtmlRspackPlugin` — сделано, патч [`p2-02-html-rspack-plugin.patch`](./arui-scripts-patches/p2-02-html-rspack-plugin.patch);
    - `keepCssVars: true` (или хотя бы предупреждение);
    - не вешать пустой `ProvideSharedPlugin`;
    - `prodSourceMaps` как настройка;
