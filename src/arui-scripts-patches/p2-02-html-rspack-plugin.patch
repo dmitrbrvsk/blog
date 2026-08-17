@@ -1,4 +1,5 @@
 diff --git a/packages/arui-scripts/docs/client-only.md b/packages/arui-scripts/docs/client-only.md
+index d4f6e7a..20f4488 100644
 --- a/packages/arui-scripts/docs/client-only.md
 +++ b/packages/arui-scripts/docs/client-only.md
 @@ -1,7 +1,7 @@
@@ -11,9 +12,11 @@ diff --git a/packages/arui-scripts/docs/client-only.md b/packages/arui-scripts/d
  
  По-умолчанию html, создаваемый скриптами будет иметь div с id `react-app`, подключенные скрипты, а так же специальный тег `<script>` для работы с конфигурацией.
 diff --git a/packages/arui-scripts/docs/overrides.md b/packages/arui-scripts/docs/overrides.md
+index d8763ce..9a25d9d 100644
 --- a/packages/arui-scripts/docs/overrides.md
 +++ b/packages/arui-scripts/docs/overrides.md
 @@ -76,7 +76,7 @@ export default overrides;
+   [Файл `base-nginx.conf`](base-nginx.md) в корне имеет приоритет над оверрайдами.
  - `start.sh` - шаблон entrypoint докер контейнера. Базовый шаблон [тут](../src/templates/start.template.ts).
  - `serverExternalsExemptions` - список модулей, которые не будут добавлены в список внешних зависимостей сервера. [Подробнее](caveats.md#node-externals).
 -- `html` - шаблон для htmlWebpackPlugin, будет использоваться только в режиме [`clientOnly`](./settings.md#clientonly).
@@ -22,6 +25,7 @@ diff --git a/packages/arui-scripts/docs/overrides.md b/packages/arui-scripts/doc
  - `swc-server` - конфигурация `swc` для серверного кода. Ключи: `swc`, `swcServer`.
  - `swc-jest` - конфигурация `swc` для тестов. Ключи: `swc`, `swcJest`.
 diff --git a/packages/arui-scripts/package.json b/packages/arui-scripts/package.json
+index 29bfa26..a738a19 100644
 --- a/packages/arui-scripts/package.json
 +++ b/packages/arui-scripts/package.json
 @@ -72,7 +72,6 @@
@@ -33,6 +37,7 @@ diff --git a/packages/arui-scripts/package.json b/packages/arui-scripts/package.
          "imagemin": "^8.0.1",
          "imagemin-svgo": "^12.0.0",
 diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-scripts/src/configs/rspack.client.ts
+index 980e017..9f3c0e5 100644
 --- a/packages/arui-scripts/src/configs/rspack.client.ts
 +++ b/packages/arui-scripts/src/configs/rspack.client.ts
 @@ -7,6 +7,7 @@ import {
@@ -43,8 +48,7 @@ diff --git a/packages/arui-scripts/src/configs/rspack.client.ts b/packages/arui-
      IgnorePlugin,
      NormalModuleReplacementPlugin,
      type RspackPluginInstance,
-@@ -17,8 +18,7 @@ import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
- import AssetsPlugin from 'assets-webpack-plugin';
+@@ -18,7 +19,6 @@ import AssetsPlugin from 'assets-webpack-plugin';
  import CaseSensitivePathsPlugin from 'case-sensitive-paths-webpack-plugin';
  import CompressionPlugin from 'compression-webpack-plugin';
  import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
