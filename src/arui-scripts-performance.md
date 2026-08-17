@@ -27,7 +27,7 @@
 Прогресс:
 
 - [x] 1. Persistent cache + `compiler.close()` — **только dev**
-- [ ] 2. Brotli quality 5–6, не сжимать PNG
+- [x] 2. Brotli quality 5–6, не сжимать PNG — **не делаем**
 - [ ] 3. Урезать `stats` в prod и watch
 - [ ] 4. `builtin:swc-loader` для `node_modules`
 - [ ] 5. Починить печать gzip-размеров
@@ -53,6 +53,8 @@
 Ожидаемый эффект: повторный `yarn start` на той же машине — секунды вместо холодной сборки. Production не меняется.
 
 ### 2. Brotli quality 11 в пайплайне сборки
+
+**Решение: не делаем.** Оставляем quality 11 и gzip PNG как есть — максимальное сжатие важных ассетов важнее минут на CI.
 
 ```ts
 new CompressionPlugin({
@@ -326,7 +328,7 @@ export default { clientOnly: true };
 
 1. **Без breaking changes, большой профит**
    - persistent cache в dev + `compiler.close()` при остановке `yarn start`;
-   - brotli quality 5–6, не сжимать PNG;
+   - ~~brotli quality 5–6, не сжимать PNG~~ — решили не трогать;
    - `stats.toJson` только errors/warnings, `modules: false` в watch;
    - `builtin:swc-loader` для `node_modules`;
    - починить печать gzip-размеров;
