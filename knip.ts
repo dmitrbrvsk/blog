@@ -13,6 +13,10 @@ const presetEntry = baseConfig.entry;
  * TODO: часть из них могла остаться после перехода с webpack на rspack, нужен аудит
  */
 const buildToolDependencies = [
+    // browserslist приходит peer-зависимостью других пакетов, а source-map-support подключает
+    // само приложение: оба намеренно не объявлены прямыми, см. комментарии в коде
+    'browserslist',
+    'source-map-support',
     '@alfalab/postcss-custom-properties',
     '@rspack/cli',
     'autoprefixer',

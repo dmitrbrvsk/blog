@@ -1,6 +1,6 @@
 // TODO: remove eslint-disable
 /* eslint-disable no-param-reassign */
-/* eslint-disable operator-assignment */
+/* eslint-disable operator-assignment -- файл специально написан так, чтобы проверить транспиляцию синтаксиса */
 export enum YesNoEnum {
     Yes = 'Yes',
     No = 'No',

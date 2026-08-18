@@ -23,7 +23,6 @@ const unmount: ModuleUnmountFunction = () => {
 };
 
 // нужно для демонстрации работы с дефолтными экспортами
-/* eslint-disable import-x/no-default-export */
 export default {
     mount,
     unmount,

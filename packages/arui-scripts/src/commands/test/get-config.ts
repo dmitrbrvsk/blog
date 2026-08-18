@@ -6,7 +6,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { configs } from '../../configs/app-configs';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- дефолтные настройки jest написаны на js и не типизированы
 // @ts-ignore
 import defaultJestConfig from '../../configs/jest/settings';
 

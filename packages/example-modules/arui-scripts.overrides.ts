@@ -1,14 +1,13 @@
 // TODO: remove eslint-disable and eslint-disable-next-line
 
 import { type OverrideFile } from 'arui-scripts';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
 // @ts-ignore
 import path from 'node:path';
-// eslint-disable-next-line import-x/no-extraneous-dependencies
 import { type RuleSetRule } from 'webpack';
 
 const overrides: OverrideFile = {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
     // @ts-ignore
     webpackClient: (config, appConfig, { findLoader }) => {
         const allConfigs = Array.isArray(config) ? config : [config];

@@ -21,7 +21,7 @@ export function updateWithPresets(config: AppConfigs, context: AppContext) {
         const presetsSettings = requireConfigFile(presetsConfigPath);
 
         validateSettingsKeys(config, presetsSettings, presetsConfigPath);
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign -- конфигурация собирается последовательным мержем
         config = merge(config, presetsSettings);
     }
     if (presetsOverridesPath) {

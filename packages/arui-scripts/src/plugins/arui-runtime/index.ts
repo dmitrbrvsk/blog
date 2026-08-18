@@ -29,7 +29,7 @@ type AruiRuntimeScope = {
 };
 
 export function getInsertCssRuntimeMethod(): (linkTag: HTMLLinkElement) => void {
-    /* eslint-disable no-var,vars-on-top */
+    /* eslint-disable no-var,vars-on-top -- функция не проходит через babel и должна остаться на es5 */
     return function insertCssRuntime(linkTag) {
         // $ARUI в рантайм добавляет RuntimeModule этого плагина, в типах webpack его нет
         var aruiScope = __webpack_require__ as unknown as AruiRuntimeScope;
@@ -56,5 +56,5 @@ export function getInsertCssRuntimeMethod(): (linkTag: HTMLLinkElement) => void 
         }
         document.head.append(linkTag);
     };
-    /* eslint-enable no-var,vars-on-top */
+    /* eslint-enable no-var,vars-on-top -- дальше обычный транспилируемый код */
 }

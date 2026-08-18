@@ -1,13 +1,12 @@
 // TODO: remove eslint-disable-next-line
 import { type OverrideFile } from 'arui-scripts';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
 // @ts-ignore
 import path from 'node:path';
-// eslint-disable-next-line import-x/no-extraneous-dependencies
 import { type RuleSetRule } from 'webpack';
 
 const overrides: OverrideFile = {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
     // @ts-ignore
     webpackClient: (config, appConfig, { createSingleClientWebpackConfig, findLoader }) => {
         const workerConfig = createSingleClientWebpackConfig(
@@ -15,7 +14,7 @@ const overrides: OverrideFile = {
             'worker',
         );
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
         // @ts-ignore
         workerConfig.output.filename = 'worker.js';
 
@@ -58,7 +57,7 @@ const overrides: OverrideFile = {
         const allConfigs = Array.isArray(config) ? config : [config];
 
         return allConfigs.map((singleConfig) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
             // @ts-ignore
 
             singleConfig.optimization.minimize = false;

@@ -1,4 +1,4 @@
-/* eslint-disable import-x/no-extraneous-dependencies */
+/* eslint-disable import-x/no-extraneous-dependencies -- source-map-support опционален, его добавляет само приложение */
 
 try {
     require('source-map-support').install();

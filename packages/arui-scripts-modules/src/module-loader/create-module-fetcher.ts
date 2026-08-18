@@ -44,10 +44,10 @@ export function createModuleFetcher({
 
         return {
             ...moduleFiles,
-            /* eslint-disable no-underscore-dangle */
+            /* eslint-disable no-underscore-dangle -- __metadata__ - ключ из манифеста сборки */
             moduleVersion: manifest.__metadata__.version || 'unknown',
             appName: manifest.__metadata__.name,
-            /* eslint-enable no-underscore-dangle */
+            /* eslint-enable no-underscore-dangle -- __metadata__ - ключ из манифеста сборки */
             mountMode: mode,
             moduleState: {
                 baseUrl,

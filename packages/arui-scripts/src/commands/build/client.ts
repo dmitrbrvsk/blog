@@ -31,10 +31,10 @@ async function main() {
             console.log(chalk.green('Client compiled successfully.\n'));
         }
 
-        function printOutputSizes(webpackConfig: Configuration, stats: Stats) {
+        function printOutputSizes(webpackConfig: Configuration, configStats: Stats) {
             console.log(chalk.bold(`Sizes for "${webpackConfig.name || 'main'}"`));
 
-            printAssetsSizes(stats);
+            printAssetsSizes(configStats);
         }
 
         if (Array.isArray(webpackClientConfig)) {

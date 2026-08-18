@@ -9454,7 +9454,6 @@ __metadata:
     babel-plugin-transform-import-meta: "npm:^2.3.3"
     babel-plugin-transform-react-remove-prop-types: "npm:0.4.24"
     brotli-dict: "npm:^1.1.4"
-    browserslist: "npm:^4.24.0"
     case-sensitive-paths-webpack-plugin: "npm:2.4.0"
     chalk: "npm:^2.4.2"
     commander: "npm:^12"
@@ -9506,7 +9505,6 @@ __metadata:
     semver: "npm:^7.5.4"
     serialize-javascript: "npm:^7.0.5"
     shelljs: "npm:0.8.5"
-    source-map-support: "npm:^0.5.21"
     strip-ansi: "npm:6.0.1"
     style-loader: "npm:3.3.3"
     swc-loader: "npm:^0.2.6"
@@ -23641,7 +23639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.21, source-map-support@npm:~0.5.20":
+"source-map-support@npm:~0.5.20":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
   dependencies:

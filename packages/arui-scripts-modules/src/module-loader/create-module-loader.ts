@@ -279,7 +279,7 @@ function wrapMountWithHooks<ModuleType extends MountableModule>(
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- проверяем форму произвольного экспорта модуля
 function isMountableModule(module: any): module is MountableModule {
     return (
         module?.mount &&

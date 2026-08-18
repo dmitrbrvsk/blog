@@ -1,5 +1,4 @@
-// это peer зависимость кучи других пакетов. Не будем добавлять её себе в прямые чтобы не ломать дерево
-// eslint-disable-next-line import-x/no-extraneous-dependencies
+// eslint-disable-next-line import-x/no-extraneous-dependencies -- peer зависимость кучи других пакетов, не добавляем её себе в прямые чтобы не ломать дерево
 import { loadConfig } from 'browserslist';
 
 import { configs } from '../../configs/app-configs';

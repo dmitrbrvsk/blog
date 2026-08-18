@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle -- имена глобалов вебпака заданы его рантаймом */
 import { type ModuleFederationContainer } from '../../types';
 import { getCompatModule, getModule } from '../get-module';
 

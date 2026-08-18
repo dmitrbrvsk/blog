@@ -46,7 +46,7 @@ import { swcClientConfig } from './swc';
 
 const noopPath = require.resolve('./util/noop');
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- функция сейчас не вызывается, оставлена намеренно
 function getSingleEntry(entryPoint: string[], mode: 'dev' | 'prod') {
     return [
         ...(Array.isArray(configs.clientPolyfillsEntry)

@@ -96,7 +96,7 @@ describe('createModuleLoader', () => {
             expect(onBeforeModuleMount).toHaveBeenCalled();
             expect(onAfterModuleMount).toHaveBeenCalled();
 
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- проверяем, что загрузчик логирует ошибку
             expect(console.warn).toHaveBeenCalledWith(
                 expect.stringContaining('использует устаревших формат хуков'),
             );
@@ -138,7 +138,7 @@ describe('createModuleLoader', () => {
         expect(onBeforeModuleMount).toHaveBeenCalled();
         expect(onAfterModuleMount).toHaveBeenCalled();
 
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- проверяем, что загрузчик логирует ошибку
         expect(console.warn).not.toHaveBeenCalled();
     });
 

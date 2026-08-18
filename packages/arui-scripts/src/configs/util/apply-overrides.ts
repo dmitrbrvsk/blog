@@ -22,19 +22,19 @@ type Overrides = {
     devServer: RspackDevServerConfiguration;
     stats: rspack.RspackOptionsNormalized['stats'];
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any -- typedef-ов для babel нет, см. TODO ниже */
     babel: any; // TODO: где взять typedef-ы для бабеля?
     babelClient: any;
     babelServer: any;
     babelDependencies: any;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any -- дальше any не нужен */
 
     swc: SwcOptions;
     swcServer: SwcOptions;
     swcClient: SwcOptions;
     swcJest: SwcOptions;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typedef-ов для postcss нет, см. TODO рядом
     postcss: any[]; // TODO: где взять typedef-ы для postcss
     browsers: string[];
     supportingBrowsers: string[];
@@ -66,7 +66,7 @@ const DEPRECATED_OVERRIDE_KEYS = {
 
 type DeprecatedOverrideKey = keyof typeof DEPRECATED_OVERRIDE_KEYS;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- any нужен, чтобы infer сработал с любой сигнатурой
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
 type BoundCreateSingleClientWebpackConfig = OmitFirstArg<typeof createSingleClientWebpackConfig>;
 
@@ -192,12 +192,12 @@ overrides = configs.overridesPath.map((path) => {
 export function applyOverrides<
     T extends Overrides[Key],
     Key extends keyof Overrides,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- параметр-тип нужен потребителям для выведения типа args
     Args = Key extends keyof OverridesAdditionalArgs ? OverridesAdditionalArgs[Key] : undefined,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- args типизируются на стороне конкретного override
 >(overridesKey: Key | Key[], config: T, args?: any): T {
     if (typeof overridesKey === 'string') {
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign -- нормализуем аргумент к массиву на месте
         overridesKey = [overridesKey];
     }
     for (const key of overridesKey) {
