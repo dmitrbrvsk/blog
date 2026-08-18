@@ -16,4 +16,4 @@ export function getEventBus(busKey: string) {
 
     return null;
 }
-/* eslint-enable no-underscore-dangle */
+/* eslint-enable no-underscore-dangle -- имя глобальной переменной задано контрактом event-bus */

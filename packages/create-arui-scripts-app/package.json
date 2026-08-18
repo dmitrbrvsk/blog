@@ -21,7 +21,7 @@
     ],
     "scripts": {
         "sync:version": "node ./scripts/sync-arui-scripts-version.js",
-        "build": "yarn sync:version && tsc --project tsconfig.json",
+        "build": "yarn sync:version && tsc --project tsconfig.build.json",
         "test": "jest",
         "lint:scripts": "arui-presets-lint scripts",
         "format": "arui-presets-lint format",

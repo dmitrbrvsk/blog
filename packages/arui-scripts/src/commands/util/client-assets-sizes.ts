@@ -1,13 +1,12 @@
-import path from 'path';
-
 import { type Stats } from '@rspack/core';
 import chalk from 'chalk';
 import filesize from 'filesize';
+import path from 'node:path';
 
 import { configs } from '../../configs/app-configs';
 
 function removeFileNameHash(fileName: string) {
-    const parts = fileName.replace(/\\/g, '/').split('.');
+    const parts = fileName.replaceAll('\\', '/').split('.');
 
     const id = parts[0];
     const isChunk = fileName.includes('.chunk.');
@@ -26,17 +25,17 @@ type AssetSize = {
 export function printAssetsSizes(webpackStats: Stats) {
     const assetsStats = webpackStats.toJson({ all: false, assets: true }).assets || [];
     const assetsMap: Record<string, AssetSize> = {};
-    const statExtensions = ['js', 'css', 'br', 'gz', 'dcb'];
+    const statExtensions = new Set(['js', 'css', 'br', 'gz', 'dcb']);
 
-    assetsStats.forEach((asset) => {
+    for (const asset of assetsStats) {
         if (asset.type !== 'asset') {
-            return;
+            continue;
         }
 
-        const extension = path.parse(asset.name).ext.substring(1);
+        const extension = path.parse(asset.name).ext.slice(1);
 
-        if (!statExtensions.includes(extension) || asset.name.endsWith('.dict.br')) {
-            return;
+        if (!statExtensions.has(extension) || asset.name.endsWith('.dict.br')) {
+            continue;
         }
 
         const assetName = removeFileNameHash(asset.name);
@@ -60,7 +59,7 @@ export function printAssetsSizes(webpackStats: Stats) {
         if (extension === 'dcb') {
             assetsMap[assetName].dcbSize = asset.size;
         }
-    });
+    }
 
     const totalSizes = {
         size: 0,
@@ -71,7 +70,7 @@ export function printAssetsSizes(webpackStats: Stats) {
 
     console.log(chalk.blueBright('Assets sizes:'));
 
-    Object.keys(assetsMap).forEach((assetName) => {
+    for (const assetName of Object.keys(assetsMap)) {
         const asset = assetsMap[assetName];
         const size = asset.size || 0;
         const gzipSize = asset.brSize || size;
@@ -90,7 +89,7 @@ export function printAssetsSizes(webpackStats: Stats) {
                     : ''
             }) ${chalk.cyan(assetName)}`,
         );
-    });
+    }
 
     console.log(
         `${chalk.blueBright('\nTotal size:\n')}  ${filesize(totalSizes.size)} (${filesize(

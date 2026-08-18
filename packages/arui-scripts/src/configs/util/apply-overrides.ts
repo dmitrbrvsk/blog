@@ -22,19 +22,19 @@ type Overrides = {
     devServer: RspackDevServerConfiguration;
     stats: rspack.RspackOptionsNormalized['stats'];
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any -- typedef-ов для babel нет, см. TODO ниже */
     babel: any; // TODO: где взять typedef-ы для бабеля?
     babelClient: any;
     babelServer: any;
     babelDependencies: any;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any -- дальше any не нужен */
 
     swc: SwcOptions;
     swcServer: SwcOptions;
     swcClient: SwcOptions;
     swcJest: SwcOptions;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typedef-ов для postcss нет, см. TODO рядом
     postcss: any[]; // TODO: где взять typedef-ы для postcss
     browsers: string[];
     supportingBrowsers: string[];
@@ -66,7 +66,7 @@ const DEPRECATED_OVERRIDE_KEYS = {
 
 type DeprecatedOverrideKey = keyof typeof DEPRECATED_OVERRIDE_KEYS;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- any нужен, чтобы infer сработал с любой сигнатурой
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
 type BoundCreateSingleClientWebpackConfig = OmitFirstArg<typeof createSingleClientWebpackConfig>;
 
@@ -135,9 +135,9 @@ export type OverrideFile = {
 function normalizeDeprecatedOverrideKeys(override: OverrideFile): OverrideFile {
     const result: Record<string, unknown> = { ...override };
 
-    (Object.keys(DEPRECATED_OVERRIDE_KEYS) as DeprecatedOverrideKey[]).forEach((deprecatedKey) => {
+    for (const deprecatedKey of Object.keys(DEPRECATED_OVERRIDE_KEYS) as DeprecatedOverrideKey[]) {
         if (!Object.prototype.hasOwnProperty.call(result, deprecatedKey)) {
-            return;
+            continue;
         }
 
         const newKey = DEPRECATED_OVERRIDE_KEYS[deprecatedKey];
@@ -152,22 +152,25 @@ function normalizeDeprecatedOverrideKeys(override: OverrideFile): OverrideFile {
         }
 
         delete result[deprecatedKey];
-    });
+    }
 
-    return result as OverrideFile;
+    return result;
 }
 
 let overrides: OverrideFile[] = [];
 
 overrides = configs.overridesPath.map((path) => {
     try {
-        // eslint-disable-next-line import/no-dynamic-require, global-require, @typescript-eslint/no-var-requires
-        const requireResult = require(path);
+        // eslint-disable-next-line import-x/no-dynamic-require -- путь до overrides известен только в рантайме
+        const requireResult = require(path) as OverrideFile & {
+            __esModule?: boolean;
+            default?: OverrideFile;
+        };
 
-        // eslint-disable-next-line no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle -- поле добавляет транспайлер
         if (requireResult.__esModule) {
             // ts-node импортирует esModules, из них надо вытягивать default именно так
-            return normalizeDeprecatedOverrideKeys(requireResult.default);
+            return normalizeDeprecatedOverrideKeys(requireResult.default ?? {});
         }
 
         return normalizeDeprecatedOverrideKeys(requireResult);
@@ -189,29 +192,29 @@ overrides = configs.overridesPath.map((path) => {
 export function applyOverrides<
     T extends Overrides[Key],
     Key extends keyof Overrides,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- параметр-тип нужен потребителям для выведения типа args
     Args = Key extends keyof OverridesAdditionalArgs ? OverridesAdditionalArgs[Key] : undefined,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- args типизируются на стороне конкретного override
 >(overridesKey: Key | Key[], config: T, args?: any): T {
     if (typeof overridesKey === 'string') {
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign -- нормализуем аргумент к массиву на месте
         overridesKey = [overridesKey];
     }
-    overridesKey.forEach((key) => {
-        overrides.forEach((override) => {
+    for (const key of overridesKey) {
+        for (const override of overrides) {
             if (Object.prototype.hasOwnProperty.call(override, key)) {
                 const overrideFn = override[key];
 
                 if (typeof overrideFn !== 'function') {
                     throw new TypeError(`Override ${key} must be a function`);
                 }
-                // eslint-disable-next-line no-param-reassign
+
                 // @ts-expect-error Union type conflict between rspack and deprecated webpack keys - resolved at runtime
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
+                // eslint-disable-next-line no-param-reassign
                 config = overrideFn(config, configs, args) as T;
             }
-        });
-    });
+        }
+    }
 
     return config;
 }

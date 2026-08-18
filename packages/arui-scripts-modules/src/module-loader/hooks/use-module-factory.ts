@@ -29,7 +29,7 @@ export type UseModuleFactoryParams<
     /**
      * Функция, который позволяет дополнить/изменить серверный стейт модуля перед вызовом фабрики
      */
-    getFactoryParams?: (params: ServerState) => ServerState;
+    getFactoryParams?: (params: ServerState) => ServerState | Promise<ServerState>;
 };
 
 export type UseModuleFactoryResult<ModuleExportType> = {
@@ -116,12 +116,12 @@ export function useModuleFactory<
                     return;
                 }
                 setLoadingState('rejected');
-                // eslint-disable-next-line no-console
+                // eslint-disable-next-line no-console -- ошибку загрузки модуля показываем в консоли: приложение продолжает работать
                 console.error(error);
             }
         }
 
-        run();
+        void run();
 
         return function moduleCleanUp() {
             unmountFn?.();

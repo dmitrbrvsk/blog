@@ -209,9 +209,13 @@ export function createModuleLoader<
 
         return {
             unmount: () => {
-                lifecycleHooks.onBeforeModuleUnmount?.(moduleId, moduleResources, loadedModule);
+                void lifecycleHooks.onBeforeModuleUnmount?.(
+                    moduleId,
+                    moduleResources,
+                    loadedModule,
+                );
                 unmount();
-                lifecycleHooks.onAfterModuleUnmount?.(moduleId, moduleResources, loadedModule);
+                void lifecycleHooks.onAfterModuleUnmount?.(moduleId, moduleResources, loadedModule);
             },
             module: loadedModule,
             moduleResources,
@@ -275,7 +279,7 @@ function wrapMountWithHooks<ModuleType extends MountableModule>(
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- проверяем форму произвольного экспорта модуля
 function isMountableModule(module: any): module is MountableModule {
     return (
         module?.mount &&

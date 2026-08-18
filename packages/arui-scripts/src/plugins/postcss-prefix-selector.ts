@@ -17,14 +17,19 @@ type NodeWithVisitedAndParent = {
     parent?: NodeWithVisitedAndParent;
 };
 
-const KEYFRAME_RULES = ['keyframes', '-webkit-keyframes', '-moz-keyframes', '-o-keyframes'];
+const KEYFRAME_RULES = new Set([
+    'keyframes',
+    '-webkit-keyframes',
+    '-moz-keyframes',
+    '-o-keyframes',
+]);
 
 const postCssPrefix: PluginCreator<PostCssPrefixOptions> = (options) => {
     const prefix = options?.prefix || '.prefix ';
 
     return {
         postcssPlugin: '@alfalab/postcss-prefix-selector',
-        /* eslint-disable no-param-reassign */
+
         RootExit(root: RootWithVisitedRule) {
             if (root[VisitedRule]) {
                 return;
@@ -34,10 +39,10 @@ const postCssPrefix: PluginCreator<PostCssPrefixOptions> = (options) => {
 
             root.walkRules((rule) => {
                 const hasParent = !!rule.parent;
-                const parentIsAtRule = rule.parent && rule.parent.type === 'atrule';
+                const parentIsAtRule = rule.parent?.type === 'atrule';
                 const parentIsKeyframe =
                     parentIsAtRule &&
-                    KEYFRAME_RULES.includes((rule.parent as Container & { name: string }).name);
+                    KEYFRAME_RULES.has((rule.parent as Container & { name: string }).name);
 
                 if (hasParent && parentIsKeyframe) {
                     // Нам не нужно добавлять префиксы для keyframes и элементов внутри них
@@ -65,7 +70,6 @@ const postCssPrefix: PluginCreator<PostCssPrefixOptions> = (options) => {
                 });
             });
         },
-        /* eslint-enable no-param-reassign */
     };
 };
 

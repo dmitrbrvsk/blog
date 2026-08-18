@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+import { type RegisterOptions } from 'ts-node';
+
 // Мы используем ts-node для работы c конфигами, описаными на ts
-require('ts-node').register({
+const { register } = require('ts-node') as {
+    register: (options: RegisterOptions) => void;
+};
+
+register({
     transpileOnly: true,
     ignore: [],
     compilerOptions: {

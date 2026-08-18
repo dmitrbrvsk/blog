@@ -1,23 +1,27 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+
+type AssetsManifest = Record<string, { js?: string; css?: string } | undefined>;
 
 export function readAssetsManifest() {
     const manifestPath = path.join(process.cwd(), '.build/webpack-assets.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as AssetsManifest;
     const js: string[] = [];
     const css: string[] = [];
 
-    ['vendor', 'main'].forEach((key) => {
-        if (!manifest[key]) {
-            return;
+    for (const key of ['vendor', 'main']) {
+        const entry = manifest[key];
+
+        if (!entry) {
+            continue;
         }
-        if (manifest[key].js) {
-            js.push(manifest[key].js.replace(/^auto/, 'assets'));
+        if (entry.js) {
+            js.push(entry.js.replace(/^auto/, 'assets'));
         }
-        if (manifest[key].css) {
-            css.push(manifest[key].css.replace(/^auto/, 'assets'));
+        if (entry.css) {
+            css.push(entry.css.replace(/^auto/, 'assets'));
         }
-    });
+    }
 
     return {
         js,

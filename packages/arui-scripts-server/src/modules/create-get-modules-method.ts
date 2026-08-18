@@ -51,7 +51,7 @@ export function createGetModulesMethod<
                     ...moduleRunParams,
                     hostAppId: getResourcesRequest.hostAppId,
                 },
-                // eslint-disable-next-line no-underscore-dangle
+                // eslint-disable-next-line no-underscore-dangle -- __metadata__ - ключ из манифеста сборки
                 appName: appManifest.__metadata__.name,
             };
         },

@@ -1,6 +1,5 @@
-import path from 'path';
-
 import fs from 'fs-extra';
+import path from 'node:path';
 import satisfies from 'semver/functions/satisfies';
 import shell from 'shelljs';
 
@@ -16,7 +15,7 @@ export function getBuildParamsFromArgs() {
     let { dockerRegistry } = configs;
     const commandLineArguments = process.argv.slice(3);
 
-    commandLineArguments.forEach((arg) => {
+    for (const arg of commandLineArguments) {
         let [argName, argValue] = arg.split('=');
 
         argName = argName.toLowerCase().trim();
@@ -34,7 +33,7 @@ export function getBuildParamsFromArgs() {
             default:
                 console.warn(`Unknown argument ${argName}`);
         }
-    });
+    }
 
     const tempDirName = '.docker-build';
     const pathToTempDir = path.join(configs.cwd, tempDirName);
@@ -100,25 +99,26 @@ export async function prepareFilesForDocker({
         addNodeModulesToDockerIgnore &&
         (await getAndModifyDockerIgnoreContent(dockerIgnoreFilePath));
 
-    await Promise.all(
-        [
-            fs.writeFile(path.join(pathToTempDir, 'Dockerfile'), dockerfile, 'utf8'),
-            fs.writeFile(path.join(pathToTempDir, nginxConfigFileName), nginxConf, 'utf8'),
-            nginxBaseConf &&
-                fs.writeFile(
-                    path.join(pathToTempDir, baseNginxConfigFileName),
-                    nginxBaseConf,
-                    'utf8',
-                ),
-            fs.writeFile(path.join(pathToTempDir, 'start.sh'), startScript, {
-                encoding: 'utf8',
-                mode: 0o555,
-            }),
-            addNodeModulesToDockerIgnore &&
-                dockerIgnoreFileContent &&
-                fs.writeFile(dockerIgnoreFilePath, dockerIgnoreFileContent, 'utf-8'),
-        ].filter(Boolean),
-    );
+    const writeTasks = [
+        fs.writeFile(path.join(pathToTempDir, 'Dockerfile'), dockerfile, 'utf8'),
+        fs.writeFile(path.join(pathToTempDir, nginxConfigFileName), nginxConf, 'utf8'),
+        fs.writeFile(path.join(pathToTempDir, 'start.sh'), startScript, {
+            encoding: 'utf8',
+            mode: 0o555,
+        }),
+    ];
+
+    if (nginxBaseConf) {
+        writeTasks.push(
+            fs.writeFile(path.join(pathToTempDir, baseNginxConfigFileName), nginxBaseConf, 'utf8'),
+        );
+    }
+
+    if (addNodeModulesToDockerIgnore && dockerIgnoreFileContent) {
+        writeTasks.push(fs.writeFile(dockerIgnoreFilePath, dockerIgnoreFileContent, 'utf8'));
+    }
+
+    await Promise.all(writeTasks);
 }
 
 export function dockerVersionSatisfies(request: string) {
@@ -159,7 +159,7 @@ export function getDockerBuildCommand({ tempDirName, imageFullName }: DockerBuil
 async function getAndModifyDockerIgnoreContent(dockerIgnoreFilePath: string) {
     if (fs.existsSync(dockerIgnoreFilePath)) {
         return fs
-            .readFile(dockerIgnoreFilePath, 'utf-8')
+            .readFile(dockerIgnoreFilePath, 'utf8')
             .then((ignores) => `${ignores}\nnode_modules`);
     }
 

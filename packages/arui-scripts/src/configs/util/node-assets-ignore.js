@@ -25,10 +25,10 @@
     Trying to require ${path} in node.js.
     Non-js files is ignored when required in node_modules\u001B[0m`);
 
-    ignoreExtensions.forEach((e) => {
+    for (const e of ignoreExtensions) {
         require.extensions[e] = noop;
-    });
-    warnExtensions.forEach((e) => {
+    }
+    for (const e of warnExtensions) {
         require.extensions[e] = warn;
-    });
+    }
 })();

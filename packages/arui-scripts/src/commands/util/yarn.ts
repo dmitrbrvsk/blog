@@ -1,6 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
+import fs from 'node:fs';
+import path from 'node:path';
 import shell from 'shelljs';
 
 import { configs } from '../../configs/app-configs';
@@ -10,7 +9,7 @@ type YarnVersion = '1' | '2+' | 'unavailable';
 export function getYarnVersion(): YarnVersion {
     if (configs.useYarn && shell.which('yarn')) {
         const yarnVersion = shell.exec('yarn -v', { silent: true });
-        const yarnMajorVersion = Number(yarnVersion.split('.')[0]);
+        const yarnMajorVersion = Number(yarnVersion.split('.', 1)[0]);
 
         return yarnMajorVersion > 1 ? '2+' : '1';
     }

@@ -1,11 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-
+import fs from 'node:fs';
+import path from 'node:path';
 import { type AtRule, Declaration, type Helpers, type Root, Rule } from 'postcss';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import mediaParser from 'postcss-media-query-parser';
 
-export const getMediaQueryName = (rule: AtRule) => rule.params.split(' ')[0];
+export const getMediaQueryName = (rule: AtRule) => rule.params.split(' ', 1)[0];
 
 export function parseImport(root: Root, postcssHelpers: Helpers, filePath: string) {
     let resolvedPath = '';
@@ -14,7 +12,7 @@ export function parseImport(root: Root, postcssHelpers: Helpers, filePath: strin
         resolvedPath = path.resolve(filePath);
     } catch (err) {
         throw new Error(
-            `Failed to read ${filePath} with error ${err instanceof Error ? err.message : err}`,
+            `Failed to read ${filePath} with error ${err instanceof Error ? err.message : String(err)}`,
         );
     }
 
@@ -32,7 +30,6 @@ export function parseImport(root: Root, postcssHelpers: Helpers, filePath: strin
 
 export const parseVariables = (importedFile: Root, parsedVariables: Record<string, string>) => {
     importedFile.walkDecls((decl) => {
-        // eslint-disable-next-line no-param-reassign
         parsedVariables[decl.prop] = decl.value;
     });
 };
@@ -41,7 +38,6 @@ export const parseMediaQuery = (importedFile: Root, parsedCustomMedia: Record<st
     importedFile.walkAtRules('custom-media', (mediaRule) => {
         const mediaName = getMediaQueryName(mediaRule);
 
-        // eslint-disable-next-line no-param-reassign
         parsedCustomMedia[mediaName] = mediaRule;
     });
 };
@@ -54,7 +50,7 @@ export function addGlobalVariable(
     const variableMatches = cssValue.match(/var\(\s*--([^)]+)\s*\)/g);
 
     if (variableMatches) {
-        variableMatches.forEach((match) => {
+        for (const match of variableMatches) {
             // var(--gap-24) => --gap-24
             const variableName = match.slice(4, -1).trim();
 
@@ -66,7 +62,7 @@ export function addGlobalVariable(
                 // Рекурсивно проходимся по значениям css, там тоже могут использоваться переменные
                 addGlobalVariable(parsedVariables[variableName], rootSelector, parsedVariables);
             }
-        });
+        }
     }
 }
 
@@ -87,21 +83,23 @@ export const insertParsedCss = (
         // регулярка для (--desktop), (--mobile), (--desktop-m) и тд
         const parseRule = /--\w+-?\w+/gi;
 
-        mediaParsed.nodes?.forEach(({ value }) => {
-            // value приходит в виде (--desktop); not screen and (--mobile) и тд
-            if (parseRule.test(value)) {
-                // берем все вхождения --desktop, --mobile
-                const mediaName = value.match(parseRule);
+        if (mediaParsed.nodes)
+            for (const { value } of mediaParsed.nodes) {
+                // value приходит в виде (--desktop); not screen and (--mobile) и тд
+                if (parseRule.test(value)) {
+                    // берем все вхождения --desktop, --mobile
+                    const mediaName = value.match(parseRule);
 
-                // итерируемся по [--desktop, --mobile]
-                mediaName?.forEach((name) => {
-                    // подставляем значения если у нас есть под это custom-media
-                    if (parsedCustomMedia[name]) {
-                        root.append(parsedCustomMedia[name]);
-                    }
-                });
+                    // итерируемся по [--desktop, --mobile]
+                    if (mediaName)
+                        for (const name of mediaName) {
+                            // подставляем значения если у нас есть под это custom-media
+                            if (parsedCustomMedia[name]) {
+                                root.append(parsedCustomMedia[name]);
+                            }
+                        }
+                }
             }
-        });
     });
 
     return rootRule;

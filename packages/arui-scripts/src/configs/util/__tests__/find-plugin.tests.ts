@@ -5,11 +5,11 @@ import { createServerConfig } from '../../rspack.server';
 import { createFindPluginFunction } from '../find-plugin';
 
 const getPlugins = (
-    plugins: Plugins | undefined = [],
+    plugins: Plugins | undefined,
     name: string,
     property: (props: { options: Record<string, unknown> }) => Record<string, unknown>,
 ) =>
-    plugins.map((plugin: Plugin) => {
+    (plugins ?? []).map((plugin: Plugin) => {
         if (plugin?.constructor.name === name) {
             const typedPlugin = plugin as unknown as { options: Record<string, unknown> };
 

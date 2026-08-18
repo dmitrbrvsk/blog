@@ -22,7 +22,7 @@ describe('useModuleMountTarget', () => {
             result.current.afterTargetMountCallback(targetNode);
         });
 
-        const realTarget = targetNode.children[0];
+        const realTarget = targetNode.firstElementChild;
 
         expect(result.current.mountTargetNode).toBe(realTarget);
     });
@@ -56,8 +56,8 @@ describe('useModuleMountTarget', () => {
         });
 
         expect(targetNode.shadowRoot).toBeDefined();
-        expect(targetNode.shadowRoot?.children[0].tagName).toBe('DIV');
-        expect(targetNode.shadowRoot?.children[0].children[0]).toBe(realTarget);
+        expect(targetNode.shadowRoot?.firstElementChild?.tagName).toBe('DIV');
+        expect(targetNode.shadowRoot?.firstElementChild?.firstElementChild).toBe(realTarget);
         expect(result.current.cssTargetSelector).toBe('[data-module-mount-id="unique-id"]');
         expect(result.current.mountTargetNode).toBe(realTarget);
     });

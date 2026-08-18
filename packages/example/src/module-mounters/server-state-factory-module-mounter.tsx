@@ -40,7 +40,7 @@ export const ServerStateFactoryModuleMounter = () => {
         loader,
         runParams,
         getFactoryParams: (params) => {
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- пример показывает результат вызова метода модуля
             console.log(params);
 
             return params;

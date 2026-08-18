@@ -11,15 +11,14 @@ if (process.env.NODE_ENV !== 'production' && module.hot) {
     root.render(<App />);
 
     module.hot.accept('./components/app', () => {
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-        const NextAppAssignments = require('./components/app').App;
+        const { App: NextApp } = require('./components/app') as { App: typeof App };
 
-        root.render(<NextAppAssignments />);
+        root.render(<NextApp />);
     });
 } else {
     root.render(<App />);
 }
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/assets/worker.js');
+    void navigator.serviceWorker.register('/assets/worker.js');
 }

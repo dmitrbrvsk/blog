@@ -1,6 +1,5 @@
-import { spawn } from 'child_process';
-
 import fs from 'fs-extra';
+import { spawn } from 'node:child_process';
 
 import { configs } from '../../configs/app-configs';
 
@@ -34,7 +33,7 @@ export function runCompilers(pathToCompilers: Array<string | string[]>) {
 
     function onProcessExit(code: number) {
         if (code !== 0) {
-            compilers.forEach((compiler) => compiler.kill());
+            for (const compiler of compilers) compiler.kill();
             process.exit(code);
         }
     }

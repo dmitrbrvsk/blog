@@ -1,22 +1,21 @@
 // TODO: remove eslint-disable and eslint-disable-next-line
-/* eslint-disable no-param-reassign */
+
 import { type OverrideFile } from 'arui-scripts';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
 // @ts-ignore
 import path from 'node:path';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { type RuleSetRule } from 'webpack';
 
 const overrides: OverrideFile = {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
     // @ts-ignore
     webpackClient: (config, appConfig, { findLoader }) => {
         const allConfigs = Array.isArray(config) ? config : [config];
 
         // Делаем стабильные имена классов css модулей для тестирования
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const singleConfig of allConfigs) {
-            const cssModulesLoader = findLoader(singleConfig, '/\\.module\\.css$/');
+            const cssModulesLoader = findLoader(singleConfig, String.raw`/\.module\.css$/`);
 
             if (cssModulesLoader?.use && Array.isArray(cssModulesLoader.use)) {
                 const cssLoader = cssModulesLoader.use.find((loader) => {

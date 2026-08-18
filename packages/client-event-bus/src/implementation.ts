@@ -6,9 +6,9 @@ export type EventBusParams = {
     debugMode?: boolean;
 };
 
-export class EventBus<KnownEventTypes extends AbstractKnownEventTypes>
-    implements AbstractAppEventBus<KnownEventTypes>
-{
+export class EventBus<
+    KnownEventTypes extends AbstractKnownEventTypes,
+> implements AbstractAppEventBus<KnownEventTypes> {
     constructor({ targetNode = document, debugMode = false }: EventBusParams = {}) {
         this.debugMode = debugMode;
         this.targetNode = targetNode;
@@ -28,7 +28,7 @@ export class EventBus<KnownEventTypes extends AbstractKnownEventTypes>
         this.targetNode.dispatchEvent(new CustomEvent(eventName as string, { detail }));
 
         if (this.debugMode) {
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- отладочный режим шины пишет в консоль намеренно
             console.debug(`Event bus, dispatchEvent: ${eventName.toString()}`, detail);
         }
     }
@@ -84,13 +84,13 @@ export class EventBus<KnownEventTypes extends AbstractKnownEventTypes>
     }
 }
 
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle -- имя глобальной переменной задано контрактом event-bus */
 export function createBus(
     key: string,
     params: EventBusParams = {},
 ): EventBus<AbstractKnownEventTypes> {
     if (typeof window === 'undefined') {
-        throw new Error('Client event bus can only be created in a browser environment');
+        throw new TypeError('Client event bus can only be created in a browser environment');
     }
 
     if (!window.__alfa_event_buses) {
@@ -103,4 +103,4 @@ export function createBus(
     return window.__alfa_event_buses[key] as EventBus<AbstractKnownEventTypes>;
 }
 
-/* eslint-enable no-underscore-dangle */
+/* eslint-enable no-underscore-dangle -- имя глобальной переменной задано контрактом event-bus */

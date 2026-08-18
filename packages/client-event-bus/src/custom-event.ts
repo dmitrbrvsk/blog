@@ -4,7 +4,7 @@ function isNativeCustomEventAvailable() {
         const p = new global.CustomEvent('cat', { detail: { foo: 'bar' } });
 
         return p.type === 'cat' && p.detail.foo === 'bar';
-    } catch (e) {
+    } catch {
         // just ignore it
     }
 
@@ -17,7 +17,7 @@ function CustomEventPolyfill<T>(type: string, params: CustomEventInit<T>) {
     if (params) {
         e.initCustomEvent(type, Boolean(params.bubbles), Boolean(params.cancelable), params.detail);
     } else {
-        e.initCustomEvent(type, false, false, undefined);
+        e.initCustomEvent(type, false, false);
     }
 
     return e;

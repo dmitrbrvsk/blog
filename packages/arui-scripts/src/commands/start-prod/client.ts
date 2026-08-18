@@ -4,4 +4,4 @@ import { runClientDevServer } from '../util/run-client-dev-server';
 
 loadBrowserslist();
 
-runClientDevServer(webpackClientConfig);
+void runClientDevServer(webpackClientConfig);

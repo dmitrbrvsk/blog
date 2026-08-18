@@ -1,13 +1,12 @@
 // TODO: remove eslint-disable-next-line
 import { type OverrideFile } from 'arui-scripts';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
 // @ts-ignore
 import path from 'node:path';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { type RuleSetRule } from 'webpack';
 
 const overrides: OverrideFile = {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
     // @ts-ignore
     webpackClient: (config, appConfig, { createSingleClientWebpackConfig, findLoader }) => {
         const workerConfig = createSingleClientWebpackConfig(
@@ -15,16 +14,16 @@ const overrides: OverrideFile = {
             'worker',
         );
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
         // @ts-ignore
         workerConfig.output.filename = 'worker.js';
 
         const rootConfigList = Array.isArray(config) ? config : [config];
 
         // Делаем стабильные имена классов css модулей для тестирования
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const rootConfig of rootConfigList) {
-            const cssModulesLoader = findLoader(rootConfig, '/\\.module\\.css$/');
+            const cssModulesLoader = findLoader(rootConfig, String.raw`/\.module\.css$/`);
 
             if (cssModulesLoader?.use && Array.isArray(cssModulesLoader.use)) {
                 const cssLoader = cssModulesLoader.use.find((loader) => {
@@ -58,9 +57,9 @@ const overrides: OverrideFile = {
         const allConfigs = Array.isArray(config) ? config : [config];
 
         return allConfigs.map((singleConfig) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ниже @ts-ignore: типы конфигурации сборщика не совпадают с фактическими
             // @ts-ignore
-            // eslint-disable-next-line no-param-reassign
+
             singleConfig.optimization.minimize = false;
 
             return singleConfig;

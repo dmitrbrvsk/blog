@@ -26,11 +26,10 @@ export function createGetModulesHapi20Plugin(
                             request.payload as GetResourcesRequest,
                             request,
                         );
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    } catch (e: any) {
+                    } catch (error: unknown) {
                         return h
                             .response({
-                                error: e.message,
+                                error: error instanceof Error ? error.message : String(error),
                                 status: 500,
                             })
                             .code(500);

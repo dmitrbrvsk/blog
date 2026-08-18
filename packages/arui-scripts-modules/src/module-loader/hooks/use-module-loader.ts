@@ -73,12 +73,12 @@ export function useModuleLoader<ModuleExportType, GetResourcesParams>({
                     return;
                 }
                 setLoadingState('rejected');
-                // eslint-disable-next-line no-console
+                // eslint-disable-next-line no-console -- ошибку загрузки модуля показываем в консоли: приложение продолжает работать
                 console.error(error);
             }
         }
 
-        run();
+        void run();
 
         return function moduleCleanUp() {
             unmountFn?.();

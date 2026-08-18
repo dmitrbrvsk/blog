@@ -1,6 +1,6 @@
 // TODO: remove eslint-disable-next-line
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { getPolyfills } from '../util/get-polyfills';
 import { resolveNodeModuleRelativeTo } from '../util/resolve';
@@ -34,12 +34,12 @@ export function calculateDependentContext(config: AppConfigs, context: AppContex
             '@babel/runtime/package.json',
         );
 
-        babelRuntimeVersion = JSON.parse(
-            fs.readFileSync(pathToProjectBabelRuntime, 'utf8'),
+        babelRuntimeVersion = (
+            JSON.parse(fs.readFileSync(pathToProjectBabelRuntime, 'utf8')) as { version: string }
         ).version;
-    } catch (e) {
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-        babelRuntimeVersion = require('@babel/runtime/package.json').version;
+    } catch {
+        babelRuntimeVersion = (require('@babel/runtime/package.json') as { version: string })
+            .version;
     }
 
     const allDictionaryPath = config.dictionaryCompression.dictionaryPath.map((p) => {
@@ -53,7 +53,7 @@ export function calculateDependentContext(config: AppConfigs, context: AppContex
     const singleFilesDictionaries = [] as string[];
     const previousVersionPath = [] as string[];
 
-    allDictionaryPath.forEach((p) => {
+    for (const p of allDictionaryPath) {
         const statResult = fs.statSync(p);
 
         if (statResult.isFile()) {
@@ -61,7 +61,7 @@ export function calculateDependentContext(config: AppConfigs, context: AppContex
         } else {
             previousVersionPath.push(p);
         }
-    });
+    }
 
     return {
         ...context,

@@ -3,6 +3,7 @@ import merge from 'lodash.merge';
 
 import { tryResolve } from '../util/resolve';
 
+import { requireConfigFile } from './require-config-file';
 import { type AppConfigs, type AppContext } from './types';
 import { validateSettingsKeys } from './validate-settings-keys';
 
@@ -17,16 +18,10 @@ export function updateWithPresets(config: AppConfigs, context: AppContext) {
     });
 
     if (presetsConfigPath) {
-        // eslint-disable-next-line import/no-dynamic-require, @typescript-eslint/no-var-requires, global-require
-        let presetsSettings = require(presetsConfigPath);
+        const presetsSettings = requireConfigFile(presetsConfigPath);
 
-        // eslint-disable-next-line no-underscore-dangle
-        if (presetsSettings.__esModule) {
-            // ts-node импортирует esModules, из них надо вытягивать default именно так
-            presetsSettings = presetsSettings.default;
-        }
         validateSettingsKeys(config, presetsSettings, presetsConfigPath);
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign -- конфигурация собирается последовательным мержем
         config = merge(config, presetsSettings);
     }
     if (presetsOverridesPath) {

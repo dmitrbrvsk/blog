@@ -31,18 +31,17 @@ async function main() {
             console.log(chalk.green('Client compiled successfully.\n'));
         }
 
-        function printOutputSizes(webpackConfig: Configuration, stats: Stats) {
+        function printOutputSizes(webpackConfig: Configuration, configStats: Stats) {
             console.log(chalk.bold(`Sizes for "${webpackConfig.name || 'main'}"`));
 
-            printAssetsSizes(stats);
+            printAssetsSizes(configStats);
         }
 
         if (Array.isArray(webpackClientConfig)) {
-            webpackClientConfig.forEach((conf, index) =>
-                printOutputSizes(conf, (stats as MultiStats).stats[index]),
-            );
+            for (const [index, conf] of webpackClientConfig.entries())
+                printOutputSizes(conf, (stats as MultiStats).stats[index]);
         } else {
-            printOutputSizes(webpackClientConfig as any, stats as Stats);
+            printOutputSizes(webpackClientConfig, stats as Stats);
         }
     } catch (err) {
         console.log(chalk.red('Failed to compile client.\n'));
@@ -51,4 +50,4 @@ async function main() {
     }
 }
 
-main();
+void main();

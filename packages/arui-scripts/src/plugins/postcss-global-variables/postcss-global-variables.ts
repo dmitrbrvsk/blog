@@ -24,12 +24,12 @@ const postCssGlobalVariables: PluginCreator<PluginOptions> = (opts?: PluginOptio
                 postcssPlugin: '@alfalab/postcss-global-variables',
                 Once(root, postcssHelpers): void {
                     if (!Object.keys(parsedVariables).length) {
-                        options.files.forEach((filePath) => {
+                        for (const filePath of options.files) {
                             const importedCss = parseImport(root, postcssHelpers, filePath);
 
                             parseVariables(importedCss, parsedVariables);
                             parseMediaQuery(importedCss, parsedCustomMedia);
-                        });
+                        }
                     }
 
                     const rootRule = insertParsedCss(root, parsedVariables, parsedCustomMedia);
@@ -38,9 +38,9 @@ const postCssGlobalVariables: PluginCreator<PluginOptions> = (opts?: PluginOptio
                     rulesSelectors.add(rootRule);
                 },
                 OnceExit(): void {
-                    rulesSelectors.forEach((rule) => {
+                    for (const rule of rulesSelectors) {
                         rule.remove();
-                    });
+                    }
                     rulesSelectors = new Set<Rule>();
                 },
             };

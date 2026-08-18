@@ -120,23 +120,23 @@ export function removeModuleResources({
     moduleId,
     targetNodes,
 }: RemoveModuleResourcesParams): void {
-    targetNodes.forEach((targetNode) => {
+    for (const targetNode of targetNodes) {
         if (!targetNode) {
-            return;
+            continue;
         }
 
         const resources = nodeListToArray(
             targetNode.querySelectorAll(`[${DATA_APP_ID_ATTRIBUTE}="${moduleId}"]`),
         );
 
-        resources.forEach((element) => {
-            element.parentNode?.removeChild(element);
-        });
-    });
+        for (const element of resources) {
+            element.remove();
+        }
+    }
 }
 
 function nodeListToArray<T extends Node>(nodeList: NodeListOf<T>): T[] {
-    return [].slice.call(nodeList);
+    return Array.prototype.slice.call(nodeList);
 }
 
 async function appendTag(
@@ -145,10 +145,11 @@ async function appendTag(
     attributes: Record<string, string>,
     fetcher: ReturnType<GenericResourceFetcherParams['createFetcher']>,
 ): Promise<HTMLElement> {
-    Object.keys(attributes).forEach((key) => {
+    for (const key of Object.keys(attributes)) {
         element.setAttribute(key, attributes[key]);
-    });
+    }
 
+    // eslint-disable-next-line unicorn/prefer-dom-node-append -- targetNode типизирован как Node, append есть только у ParentNode
     targetNode.appendChild(element);
 
     await fetcher();
@@ -192,7 +193,6 @@ function createContentFetcher(href: string, element: HTMLElement, abortSignal?: 
             throw new DOMException('The operation was aborted.');
         }
 
-        // eslint-disable-next-line no-param-reassign
         element.textContent = text;
 
         return element;

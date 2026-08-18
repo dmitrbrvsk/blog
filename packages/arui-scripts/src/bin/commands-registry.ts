@@ -1,5 +1,4 @@
-/* eslint-disable global-require */
-/* eslint import/no-dynamic-require: 0 */
+/* eslint import-x/no-dynamic-require: 0 -- команды подключаются по имени в рантайме */
 
 export type CliCommand = {
     name: string;

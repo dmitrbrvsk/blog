@@ -1,11 +1,11 @@
-import path from 'path';
-
 import express from 'express';
+import path from 'node:path';
 
 import { readAssetsManifest } from '@alfalab/scripts-server';
 
-import icon from './server.png';
 import svgIcon from '../clock.svg';
+
+import icon from './server.png';
 
 const app = express();
 
@@ -35,6 +35,6 @@ ${assets.js.map((c) => `<script type='text/javascript' src='/${c}'></script>`).j
 });
 
 app.listen(3000, () => {
-    // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console -- лог сервера приложения-примера
     console.log('Test server is listening on :3000');
 });

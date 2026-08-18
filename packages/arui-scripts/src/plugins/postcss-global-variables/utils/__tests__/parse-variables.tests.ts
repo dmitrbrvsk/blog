@@ -13,7 +13,9 @@ describe('parseVariables', () => {
                     { prop: '--font-size', value: 'var(--gap-24)' } as Declaration,
                 ];
 
-                mockDeclarations.forEach(callback);
+                for (const [index, declaration] of mockDeclarations.entries()) {
+                    callback(declaration, index);
+                }
 
                 return false;
             },

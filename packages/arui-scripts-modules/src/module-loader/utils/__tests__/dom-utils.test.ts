@@ -56,9 +56,9 @@ describe('dom utils', () => {
             removeModuleResources({ moduleId: MODULE_TEST_ID, targetNodes: [document.head] });
 
             timerId = setTimeout(() => {
-                findResourcesNodes().forEach((node) => {
+                for (const node of findResourcesNodes()) {
                     node.dispatchEvent(new Event('load'));
-                });
+                }
             });
         });
 
@@ -113,8 +113,16 @@ describe('dom utils', () => {
             const vendorStyle = '.container { color: red; }';
             const mainStyle = '.slider { color: red; }';
 
+            const getRequestUrl = (href: RequestInfo | URL): string => {
+                if (typeof href === 'string') {
+                    return href;
+                }
+
+                return href instanceof URL ? href.href : href.url;
+            };
+
             const mockFetch = jest.fn((href: RequestInfo | URL): Promise<Response> => {
-                if (href.toString().includes(vendorHref)) {
+                if (getRequestUrl(href).includes(vendorHref)) {
                     return new Promise((resolve) => {
                         setTimeout(
                             () => resolve({ text: () => Promise.resolve(vendorStyle) } as Response),
@@ -225,9 +233,9 @@ describe('dom utils', () => {
         it('should not inject resources if has load error', async () => {
             clearTimeout(timerId);
             timerId = setTimeout(() => {
-                findResourcesNodes().forEach((node) => {
+                for (const node of findResourcesNodes()) {
                     node.dispatchEvent(new Event('error'));
-                });
+                }
             });
 
             await expect(

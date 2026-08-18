@@ -4,8 +4,7 @@ import { type CliFlags } from './defaults';
 import { runInit } from './run';
 import { type CodeLoader, type E2eFramework, type TestRunner } from './types';
 
-// eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-const { version } = require('../package.json');
+const { version } = require('../package.json') as { version: string };
 
 export type InitHandler = (dir: string | undefined, flags: CliFlags) => Promise<void>;
 
@@ -40,8 +39,8 @@ export function createProgram(onInit: InitHandler = defaultInitHandler): Command
         .option('--no-router', 'Без React Router')
         .option('--css-modules', 'CSS-модули')
         .option('--no-css-modules', 'Обычный css')
-        .option('--client-port <port>', 'Порт dev-сервера', (value) => Number(value))
-        .option('--server-port <port>', 'Порт node-сервера', (value) => Number(value))
+        .option('--client-port <port>', 'Порт dev-сервера', Number)
+        .option('--server-port <port>', 'Порт node-сервера', Number)
         .option('--docker-registry <registry>', 'Docker registry')
         .option('--presets <package>', 'Preset-пакет')
         .option('--polyfills', 'Добавить core-js')

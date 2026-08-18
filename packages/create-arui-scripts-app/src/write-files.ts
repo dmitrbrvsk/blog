@@ -1,6 +1,5 @@
-import path from 'path';
-
 import fs from 'fs-extra';
+import path from 'node:path';
 
 export async function findConflictingFiles(
     targetDir: string,
@@ -17,7 +16,7 @@ export async function findConflictingFiles(
         }),
     );
 
-    return conflicts.sort();
+    return conflicts.toSorted();
 }
 
 export async function writeFiles(targetDir: string, files: Record<string, string>): Promise<void> {

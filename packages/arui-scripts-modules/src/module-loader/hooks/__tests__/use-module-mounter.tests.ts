@@ -3,6 +3,9 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { useModuleMountTarget } from '../use-module-mount-target';
 import { useModuleMounter } from '../use-module-mounter';
 
+// expect.any типизирован как any, поэтому приводим матчер к ожидаемому типу
+const anyAbortSignal = expect.any(AbortSignal) as AbortSignal;
+
 jest.mock('../use-module-mount-target', () => ({
     useModuleMountTarget: jest.fn().mockReturnValue({
         mountTargetNode: undefined,
@@ -74,7 +77,7 @@ describe('useModuleMounter', () => {
         expect(loader).toHaveBeenCalledWith({
             getResourcesParams: loaderParams,
             cssTargetSelector: 'head',
-            abortSignal: expect.any(AbortSignal),
+            abortSignal: anyAbortSignal,
             useShadowDom: false,
         });
 

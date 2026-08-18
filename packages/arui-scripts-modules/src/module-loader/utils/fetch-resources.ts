@@ -58,8 +58,8 @@ export async function fetchResources({
         cssTargetNode.querySelectorAll(`${styleTag}[${DATA_APP_ID_ATTRIBUTE}="${moduleId}"]`),
     );
 
-    previouslyAddedScripts.forEach((script) => script.remove());
-    previouslyAddedStyles.forEach((style) => style.remove());
+    for (const script of previouslyAddedScripts) script.remove();
+    for (const style of previouslyAddedStyles) style.remove();
 
     await Promise.all([
         scriptsFetcher({
@@ -114,9 +114,7 @@ export function getResourcesTargetNodes({
         const possibleCssTarget = document.querySelector(cssTargetSelector);
 
         if (possibleCssTarget) {
-            cssResourcesTargetNode = possibleCssTarget.shadowRoot
-                ? possibleCssTarget.shadowRoot
-                : possibleCssTarget;
+            cssResourcesTargetNode = possibleCssTarget.shadowRoot ?? possibleCssTarget;
         }
     }
 

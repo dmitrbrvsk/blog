@@ -1,14 +1,14 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
+
+import { installDependencies, installLefthook } from '../install-dependencies';
 
 const spawnMock = jest.fn();
 
-jest.mock('child_process', () => ({
+jest.mock('node:child_process', () => ({
     spawn: (...args: unknown[]) => spawnMock(...args),
 }));
 
-// eslint-disable-next-line import/first
-import { installDependencies, installLefthook } from '../install-dependencies';
-
+/* eslint-disable unicorn/prefer-event-target -- мок повторяет API child_process, построенное на EventEmitter */
 function fakeChild(exitCode: number) {
     const child = new EventEmitter() as EventEmitter & {
         stdout: EventEmitter;

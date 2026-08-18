@@ -1,18 +1,19 @@
-import fs from 'fs';
-import path from 'path';
-import { pathToFileURL } from 'url';
-
 import { replaceRootDirInPath } from 'jest-config';
 import Resolver from 'jest-resolve';
 import merge from 'lodash.merge';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { configs } from '../../configs/app-configs';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- дефолтные настройки jest написаны на js и не типизированы
 // @ts-ignore
 import defaultJestConfig from '../../configs/jest/settings';
 
 const PRESET_EXTENSIONS = ['.json', '.js', '.cjs', '.mjs'];
 const PRESET_NAME = 'jest-preset';
+
+type JestConfig = Record<string, unknown> & { preset?: string };
 
 export const getJestConfig = async () => {
     const { preset, ...appJestConfig } = await getAppJestConfig();
@@ -26,11 +27,11 @@ export const getJestConfig = async () => {
     return merge(defaultJestConfig, presetConfig, appJestConfig);
 };
 
-async function getAppJestConfig() {
+async function getAppJestConfig(): Promise<JestConfig> {
     const jestConfigPath = path.resolve(process.cwd(), 'jest.config.js');
 
     if (fs.existsSync(jestConfigPath)) {
-        return (await import(pathToFileURL(jestConfigPath).href)).default;
+        return await importJestConfig(pathToFileURL(jestConfigPath).href);
     }
 
     if (configs.appPackage.jest) {
@@ -40,7 +41,14 @@ async function getAppJestConfig() {
     return {};
 }
 
-async function getPresetConfig(presetPath?: string) {
+// Путь до конфигурации известен только в рантайме, поэтому типов у импорта нет
+async function importJestConfig(href: string): Promise<JestConfig> {
+    const module = (await import(href)) as { default: JestConfig };
+
+    return module.default;
+}
+
+async function getPresetConfig(presetPath?: string): Promise<JestConfig> {
     if (!presetPath) {
         return {};
     }
@@ -61,8 +69,9 @@ async function getPresetConfig(presetPath?: string) {
         throw new Error(`Cannot find module '${normalizedPresetPath}'`);
     }
 
-    const { preset: subPreset, ...preset } = (await import(pathToFileURL(presetModule).href))
-        .default;
+    const { preset: subPreset, ...preset } = await importJestConfig(
+        pathToFileURL(presetModule).href,
+    );
 
     if (subPreset) {
         console.warn(`Jest can't handle preset chaining. Preset "${subPreset}" will be ignored.`);

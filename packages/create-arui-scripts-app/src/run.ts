@@ -1,7 +1,5 @@
-/* eslint-disable no-console */
-import path from 'path';
-
 import chalk from 'chalk';
+import path from 'node:path';
 import ora from 'ora';
 import prompts from 'prompts';
 
@@ -26,8 +24,7 @@ import {
     writeFiles,
 } from './write-files';
 
-// eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-const { version: cliVersion } = require('../package.json');
+const { version: cliVersion } = require('../package.json') as { version: string };
 
 export type RunInitOptions = {
     // аргумент `[dir]` из командной строки
@@ -158,7 +155,7 @@ async function resolveAnswers(defaultName: string, flags: CliFlags): Promise<Ini
 }
 
 // Накладывает ответы мастера поверх базовых значений (флаги + дефолты)
-function mergePromptAnswers(base: InitAnswers, answers: prompts.Answers<string>): InitAnswers {
+function mergePromptAnswers(base: InitAnswers, answers: Partial<InitAnswers>): InitAnswers {
     const merged = { ...base };
 
     if (answers.name !== undefined) {
@@ -242,7 +239,7 @@ function printSuccess(context: TemplateContext, targetDir: string, fileCount: nu
         chalk.dim(context.clientOnly ? 'clientOnly' : 'SSR'),
         chalk.dim(context.codeLoader),
         chalk.dim(context.testRunner),
-        ...(context.e2eFramework !== 'none' ? [chalk.dim(context.e2eFramework)] : []),
+        ...(context.e2eFramework === 'none' ? [] : [chalk.dim(context.e2eFramework)]),
         ...(context.useRouter ? [chalk.dim('router')] : []),
         ...(context.useLint ? [chalk.dim('lint')] : []),
     ].join(chalk.dim(' · '));
@@ -303,8 +300,8 @@ function printNextSteps(
 
     console.log();
     console.log(`  ${chalk.bold('Дальше')}`);
-    steps.forEach((step, index) => {
+    for (const [index, step] of steps.entries()) {
         console.log(`    ${chalk.dim(`${index + 1}.`)} ${chalk.cyan(step)}`);
-    });
+    }
     console.log();
 }

@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle -- имена глобалов вебпака заданы его рантаймом */
 import { type ModuleFederationContainer } from '../../types';
 import { getCompatModule, getModule } from '../get-module';
 
@@ -27,17 +27,16 @@ describe('getModule', () => {
     it('should return the module factory function', async () => {
         const moduleId = 'my-module';
         const factory = jest.fn(() => 'module content');
-        const container = {
-            init: jest.fn(),
-            get: jest.fn(() => Promise.resolve(factory)),
-        } as ModuleFederationContainer;
+        const init = jest.fn();
+        const get = jest.fn(() => Promise.resolve(factory));
+        const container = { init, get } as ModuleFederationContainer;
 
         typedWindow[windowVarName] = container;
 
         const result = await getModule(windowVarName, moduleId);
 
-        expect(container.init).toHaveBeenCalledWith(expect.any(Object));
-        expect(container.get).toHaveBeenCalledWith(moduleId);
+        expect(init).toHaveBeenCalledWith(expect.any(Object));
+        expect(get).toHaveBeenCalledWith(moduleId);
         expect(factory).toHaveBeenCalled();
         expect(result).toBe('module content');
     });

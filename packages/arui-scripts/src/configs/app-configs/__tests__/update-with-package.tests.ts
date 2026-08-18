@@ -24,7 +24,7 @@ describe('update-with-package', () => {
                     },
                 },
             },
-        } as AppContext;
+        } as unknown as AppContext;
 
         const updatedConfig = updateWithPackage(baseConfig, context);
 

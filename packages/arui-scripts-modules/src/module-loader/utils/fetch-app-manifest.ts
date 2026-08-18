@@ -11,7 +11,7 @@ export function fetchAppManifest(url: string) {
         xhr.open('GET', url, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.setRequestHeader('Cache-Control', 'no-cache');
-        xhr.onload = () => {
+        xhr.addEventListener('load', () => {
             if (xhr.status !== 200) {
                 reject(createResponseError(ERROR_DESCRIPTION, url, xhr));
 
@@ -23,8 +23,8 @@ export function fetchAppManifest(url: string) {
             } catch (error) {
                 reject(createParseError(ERROR_DESCRIPTION, url, error));
             }
-        };
-        xhr.onerror = () => reject(createNetworkError(ERROR_DESCRIPTION, url));
+        });
+        xhr.addEventListener('error', () => reject(createNetworkError(ERROR_DESCRIPTION, url)));
         xhr.send();
     });
 }

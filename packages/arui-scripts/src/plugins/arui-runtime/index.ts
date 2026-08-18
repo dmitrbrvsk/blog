@@ -22,29 +22,39 @@ export class AruiRuntimePlugin {
  * без использования синтаксиса, который не поддерживается браузерами.
  * Более того, мы не можем использовать импорты или require внутри, это так же сломает сборку.
  */
+type AruiRuntimeScope = {
+    $ARUI?: {
+        scriptSource?: HTMLScriptElement;
+    };
+};
+
 export function getInsertCssRuntimeMethod(): (linkTag: HTMLLinkElement) => void {
-    /* eslint-disable no-var,vars-on-top,prefer-destructuring */
+    /* eslint-disable no-var,vars-on-top -- функция не проходит через babel и должна остаться на es5 */
     return function insertCssRuntime(linkTag) {
-        if (__webpack_require__?.$ARUI.scriptSource) {
-            var scriptSource = __webpack_require__.$ARUI.scriptSource;
-            var targetElementSelector = scriptSource.getAttribute('data-resources-target-selector');
+        // $ARUI в рантайм добавляет RuntimeModule этого плагина, в типах webpack его нет
+        var aruiScope = __webpack_require__ as unknown as AruiRuntimeScope;
+
+        var scriptSource = aruiScope.$ARUI?.scriptSource;
+
+        if (scriptSource) {
+            var targetElementSelector = scriptSource.dataset.resourcesTargetSelector;
 
             if (targetElementSelector) {
                 var targetElement = document.querySelector(targetElementSelector);
 
                 if (targetElement) {
                     if (targetElement.shadowRoot) {
-                        targetElement.shadowRoot.appendChild(linkTag);
+                        targetElement.shadowRoot.append(linkTag);
 
                         return;
                     }
-                    targetElement.appendChild(linkTag);
+                    targetElement.append(linkTag);
 
                     return;
                 }
             }
         }
-        document.head.appendChild(linkTag);
+        document.head.append(linkTag);
     };
-    /* eslint-enable no-var,vars-on-top,prefer-destructuring */
+    /* eslint-enable no-var,vars-on-top -- дальше обычный транспилируемый код */
 }

@@ -20,7 +20,7 @@ describe('update-with-presets', () => {
     it('should add overrides path if preset contain overrides', () => {
         mockedTryResolve.mockImplementation((path: string) => {
             if (path.includes('/arui-scripts.config')) {
-                return undefined;
+                return;
             }
 
             return path;
@@ -34,7 +34,7 @@ describe('update-with-presets', () => {
             overridesPath: ['package-overrides-path.js'],
         } as AppContext;
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- проверяется побочный эффект, результат не нужен
         const updatedConfig = updateWithPresets(baseConfig, context);
 
         expect(context.overridesPath).toEqual([
@@ -55,8 +55,6 @@ describe('update-with-presets', () => {
             if (path.includes('/arui-scripts.config')) {
                 return 'virtual-presets';
             }
-
-            return undefined;
         });
         const baseConfig = {
             presets: 'presets',

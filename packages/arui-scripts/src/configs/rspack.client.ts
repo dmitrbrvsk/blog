@@ -1,6 +1,3 @@
-import path from 'path';
-import * as zlib from 'zlib';
-
 import ReactRefreshTypeScript from 'react-refresh-typescript';
 import {
     type Configuration,
@@ -19,6 +16,8 @@ import CaseSensitivePathsPlugin from 'case-sensitive-paths-webpack-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import path from 'node:path';
+import * as zlib from 'node:zlib';
 import { RspackManifestPlugin } from 'rspack-manifest-plugin';
 import { TsCheckerRspackPlugin } from 'ts-checker-rspack-plugin';
 import { WebpackDeduplicationPlugin } from 'webpack-deduplication-plugin';
@@ -47,7 +46,7 @@ import { swcClientConfig } from './swc';
 
 const noopPath = require.resolve('./util/noop');
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- функция сейчас не вызывается, оставлена намеренно
 function getSingleEntry(entryPoint: string[], mode: 'dev' | 'prod') {
     return [
         ...(Array.isArray(configs.clientPolyfillsEntry)
@@ -85,11 +84,11 @@ function getMinimizeConfig(mode: 'dev' | 'prod') {
             minimizer: [
                 new CssMinimizerPlugin({
                     minimizerOptions: {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- некорректные типы у cssMinimizerPlugin
                         preset: (() => ({
-                            // eslint-disable-next-line global-require
                             plugins: [require('postcss-discard-duplicates')],
-                            // некорректные типы у cssMinimizerPlugin
-                        })) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- некорректные типы у cssMinimizerPlugin
+                        })) as any,
                     },
                 }),
             ],
@@ -108,7 +107,7 @@ function getMinimizeConfig(mode: 'dev' | 'prod') {
  * @param entry Точка входа, любой валидный вход для webpack
  * @param configName Имя конфигурации, если не указано, то используется имя по умолчанию
  */
-// eslint-disable-next-line complexity
+
 export const createSingleClientWebpackConfig = (
     mode: 'dev' | 'prod',
     entry: Entry,
@@ -138,7 +137,7 @@ export const createSingleClientWebpackConfig = (
                 : `${configName ? `${configName}-` : ''}[name].[chunkhash:8].chunk.js`,
         // Point sourcemap entries to original disk location (format as URL on Windows)
         devtoolModuleFilenameTemplate: (info) =>
-            path.relative(configs.appSrc, info.absoluteResourcePath).replace(/\\/g, '/'),
+            path.relative(configs.appSrc, info.absoluteResourcePath).replaceAll('\\', '/'),
     },
     optimization: {
         ...getMinimizeConfig(mode),
@@ -155,7 +154,7 @@ export const createSingleClientWebpackConfig = (
                           vendor: {
                               test: /node_modules/,
                               chunks: 'initial',
-                              // Почему то rspack предоставляет некорректные типы для этой функции.
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- rspack предоставляет некорректные типы для этой функции
                               name: ((
                                   _: unknown,
                                   chunks: Array<{ name: string }>,
@@ -168,7 +167,8 @@ export const createSingleClientWebpackConfig = (
                                   const allChunksNames = chunks.map((item) => item.name).join('~');
 
                                   return `${cacheGroupKey}-${allChunksNames}`;
-                              }) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rspack предоставляет некорректные типы для этой функции
+                              }) as any,
                               priority: 10,
                               enforce: true,
                           },
@@ -283,7 +283,7 @@ export const createSingleClientWebpackConfig = (
                             },
                         },
                     },
-                ].filter(Boolean) as RuleSetRule[],
+                ].filter(Boolean),
             },
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before asset modules
@@ -368,7 +368,7 @@ export const createSingleClientWebpackConfig = (
                 filename: '[file].gz',
                 algorithm: 'gzip',
                 test: /\.js$|\.css$|\.png$|\.svg$/,
-                threshold: 10240,
+                threshold: 10_240,
                 minRatio: 0.8,
             }),
         mode === 'prod' &&
@@ -382,7 +382,7 @@ export const createSingleClientWebpackConfig = (
                         [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
                     },
                 },
-                threshold: 10240,
+                threshold: 10_240,
                 minRatio: 0.8,
             }),
         // Ignore prop-types packages in production mode

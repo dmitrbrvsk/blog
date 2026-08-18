@@ -2,7 +2,7 @@ import { type TemplateContext } from '../types';
 
 function sortKeys(record: Record<string, string>): Record<string, string> {
     return Object.keys(record)
-        .sort()
+        .toSorted()
         .reduce<Record<string, string>>((acc, key) => {
             acc[key] = record[key];
 

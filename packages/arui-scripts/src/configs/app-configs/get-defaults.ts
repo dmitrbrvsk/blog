@@ -1,10 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { tryResolve } from '../util/resolve';
 
 import { readConfigFile } from './read-config-file';
-import { type AppConfigs, type AppContext } from './types';
+import { type AppConfigs, type AppContext, type AppPackageJson } from './types';
 
 const CWD = process.cwd();
 const absoluteSrcPath = path.resolve(CWD, 'src');
@@ -102,11 +102,13 @@ export function getDefaultAppConfig(): AppConfigs {
     };
 }
 
-function getPackageJson() {
-    const appPackage = JSON.parse(fs.readFileSync(path.join(CWD, 'package.json'), 'utf8'));
+function getPackageJson(): AppPackageJson {
+    const appPackage = JSON.parse(
+        fs.readFileSync(path.join(CWD, 'package.json'), 'utf8'),
+    ) as AppPackageJson;
 
     if (appPackage['arui-scripts']) {
-        throw Error('arui-scripts in package.json is not supported. Use aruiScripts instead.');
+        throw new Error('arui-scripts in package.json is not supported. Use aruiScripts instead.');
     }
 
     return appPackage;
@@ -128,7 +130,7 @@ export function getDefaultAppContext(): AppContext {
     return {
         appPackage,
         name: appPackage.name,
-        normalizedName: appPackage.name.replace(/-/g, '_'), // для использования в качестве имени переменной
+        normalizedName: appPackage.name.replaceAll('-', '_'), // для использования в качестве имени переменной
         version: appPackage.version,
 
         // general paths

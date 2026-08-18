@@ -1,6 +1,5 @@
-import path from 'path';
-
 import fs from 'fs-extra';
+import path from 'node:path';
 import tar from 'tar';
 
 import { configs } from '../../configs/app-configs';

@@ -2,6 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 import { useModuleFactory } from '../use-module-factory';
 
+// expect.any типизирован как any, поэтому приводим матчер к ожидаемому типу
+const anyAbortSignal = expect.any(AbortSignal) as AbortSignal;
+
 describe('useModuleFactory', () => {
     it('should return factory execution result when the loader resolves', async () => {
         const moduleExport = jest.fn();
@@ -23,7 +26,7 @@ describe('useModuleFactory', () => {
 
         expect(loader).toHaveBeenCalledWith({
             getResourcesParams: loaderParams,
-            abortSignal: expect.any(AbortSignal),
+            abortSignal: anyAbortSignal,
         });
         expect(moduleExport).toHaveBeenCalledWith(runParams, 'serverState');
     });
@@ -64,7 +67,7 @@ describe('useModuleFactory', () => {
         expect(result.current.module).toBeUndefined();
         expect(loader).toHaveBeenCalledWith({
             getResourcesParams: loaderParams,
-            abortSignal: expect.any(AbortSignal),
+            abortSignal: anyAbortSignal,
         });
     });
 

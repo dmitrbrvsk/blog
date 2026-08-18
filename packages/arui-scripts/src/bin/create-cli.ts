@@ -1,12 +1,9 @@
-/* eslint-disable global-require */
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 import chalk from 'chalk';
 import { Command } from 'commander';
 
 import { commands } from './commands-registry';
 
-const { version } = require('../../package.json');
+const { version } = require('../../package.json') as { version: string };
 
 export function createCli(): Command {
     const program = new Command('arui-scripts');
@@ -23,7 +20,7 @@ export function createCli(): Command {
             : '',
     );
 
-    commands.forEach((cmd) => {
+    for (const cmd of commands) {
         const command = program.command(cmd.name).description(cmd.description).action(cmd.load);
 
         if (cmd.passthrough) {
@@ -34,7 +31,7 @@ export function createCli(): Command {
         if (cmd.help) {
             command.addHelpText('after', `\n${chalk.dim(cmd.help)}`);
         }
-    });
+    }
 
     return program;
 }

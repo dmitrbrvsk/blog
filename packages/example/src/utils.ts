@@ -1,6 +1,6 @@
 // TODO: remove eslint-disable
 /* eslint-disable no-param-reassign */
-/* eslint-disable operator-assignment */
+/* eslint-disable operator-assignment -- файл специально написан так, чтобы проверить транспиляцию синтаксиса */
 export enum YesNoEnum {
     Yes = 'Yes',
     No = 'No',
@@ -19,10 +19,12 @@ type OptionalChainingTest = {
     };
 };
 
+/** @public проверяет транспиляцию синтаксиса в сборке примера */
 export function testOptionalChaining(smth: OptionalChainingTest) {
     return smth?.foo?.bar;
 }
 
+/** @public проверяет транспиляцию синтаксиса в сборке примера */
 export class SomethingWithPrivateFields {
     #name = 'really private';
 
@@ -31,10 +33,12 @@ export class SomethingWithPrivateFields {
     }
 }
 
+/** @public проверяет транспиляцию синтаксиса в сборке примера */
 export function withNullishCoalescing(something: null | string) {
     return something ?? 'other value';
 }
 
+/** @public проверяет транспиляцию синтаксиса в сборке примера */
 export const constObject = {
     name: 'someString',
 } as const;
