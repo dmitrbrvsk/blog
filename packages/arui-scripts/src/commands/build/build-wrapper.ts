@@ -1,5 +1,6 @@
+import { type Configuration,type MultiStats, rspack, type Stats } from '@rspack/core';
 import chalk from 'chalk';
-import { rspack, Stats, MultiStats, Configuration } from '@rspack/core';
+
 import { formatWebpackMessages } from '../util/format-webpack-messages';
 
 type BuildResult = {
@@ -9,7 +10,7 @@ type BuildResult = {
 };
 
 function build(config: Configuration | Configuration[], previousFileSizes?: unknown) {
-    let compiler = rspack(config);
+    const compiler = rspack(config);
     return new Promise<BuildResult>((resolve, reject) => {
         compiler.run((err, stats) => {
             if (err) {

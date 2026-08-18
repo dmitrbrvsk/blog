@@ -38,11 +38,10 @@ async function main() {
         }
 
         if (Array.isArray(webpackClientConfig)) {
-            webpackClientConfig.forEach((conf, index) =>
-                printOutputSizes(conf, (stats as MultiStats).stats[index]),
-            );
+            for (const [index, conf] of webpackClientConfig.entries()) printOutputSizes(conf, (stats as MultiStats).stats[index])
+            ;
         } else {
-            printOutputSizes(webpackClientConfig as any, stats as Stats);
+            printOutputSizes(webpackClientConfig, stats as Stats);
         }
     } catch (err) {
         console.log(chalk.red('Failed to compile client.\n'));
@@ -51,4 +50,4 @@ async function main() {
     }
 }
 
-main();
+void main();

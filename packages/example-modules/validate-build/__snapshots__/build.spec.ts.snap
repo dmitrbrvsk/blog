@@ -38,10 +38,6 @@ exports[`modules should create valid css for ModuleCompat 1`] = `
     margin-top:4px;
 }
 
-    .module-ModuleCompat .primary__footer{
-        color:blue;
-    }
-
     @media (min-width: 1024px){.module-ModuleCompat .primary{
         color:coral
 }
@@ -50,6 +46,10 @@ exports[`modules should create valid css for ModuleCompat 1`] = `
     .module-ModuleCompat .primary:hover .primary__footer{
         color:green;
         animation:someRandomAnimation 1s ease-in-out infinite alternate;
+    }
+
+    .module-ModuleCompat .primary__footer{
+        color:blue;
     }
 
     @media (min-width: 1280px){

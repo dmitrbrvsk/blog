@@ -10,6 +10,6 @@ package-lock.json
 .pnp.*
 tsconfig.tsbuildinfo
 .turbo
-build
+/build
 .DS_Store
 .vscode/

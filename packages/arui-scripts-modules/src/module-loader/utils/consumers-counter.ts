@@ -25,5 +25,3 @@ export function getConsumerCounter() {
         },
     };
 }
-
-export type ConsumersCounter = ReturnType<typeof getConsumerCounter>;
