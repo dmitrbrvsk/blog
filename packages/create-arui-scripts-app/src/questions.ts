@@ -103,7 +103,7 @@ export function getQuestions(defaultName: string, prefill: CliFlags = {}): promp
             // Пропускаем порт сервера для clientOnly приложений
             // и когда он уже задан флагом.
             type: (_prev, values) => {
-                const clientOnly = prefill.clientOnly ?? values.clientOnly;
+                const clientOnly = prefill.clientOnly ?? Boolean(values.clientOnly);
 
                 if (clientOnly || prefill.serverPort !== undefined) {
                     return null;

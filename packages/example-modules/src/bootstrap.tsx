@@ -11,9 +11,9 @@ if (process.env.NODE_ENV !== 'production' && module.hot) {
     root.render(<App />);
 
     module.hot.accept('./components/app', () => {
-        const NextAppAssignments = require('./components/app').App;
+        const { App: NextApp } = require('./components/app') as { App: typeof App };
 
-        root.render(<NextAppAssignments />);
+        root.render(<NextApp />);
     });
 } else {
     root.render(<App />);

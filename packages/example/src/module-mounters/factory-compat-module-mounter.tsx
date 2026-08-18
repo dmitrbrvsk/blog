@@ -19,8 +19,16 @@ const loader = createModuleLoader<FactoryModule>({
     }),
 });
 
+// useModuleFactory намеренно отдаёт экспорт модуля как any, чтобы не ломать
+// выведение типов у потребителей, поэтому форму модуля описываем на месте
+type CompatModule = {
+    saySomething: () => void;
+};
+
 export const FactoryCompatModuleMaunter = () => {
-    const { loadingState, module } = useModuleFactory({ loader });
+    const factory = useModuleFactory({ loader });
+    const { loadingState } = factory;
+    const module = factory.module as CompatModule | undefined;
 
     return (
         <Underlay

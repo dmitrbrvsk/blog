@@ -1,10 +1,21 @@
-import os from 'os';
-import path from 'path';
-
 import fs from 'fs-extra';
+import os from 'node:os';
+import path from 'node:path';
 import prompts from 'prompts';
 
 import { resolveCdPath, runInit } from '../run';
+
+type GeneratedPackageJson = {
+    name: string;
+    scripts: Record<string, string>;
+    dependencies: Record<string, string>;
+    devDependencies: Record<string, string>;
+};
+
+// fs.readJson типизирован как Promise<any>, поэтому приводим результат к ожидаемой форме
+async function readPackageJson(...dir: string[]): Promise<GeneratedPackageJson> {
+    return (await fs.readJson(path.join(...dir, 'package.json'))) as GeneratedPackageJson;
+}
 
 describe('runInit', () => {
     let tempDir: string;
@@ -27,7 +38,7 @@ describe('runInit', () => {
             aruiScriptsVersion: '23.0.1',
         });
 
-        const pkg = await fs.readJson(path.join(target, 'package.json'));
+        const pkg = await readPackageJson(target);
 
         expect(pkg.name).toBe('app');
         expect(pkg.devDependencies['arui-scripts']).toBe('^23.0.1');
@@ -77,7 +88,7 @@ describe('runInit', () => {
             aruiScriptsVersion: '1.2.3',
         });
 
-        const pkg = await fs.readJson(path.join(target, 'package.json'));
+        const pkg = await readPackageJson(target);
 
         expect(pkg.name).toBe('fresh-app');
     });
@@ -130,7 +141,7 @@ describe('runInit', () => {
             });
 
             const target = path.join(tempDir, 'app');
-            const pkg = await fs.readJson(path.join(target, 'package.json'));
+            const pkg = await readPackageJson(target);
 
             expect(pkg.name).toBe('flagged-app');
             expect(pkg.scripts.test).toBe('arui-scripts test:vitest');
@@ -157,7 +168,7 @@ describe('runInit', () => {
                 aruiScriptsVersion: '23.0.1',
             });
 
-            const pkg = await fs.readJson(path.join(tempDir, 'app', 'package.json'));
+            const pkg = await readPackageJson(tempDir, 'app');
 
             expect(pkg.name).toBe('app');
             expect(pkg.scripts.test).toBe('arui-scripts test:vitest');

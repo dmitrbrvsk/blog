@@ -24,7 +24,7 @@ import {
     writeFiles,
 } from './write-files';
 
-const { version: cliVersion } = require('../package.json');
+const { version: cliVersion } = require('../package.json') as { version: string };
 
 export type RunInitOptions = {
     // аргумент `[dir]` из командной строки
@@ -155,7 +155,7 @@ async function resolveAnswers(defaultName: string, flags: CliFlags): Promise<Ini
 }
 
 // Накладывает ответы мастера поверх базовых значений (флаги + дефолты)
-function mergePromptAnswers(base: InitAnswers, answers: prompts.Answers<string>): InitAnswers {
+function mergePromptAnswers(base: InitAnswers, answers: Partial<InitAnswers>): InitAnswers {
     const merged = { ...base };
 
     if (answers.name !== undefined) {

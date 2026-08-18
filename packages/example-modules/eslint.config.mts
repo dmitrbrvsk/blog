@@ -1,10 +1,15 @@
-import { defineConfig, eslintConfig, TYPESCRIPT_SCRIPTS_SCOPE } from 'arui-presets-lint/eslint';
+import {
+    defineConfig,
+    eslintConfig,
+    globalIgnores,
+    TYPESCRIPT_SCRIPTS_SCOPE,
+} from 'arui-presets-lint/eslint';
 
-import { commonjsConfig, lintConfigFilesConfig } from '../../eslint.shared.mts';
+import { commonjsConfig, eslintConfigIgnore } from '../../eslint.shared.mts';
 
 export default defineConfig(eslintConfig, [
+    globalIgnores(eslintConfigIgnore),
     commonjsConfig,
-    lintConfigFilesConfig,
     {
         settings: {
             react: {
@@ -17,8 +22,8 @@ export default defineConfig(eslintConfig, [
             parserOptions: {
                 tsconfigRootDir: import.meta.dirname,
                 projectService: {
-                    // tsconfig.json собирает только src, конфиги в корне пакета в него не входят
-                    allowDefaultProject: ['*.ts', '*.mts', '*.cts'],
+                    // конфиги arui-scripts читает сборщик, в tsconfig.json приложения они не входят
+                    allowDefaultProject: ['arui-scripts.config.ts', 'arui-scripts.overrides.ts'],
                 },
             },
         },

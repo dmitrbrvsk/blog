@@ -5,12 +5,11 @@ import {
     TYPESCRIPT_SCRIPTS_SCOPE,
 } from 'arui-presets-lint/eslint';
 
-import { commonjsConfig, lintConfigFilesConfig } from '../../eslint.shared.mts';
+import { commonjsConfig, eslintConfigIgnore } from '../../eslint.shared.mts';
 
 export default defineConfig(eslintConfig, [
-    globalIgnores(['src/templates/dockerfile-compiled.template.ts', 'eslint.config.mts']),
+    globalIgnores([...eslintConfigIgnore, 'src/templates/dockerfile-compiled.template.ts']),
     commonjsConfig,
-    lintConfigFilesConfig,
     {
         languageOptions: {
             parserOptions: {

@@ -4,7 +4,7 @@ import { type CliFlags } from './defaults';
 import { runInit } from './run';
 import { type CodeLoader, type E2eFramework, type TestRunner } from './types';
 
-const { version } = require('../package.json');
+const { version } = require('../package.json') as { version: string };
 
 export type InitHandler = (dir: string | undefined, flags: CliFlags) => Promise<void>;
 

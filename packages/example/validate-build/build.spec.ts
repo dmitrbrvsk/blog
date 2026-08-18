@@ -3,6 +3,18 @@ import path from 'node:path';
 
 const BUILD_PATH = path.join(__dirname, '../.build');
 
+type AssetsManifest = Record<string, { js: string; css?: string }>;
+
+// JSON.parse и асимметричные матчеры jest типизированы как any,
+// поэтому приводим их к ожидаемой форме один раз
+const anyString = expect.any(String) as string;
+
+async function readManifest(...segments: string[]): Promise<AssetsManifest> {
+    return JSON.parse(
+        await fs.promises.readFile(path.join(BUILD_PATH, ...segments), 'utf8'),
+    ) as AssetsManifest;
+}
+
 async function fileExists(filePath: string) {
     try {
         const res = await fs.promises.stat(filePath);
@@ -27,15 +39,14 @@ describe('assets-manifest', () => {
     });
 
     it('should contain list of all assets', async () => {
-        const manifestPath = path.join(BUILD_PATH, 'webpack-assets.json');
-        const manifest = JSON.parse(await fs.promises.readFile(manifestPath, 'utf8'));
+        const manifest = await readManifest('webpack-assets.json');
 
         expect(manifest).toMatchObject({
             worker: {
-                js: expect.any(String),
+                js: anyString,
             },
             __metadata__: {
-                version: expect.any(String),
+                version: anyString,
                 name: 'example',
             },
         });
@@ -52,9 +63,7 @@ describe('server', () => {
 
 describe('client', () => {
     it('should create client entry', async () => {
-        const assetsManifest = JSON.parse(
-            await fs.promises.readFile(path.join(BUILD_PATH, 'assets/webpack-assets.json'), 'utf8'),
-        );
+        const assetsManifest = await readManifest('assets/webpack-assets.json');
 
         const mainJsPath = path.join(BUILD_PATH, assetsManifest.main.js);
 
@@ -62,11 +71,13 @@ describe('client', () => {
     });
 
     it('should create valid css', async () => {
-        const assetsManifest = JSON.parse(
-            await fs.promises.readFile(path.join(BUILD_PATH, 'assets/webpack-assets.json'), 'utf8'),
-        );
+        const assetsManifest = await readManifest('assets/webpack-assets.json');
 
-        const moduleCssPath = path.join(BUILD_PATH, assetsManifest.main.css);
+        const { css } = assetsManifest.main;
+
+        expect(css).toEqual(anyString);
+
+        const moduleCssPath = path.join(BUILD_PATH, String(css));
 
         expect(await fileExists(moduleCssPath)).toBe(true);
         expect(await fs.promises.readFile(moduleCssPath, 'utf8')).toMatchSnapshot();

@@ -11,5 +11,5 @@
         "types": ["jest", "node", "webpack-env"]
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["build", "src/**/__tests__/**"]
+    "exclude": ["build"]
 }

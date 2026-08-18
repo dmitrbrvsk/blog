@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { type AtRule, Declaration, type Helpers, type Root, Rule } from 'postcss';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-x/no-extraneous-dependencies
 import mediaParser from 'postcss-media-query-parser';
 
 export const getMediaQueryName = (rule: AtRule) => rule.params.split(' ', 1)[0];

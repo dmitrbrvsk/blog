@@ -161,7 +161,7 @@ let overrides: OverrideFile[] = [];
 
 overrides = configs.overridesPath.map((path) => {
     try {
-        // eslint-disable-next-line import/no-dynamic-require
+        // eslint-disable-next-line import-x/no-dynamic-require
         const requireResult = require(path);
 
         // eslint-disable-next-line no-underscore-dangle

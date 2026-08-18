@@ -17,7 +17,7 @@ export function updateWithPresets(config: AppConfigs, context: AppContext) {
     });
 
     if (presetsConfigPath) {
-        // eslint-disable-next-line import/no-dynamic-require
+        // eslint-disable-next-line import-x/no-dynamic-require
         let presetsSettings = require(presetsConfigPath);
 
         // eslint-disable-next-line no-underscore-dangle

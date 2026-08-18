@@ -16,7 +16,7 @@ export async function findConflictingFiles(
         }),
     );
 
-    return conflicts.sort();
+    return conflicts.toSorted();
 }
 
 export async function writeFiles(targetDir: string, files: Record<string, string>): Promise<void> {

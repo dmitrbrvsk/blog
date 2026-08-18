@@ -3,7 +3,7 @@ import { type OverrideFile } from 'arui-scripts';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import path from 'node:path';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-x/no-extraneous-dependencies
 import { type RuleSetRule } from 'webpack';
 
 const overrides: OverrideFile = {

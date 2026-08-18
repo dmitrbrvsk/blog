@@ -14,16 +14,7 @@ export const commonjsConfig: Linter.Config = {
 };
 
 /**
- * Линтеры объявлены в корневом package.json монорепозитория, поэтому для конфигов
- * в пакетах правило должно проверять зависимости именно по нему
+ * Конфиги eslint написаны на .mts и используют import.meta, а tsconfig пакетов
+ * собирает commonjs, где import.meta невалиден. Линтить сами конфиги смысла нет
  */
-export const lintConfigFilesConfig: Linter.Config = {
-    name: 'arui-scripts/lint-config-files',
-    files: ['eslint.config.mts'],
-    rules: {
-        'import-x/no-extraneous-dependencies': [
-            'error',
-            { devDependencies: true, packageDir: [import.meta.dirname] },
-        ],
-    },
-};
+export const eslintConfigIgnore = ['eslint.config.mts'];

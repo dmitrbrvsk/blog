@@ -144,17 +144,17 @@ describe('buildFileMap', () => {
     it('экранирует dockerRegistry и presets в конфиге', () => {
         const config = map({
             dockerRegistry: "reg.io/org's",
-            presets: 'my-preset\\name',
+            presets: String.raw`my-preset\name`,
         })['arui-scripts.config.ts'];
 
-        expect(config).toContain("dockerRegistry: 'reg.io/org\\'s'");
-        expect(config).toContain("presets: 'my-preset\\\\name'");
+        expect(config).toContain(String.raw`dockerRegistry: 'reg.io/org\'s'`);
+        expect(config).toContain(String.raw`presets: 'my-preset\\name'`);
     });
 
     it('экранирует имя проекта в JSX', () => {
         const app = map({ name: "O'Reilly <App>" })['src/client/components/app.tsx'];
 
-        expect(app).toContain("const appName = 'O\\'Reilly <App>';");
+        expect(app).toContain(String.raw`const appName = 'O\'Reilly <App>';`);
         expect(app).toContain('{appName}');
     });
 
