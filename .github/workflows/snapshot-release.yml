@@ -1,0 +1,37 @@
+name: Create snapshot release of packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      prefix:
+        description: 'Custom prefix for snapshot version'
+        required: true
+        default: 'next'
+
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install Dependencies
+        run: yarn install --immutable
+
+      - name: Publish snapshot release
+        id: release
+        run: |
+            yarn run turbo test build
+            yarn run changeset version --snapshot ${{ github.event.inputs.prefix }}
+            yarn workspaces foreach --all --no-private npm publish --tolerate-republish --access public --tag next
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

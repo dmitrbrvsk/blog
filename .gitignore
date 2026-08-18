@@ -1,0 +1,15 @@
+.idea/
+node_modules
+package-lock.json
+*.log
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+tsconfig.tsbuildinfo
+.turbo
+build
+.DS_Store
+.vscode/

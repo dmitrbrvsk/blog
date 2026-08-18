@@ -1,0 +1,31 @@
+# @alfalab/client-event-bus
+
+## 2.1.0
+
+### Minor Changes
+
+-   [#544](https://github.com/core-ds/arui-scripts/pull/544) [`87d6a9d`](https://github.com/core-ds/arui-scripts/commit/87d6a9d45bb935b5d947af63ba05fd6f6762e03b) Thanks [@dmitrbrvsk](https://github.com/dmitrbrvsk)! - Исправлен баг с синхронизацией последнего значения событий и react хука, добавлены безопасные browser guards и стабильные package exports для переиспользования runtime.
+
+## 2.0.3
+
+### Patch Changes
+
+-   [#449](https://github.com/core-ds/arui-scripts/pull/449) [`63a7336`](https://github.com/core-ds/arui-scripts/commit/63a7336cc279d6eeab3bc8ba24246a036e683d72) Thanks [@heymdall-legal](https://github.com/heymdall-legal)! - Сборка переведена на typescript@6. Изменений для внешних потребителей нет
+
+## 2.0.2
+
+### Patch Changes
+
+-   [#293](https://github.com/core-ds/arui-scripts/pull/293) [`1157100`](https://github.com/core-ds/arui-scripts/commit/115710068391b7977b7c5c134f537bb57d70ff4b) Thanks [@heymdall-legal](https://github.com/heymdall-legal)! - Исправлен тип для useEventBusValue, теперь он принимает то, что возвращает getEventBus без приведения типов
+
+## 2.0.1
+
+### Patch Changes
+
+-   [#267](https://github.com/core-ds/arui-scripts/pull/267) [`ba36194`](https://github.com/core-ds/arui-scripts/commit/ba36194fb13fef3b5b424c3ae9068761e3600aa5) Thanks [@denis0ff](https://github.com/denis0ff)! - Обновлен README.md
+
+## 2.0.0
+
+### Major Changes
+
+-   [#255](https://github.com/core-ds/arui-scripts/pull/255) [`9b99b3d`](https://github.com/core-ds/arui-scripts/commit/9b99b3d654d555200d32eb8d35aa9f6275633068) Thanks [@denis0ff](https://github.com/denis0ff)! - Добавлена библиотека для обмена данными через общую шину
