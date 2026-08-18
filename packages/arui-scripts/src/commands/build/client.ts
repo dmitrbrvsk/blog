@@ -38,8 +38,8 @@ async function main() {
         }
 
         if (Array.isArray(webpackClientConfig)) {
-            for (const [index, conf] of webpackClientConfig.entries()) printOutputSizes(conf, (stats as MultiStats).stats[index])
-            ;
+            for (const [index, conf] of webpackClientConfig.entries())
+                printOutputSizes(conf, (stats as MultiStats).stats[index]);
         } else {
             printOutputSizes(webpackClientConfig, stats as Stats);
         }

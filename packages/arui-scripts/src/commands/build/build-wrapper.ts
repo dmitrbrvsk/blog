@@ -1,4 +1,4 @@
-import { type Configuration,type MultiStats, rspack, type Stats } from '@rspack/core';
+import { type Configuration, type MultiStats, rspack, type Stats } from '@rspack/core';
 import chalk from 'chalk';
 
 import { formatWebpackMessages } from '../util/format-webpack-messages';
