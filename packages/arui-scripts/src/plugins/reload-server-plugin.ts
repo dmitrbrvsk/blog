@@ -1,7 +1,6 @@
-import cluster, { type Worker } from 'cluster';
-import path from 'path';
-
 import { type Compiler } from '@rspack/core';
+import cluster, { type Worker } from 'node:cluster';
+import path from 'node:path';
 
 const defaultOptions = {
     script: 'server.js',
@@ -32,15 +31,15 @@ export class ReloadServerPlugin {
     apply(compiler: Compiler) {
         compiler.hooks.afterEmit.tapAsync('ReloadServerPlugin', (compilation, callback) => {
             this.done = callback;
-            this.workers.forEach((worker) => {
+            for (const worker of this.workers) {
                 try {
                     if (worker.process.pid) {
                         process.kill(worker.process.pid, 'SIGTERM');
                     }
-                } catch (e) {
+                } catch {
                     console.warn(`Unable to kill process #${worker.process.pid}`);
                 }
-            });
+            }
 
             this.workers = [];
 

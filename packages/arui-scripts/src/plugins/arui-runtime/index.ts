@@ -23,28 +23,28 @@ export class AruiRuntimePlugin {
  * Более того, мы не можем использовать импорты или require внутри, это так же сломает сборку.
  */
 export function getInsertCssRuntimeMethod(): (linkTag: HTMLLinkElement) => void {
-    /* eslint-disable no-var,vars-on-top,prefer-destructuring */
+    /* eslint-disable no-var,vars-on-top */
     return function insertCssRuntime(linkTag) {
         if (__webpack_require__?.$ARUI.scriptSource) {
-            var scriptSource = __webpack_require__.$ARUI.scriptSource;
-            var targetElementSelector = scriptSource.getAttribute('data-resources-target-selector');
+            var { scriptSource } = __webpack_require__.$ARUI;
+            var targetElementSelector = scriptSource.dataset.resourcesTargetSelector;
 
             if (targetElementSelector) {
                 var targetElement = document.querySelector(targetElementSelector);
 
                 if (targetElement) {
                     if (targetElement.shadowRoot) {
-                        targetElement.shadowRoot.appendChild(linkTag);
+                        targetElement.shadowRoot.append(linkTag);
 
                         return;
                     }
-                    targetElement.appendChild(linkTag);
+                    targetElement.append(linkTag);
 
                     return;
                 }
             }
         }
-        document.head.appendChild(linkTag);
+        document.head.append(linkTag);
     };
-    /* eslint-enable no-var,vars-on-top,prefer-destructuring */
+    /* eslint-enable no-var,vars-on-top */
 }

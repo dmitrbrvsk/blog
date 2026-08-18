@@ -1,6 +1,5 @@
-import path from 'path';
-
 import { type Assets } from 'assets-webpack-plugin';
+import path from 'node:path';
 
 import { configs } from './app-configs';
 import { MODULES_ENTRY_NAME } from './modules';
@@ -8,16 +7,16 @@ import { MODULES_ENTRY_NAME } from './modules';
 export function processAssetsPluginOutput(assets: Assets) {
     const adjustedAssets = assets;
 
-    Object.keys(adjustedAssets).forEach((key) => {
+    for (const key of Object.keys(adjustedAssets)) {
         // заменяем путь к файлам на корректный в случае если в нем есть 'auto/'
         adjustedAssets[key] = {
             css: replaceAutoPath(adjustedAssets[key].css) as string,
             js: replaceAutoPath(adjustedAssets[key].js) as string,
         };
-    });
+    }
 
     // добавляем в манифест js-файлы для модулей
-    Object.keys(configs.modules?.exposes || {}).forEach((moduleName) => {
+    for (const moduleName of Object.keys(configs.modules?.exposes || {})) {
         if (configs.compatModules?.exposes?.[moduleName]) {
             throw new Error(
                 `Модуль ${moduleName} определен как module и как compat. Поменяйте название одного из модулей или удалите его`,
@@ -27,7 +26,7 @@ export function processAssetsPluginOutput(assets: Assets) {
             mode: 'default',
             js: path.join(configs.publicPath, MODULES_ENTRY_NAME),
         };
-    });
+    }
 
     const result = {
         ...adjustedAssets,

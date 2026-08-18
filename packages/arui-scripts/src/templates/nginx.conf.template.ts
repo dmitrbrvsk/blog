@@ -1,7 +1,7 @@
 import { configs } from '../configs/app-configs';
 import { applyOverrides } from '../configs/util/apply-overrides';
 
-const nginxTemplate = `client_max_body_size 20m;
+const nginxTemplate = String.raw`client_max_body_size 20m;
 
 server {
     listen ${configs.clientServerPort};
@@ -40,7 +40,7 @@ server {
         }
     }
 
-    location ~ /${configs.publicPath}.*\\.js$ {
+    location ~ /${configs.publicPath}.*\.js$ {
         expires max;
         add_header Cache-Control public;
         root ${configs.nginxRootPath}/${configs.buildPath};

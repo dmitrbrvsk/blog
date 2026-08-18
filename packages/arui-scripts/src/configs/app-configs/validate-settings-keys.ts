@@ -6,9 +6,9 @@ export function validateSettingsKeys(
     settingsObject: Record<string, unknown>,
     source?: string,
 ) {
-    Object.keys(settingsObject).forEach((setting) => {
-        if (typeof existingConfig[setting] === 'undefined') {
+    for (const setting of Object.keys(settingsObject)) {
+        if (existingConfig[setting] === undefined) {
             console.warn(`Неизвестная настройка "${setting}" в ${source || 'конфигурации'}`);
         }
-    });
+    }
 }

@@ -3,8 +3,8 @@ import { applyOverrides } from '../configs/util/apply-overrides';
 
 const baseNginxConfig = {
     workerProcesses: 2,
-    workerRlimitNoFile: 20000,
-    workerConnections: 19000,
+    workerRlimitNoFile: 20_000,
+    workerConnections: 19_000,
     eventsUse: 'epoll',
     daemon: 'off',
 };

@@ -1,36 +1,36 @@
 import { fetchAppManifest } from '../fetch-app-manifest';
 
-describe('fetchAppManifest', () => {
-    let xhrMock = {
+function createXhrMock() {
+    const listeners = new Map<string, () => void>();
+
+    return {
+        listeners,
         open: jest.fn(),
         send: jest.fn(),
         setRequestHeader: jest.fn(),
-        onload: jest.fn(),
+        addEventListener: jest.fn((type: string, listener: () => void) => {
+            listeners.set(type, listener);
+        }),
         onerror: jest.fn(),
         status: 200,
         responseText: '',
         statusText: '',
     };
+}
+
+describe('fetchAppManifest', () => {
+    let xhrMock = createXhrMock();
 
     beforeEach(() => {
         window.XMLHttpRequest = jest.fn(() => xhrMock) as unknown as typeof XMLHttpRequest;
-        xhrMock = {
-            open: jest.fn(),
-            send: jest.fn(),
-            setRequestHeader: jest.fn(),
-            onload: jest.fn(),
-            onerror: jest.fn(),
-            status: 200,
-            responseText: '',
-            statusText: '',
-        };
+        xhrMock = createXhrMock();
     });
 
     it('should return parsed manifest', async () => {
         xhrMock.responseText = JSON.stringify('Hello World!');
         const manifestPromise = fetchAppManifest('http://test/manifest.json');
 
-        xhrMock.onload?.({});
+        xhrMock.listeners.get('load')?.();
 
         await expect(manifestPromise).resolves.toEqual('Hello World!');
     });
@@ -40,7 +40,7 @@ describe('fetchAppManifest', () => {
         xhrMock.statusText = 'Not Found';
         const manifestPromise = fetchAppManifest('http://test/manifest.json');
 
-        xhrMock.onload();
+        xhrMock.listeners.get('load')?.();
 
         await expect(manifestPromise).rejects.toThrow(
             'App manifest request failed: http://test/manifest.json responded with 404 Not Found',
@@ -51,7 +51,7 @@ describe('fetchAppManifest', () => {
         xhrMock.status = 502;
         const manifestPromise = fetchAppManifest('http://test/manifest.json');
 
-        xhrMock.onload();
+        xhrMock.listeners.get('load')?.();
 
         await expect(manifestPromise).rejects.toThrow(
             'App manifest request failed: http://test/manifest.json responded with 502',
@@ -62,7 +62,7 @@ describe('fetchAppManifest', () => {
         xhrMock.responseText = '<!doctype html>';
         const manifestPromise = fetchAppManifest('http://test/manifest.json');
 
-        xhrMock.onload();
+        xhrMock.listeners.get('load')?.();
 
         await expect(manifestPromise).rejects.toThrow(
             /App manifest request failed: http:\/\/test\/manifest\.json returned invalid JSON/,

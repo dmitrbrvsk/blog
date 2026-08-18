@@ -39,11 +39,11 @@ export function useModuleMountTarget({
 
                 const contentTarget = document.createElement('div');
 
-                shadowRoot.appendChild(contentTarget);
-                contentTarget.appendChild(realTarget);
+                shadowRoot.append(contentTarget);
+                contentTarget.append(realTarget);
                 setMountTargetNode(realTarget);
             } else {
-                node.appendChild(realTarget);
+                node.append(realTarget);
                 setMountTargetNode(realTarget);
             }
         },

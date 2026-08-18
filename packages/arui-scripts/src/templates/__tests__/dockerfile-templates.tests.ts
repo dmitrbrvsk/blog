@@ -13,7 +13,6 @@ describe('dockerfile.template (normal mode)', () => {
             },
         }));
 
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
         return require('../dockerfile.template').dockerfileTemplate;
     }
 
@@ -50,7 +49,6 @@ describe('dockerfile-compiled.template (compiled mode)', () => {
             getYarnBinSymlinkCommand: () => '',
         }));
 
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
         return require('../dockerfile-compiled.template').dockerfileTemplate;
     }
 
@@ -104,7 +102,6 @@ describe('dockerfile-compiled.template with yarn 2+ symlink', () => {
                 yarnPath ? `ln -sf /src/${yarnPath} /usr/local/bin/yarn && \\\n    ` : '',
         }));
 
-        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
         return require('../dockerfile-compiled.template').dockerfileTemplate;
     }
 

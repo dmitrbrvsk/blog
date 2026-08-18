@@ -19,7 +19,7 @@ function getModuleFederationContainerName() {
 }
 
 function getSeparateBuildRuntimeName() {
-    return `${getModuleFederationContainerName().replace(
+    return `${getModuleFederationContainerName().replaceAll(
         /\W/g,
         '_',
     )}_${MODULES_SEPARATE_BUILD_NAME}`;
@@ -29,7 +29,6 @@ export function patchMainRspackConfigForModules(
     webpackConf: rspack.Configuration,
     mode: 'consumer' | 'provider' | 'both',
 ) {
-    /* eslint-disable no-param-reassign */
     const isConsumer = mode === 'consumer' || mode === 'both';
     const isProvider = mode === 'provider' || mode === 'both';
 
@@ -91,7 +90,6 @@ export function patchMainRspackConfigForModules(
     );
 
     return webpackConf;
-    /* eslint-enable no-param-reassign */
 }
 
 /** @deprecated используйте `patchMainRspackConfigForModules` */
@@ -102,7 +100,7 @@ export function getCssPrefixForModule(module: CompatModuleConfig) {
         return module.cssPrefix;
     }
     if (module.cssPrefix === false) {
-        return undefined;
+        return;
     }
 
     return `.module-${module.name}`;
@@ -133,8 +131,8 @@ export function getExposeLoadersFormCompatModules() {
 }
 
 function addCssPrefix(webpackConf: rspack.Configuration, cssPrefix: string) {
-    const cssRule = findLoader(webpackConf, '/\\.css$/');
-    const cssModulesRule = findLoader(webpackConf, '/\\.module\\.css$/');
+    const cssRule = findLoader(webpackConf, String.raw`/\.css$/`);
+    const cssModulesRule = findLoader(webpackConf, String.raw`/\.module\.css$/`);
 
     addPrefixCssRule(cssRule, cssPrefix);
     addPrefixCssRule(cssModulesRule, `:global(${cssPrefix})`);
@@ -175,10 +173,9 @@ export function patchWebpackConfigForCompat(
     module: CompatModuleConfig,
     webpackConf: rspack.Configuration,
 ) {
-    /* eslint-disable no-param-reassign */
     webpackConf.externals = {
-        ...((webpackConf.externals as Record<string, string>) || {}),
-        ...(module.externals || {}),
+        ...(webpackConf.externals as Record<string, string>),
+        ...module.externals,
     };
     // Название переменной вебпака, которую он будет использовать для загрузки чанков. Важно чтобы для разных модулей они отличались,
     // иначе несколько модулей из одного приложения будут конфликтовать между собой
@@ -194,5 +191,4 @@ export function patchWebpackConfigForCompat(
     }
 
     return webpackConf;
-    /* eslint-enable no-param-reassign */
 }

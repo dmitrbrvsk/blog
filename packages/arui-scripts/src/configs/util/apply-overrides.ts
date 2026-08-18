@@ -135,9 +135,9 @@ export type OverrideFile = {
 function normalizeDeprecatedOverrideKeys(override: OverrideFile): OverrideFile {
     const result: Record<string, unknown> = { ...override };
 
-    (Object.keys(DEPRECATED_OVERRIDE_KEYS) as DeprecatedOverrideKey[]).forEach((deprecatedKey) => {
+    for (const deprecatedKey of Object.keys(DEPRECATED_OVERRIDE_KEYS) as DeprecatedOverrideKey[]) {
         if (!Object.prototype.hasOwnProperty.call(result, deprecatedKey)) {
-            return;
+            continue;
         }
 
         const newKey = DEPRECATED_OVERRIDE_KEYS[deprecatedKey];
@@ -152,16 +152,16 @@ function normalizeDeprecatedOverrideKeys(override: OverrideFile): OverrideFile {
         }
 
         delete result[deprecatedKey];
-    });
+    }
 
-    return result as OverrideFile;
+    return result;
 }
 
 let overrides: OverrideFile[] = [];
 
 overrides = configs.overridesPath.map((path) => {
     try {
-        // eslint-disable-next-line import/no-dynamic-require, global-require, @typescript-eslint/no-var-requires
+        // eslint-disable-next-line import/no-dynamic-require
         const requireResult = require(path);
 
         // eslint-disable-next-line no-underscore-dangle
@@ -197,21 +197,21 @@ export function applyOverrides<
         // eslint-disable-next-line no-param-reassign
         overridesKey = [overridesKey];
     }
-    overridesKey.forEach((key) => {
-        overrides.forEach((override) => {
+    for (const key of overridesKey) {
+        for (const override of overrides) {
             if (Object.prototype.hasOwnProperty.call(override, key)) {
                 const overrideFn = override[key];
 
                 if (typeof overrideFn !== 'function') {
                     throw new TypeError(`Override ${key} must be a function`);
                 }
-                // eslint-disable-next-line no-param-reassign
+
                 // @ts-expect-error Union type conflict between rspack and deprecated webpack keys - resolved at runtime
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any,no-param-reassign
+                // eslint-disable-next-line no-param-reassign
                 config = overrideFn(config, configs, args) as T;
             }
-        });
-    });
+        }
+    }
 
     return config;
 }

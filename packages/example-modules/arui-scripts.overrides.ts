@@ -1,5 +1,5 @@
 // TODO: remove eslint-disable and eslint-disable-next-line
-/* eslint-disable no-param-reassign */
+
 import { type OverrideFile } from 'arui-scripts';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -14,9 +14,9 @@ const overrides: OverrideFile = {
         const allConfigs = Array.isArray(config) ? config : [config];
 
         // Делаем стабильные имена классов css модулей для тестирования
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const singleConfig of allConfigs) {
-            const cssModulesLoader = findLoader(singleConfig, '/\\.module\\.css$/');
+            const cssModulesLoader = findLoader(singleConfig, String.raw`/\.module\.css$/`);
 
             if (cssModulesLoader?.use && Array.isArray(cssModulesLoader.use)) {
                 const cssLoader = cssModulesLoader.use.find((loader) => {

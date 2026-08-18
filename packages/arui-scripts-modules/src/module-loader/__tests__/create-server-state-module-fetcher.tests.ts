@@ -4,11 +4,14 @@ import { urlSegmentWithoutEndSlash } from '../utils/normalize-url-segment';
 jest.mock('../utils/normalize-url-segment');
 
 describe('createServerStateModuleFetcher', () => {
+    const listeners = new Map<string, () => void>();
     const mockXHR = {
         open: jest.fn(),
         send: jest.fn(),
         setRequestHeader: jest.fn(),
-        onload: null as null | (() => void),
+        addEventListener: jest.fn((type: string, listener: () => void) => {
+            listeners.set(type, listener);
+        }),
         onerror: null as null | (() => void),
         statusText: 'status',
         responseText: '{}',
@@ -62,7 +65,7 @@ describe('createServerStateModuleFetcher', () => {
             params: undefined,
         });
 
-        mockXHR.onload?.();
+        listeners.get('load')?.();
 
         await expect(promise).resolves.toEqual(JSON.parse(mockXHR.responseText));
     });
@@ -98,7 +101,7 @@ describe('createServerStateModuleFetcher', () => {
             params: undefined,
         });
 
-        mockXHR.onload?.();
+        listeners.get('load')?.();
 
         await expect(promise).rejects.toThrow(
             /Module resources request for test failed: https:\/\/test\.com\/api\/getModuleResources returned invalid JSON/,
@@ -118,7 +121,7 @@ describe('createServerStateModuleFetcher', () => {
             params: undefined,
         });
 
-        mockXHR.onload?.();
+        listeners.get('load')?.();
 
         await expect(promise).rejects.toThrow(
             'Module resources request for test failed: https://test.com/api/getModuleResources responded with 400 status',

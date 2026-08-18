@@ -28,10 +28,10 @@ export function createServerStateModuleFetcher<GetResourcesParams = undefined>({
 
             xhr.open(method, url, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            Object.keys(headers).forEach((headerName) => {
+            for (const headerName of Object.keys(headers)) {
                 xhr.setRequestHeader(headerName, headers[headerName]);
-            });
-            xhr.onload = () => {
+            }
+            xhr.addEventListener('load', () => {
                 if (xhr.status !== 200) {
                     reject(createResponseError(errorDescription, url, xhr));
 
@@ -43,7 +43,7 @@ export function createServerStateModuleFetcher<GetResourcesParams = undefined>({
                 } catch (error) {
                     reject(createParseError(errorDescription, url, error));
                 }
-            };
+            });
             xhr.onerror = () => reject(createNetworkError(errorDescription, url));
             xhr.send(JSON.stringify(params));
         });

@@ -90,7 +90,7 @@ describe('fetchResources', () => {
         const link = document.createElement('link');
 
         link.setAttribute(DATA_APP_ID_ATTRIBUTE, MODULE_ID);
-        document.head.appendChild(link);
+        document.head.append(link);
 
         await fetchResources({
             jsTargetNode: document.head,
@@ -111,7 +111,7 @@ describe('fetchResources', () => {
         const style = document.createElement('style');
 
         style.setAttribute(DATA_APP_ID_ATTRIBUTE, MODULE_ID);
-        document.head.appendChild(style);
+        document.head.append(style);
 
         await fetchResources({
             jsTargetNode: document.head,

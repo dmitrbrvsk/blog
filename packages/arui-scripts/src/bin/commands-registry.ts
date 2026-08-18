@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 /* eslint import/no-dynamic-require: 0 */
 
 export type CliCommand = {

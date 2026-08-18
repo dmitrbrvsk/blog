@@ -1,6 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
+import fs from 'node:fs';
+import path from 'node:path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 function getSetupFiles(cwd: string): string[] {
@@ -51,8 +50,6 @@ const staticFilesMockPlugin = {
 
             return `export default ${JSON.stringify(filename)}`;
         }
-
-        return undefined;
     },
 };
 

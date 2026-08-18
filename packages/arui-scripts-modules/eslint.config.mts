@@ -17,4 +17,11 @@ export default defineConfig(eslintConfig, [
         },
         files: [TYPESCRIPT_SCRIPTS_SCOPE],
     },
+    {
+        rules: {
+            // CSS.escape отсутствует в jsdom, на котором тестируется и сам пакет,
+            // и приложения-потребители
+            'unicorn/require-css-escape': 'off',
+        },
+    },
 ]);

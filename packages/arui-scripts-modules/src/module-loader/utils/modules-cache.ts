@@ -20,14 +20,14 @@ export function cleanupModule(moduleId: string) {
 }
 
 export function cleanupModulesCache() {
-    Object.keys(modulesCache).forEach((key) => {
+    for (const key of Object.keys(modulesCache)) {
         delete modulesCache[key];
-    });
+    }
 
-    Object.keys(modulesCleanupMethods).forEach((key) => {
+    for (const key of Object.keys(modulesCleanupMethods)) {
         modulesCleanupMethods[key]();
         delete modulesCleanupMethods[key];
-    });
+    }
 }
 
 export function addCleanupMethod(moduleId: string, cleanupFn: () => void) {

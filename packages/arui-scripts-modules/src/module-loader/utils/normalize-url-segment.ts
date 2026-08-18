@@ -5,7 +5,7 @@ export function normalizeUrlSegment(segment: string) {
 
     let innerSegment = segment;
 
-    if (segment[segment.length - 1] !== '/') {
+    if (segment.at(-1) !== '/') {
         innerSegment = `${innerSegment}/`;
     }
 
@@ -23,5 +23,5 @@ export function normalizeUrlSegment(segment: string) {
 export function urlSegmentWithoutEndSlash(segment: string) {
     const normalized = normalizeUrlSegment(segment);
 
-    return normalized.substring(0, normalized.length - 1);
+    return normalized.slice(0, Math.max(0, normalized.length - 1));
 }

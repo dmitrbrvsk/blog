@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export function readAssetsManifest() {
     const manifestPath = path.join(process.cwd(), '.build/webpack-assets.json');
@@ -7,9 +7,9 @@ export function readAssetsManifest() {
     const js: string[] = [];
     const css: string[] = [];
 
-    ['vendor', 'main'].forEach((key) => {
+    for (const key of ['vendor', 'main']) {
         if (!manifest[key]) {
-            return;
+            continue;
         }
         if (manifest[key].js) {
             js.push(manifest[key].js.replace(/^auto/, 'assets'));
@@ -17,7 +17,7 @@ export function readAssetsManifest() {
         if (manifest[key].css) {
             css.push(manifest[key].css.replace(/^auto/, 'assets'));
         }
-    });
+    }
 
     return {
         js,

@@ -22,9 +22,9 @@ const overrides: OverrideFile = {
         const rootConfigList = Array.isArray(config) ? config : [config];
 
         // Делаем стабильные имена классов css модулей для тестирования
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const rootConfig of rootConfigList) {
-            const cssModulesLoader = findLoader(rootConfig, '/\\.module\\.css$/');
+            const cssModulesLoader = findLoader(rootConfig, String.raw`/\.module\.css$/`);
 
             if (cssModulesLoader?.use && Array.isArray(cssModulesLoader.use)) {
                 const cssLoader = cssModulesLoader.use.find((loader) => {
@@ -60,7 +60,7 @@ const overrides: OverrideFile = {
         return allConfigs.map((singleConfig) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            // eslint-disable-next-line no-param-reassign
+
             singleConfig.optimization.minimize = false;
 
             return singleConfig;

@@ -381,6 +381,7 @@ describe('createModuleLoader', () => {
             appName: 'AppName',
         });
 
+        // eslint-disable-next-line unicorn/no-useless-undefined -- типы jest требуют аргумент, а мок должен вернуть undefined
         (getModule as jest.Mock).mockResolvedValueOnce(undefined);
 
         await expect(loader({ getResourcesParams: undefined })).rejects.toThrow(

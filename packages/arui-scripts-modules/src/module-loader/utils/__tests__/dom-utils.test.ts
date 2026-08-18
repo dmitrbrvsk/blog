@@ -56,9 +56,9 @@ describe('dom utils', () => {
             removeModuleResources({ moduleId: MODULE_TEST_ID, targetNodes: [document.head] });
 
             timerId = setTimeout(() => {
-                findResourcesNodes().forEach((node) => {
+                for (const node of findResourcesNodes()) {
                     node.dispatchEvent(new Event('load'));
-                });
+                }
             });
         });
 
@@ -225,9 +225,9 @@ describe('dom utils', () => {
         it('should not inject resources if has load error', async () => {
             clearTimeout(timerId);
             timerId = setTimeout(() => {
-                findResourcesNodes().forEach((node) => {
+                for (const node of findResourcesNodes()) {
                     node.dispatchEvent(new Event('error'));
-                });
+                }
             });
 
             await expect(

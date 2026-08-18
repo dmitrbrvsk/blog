@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const BUILD_PATH = path.join(__dirname, '../.build');
 
@@ -8,7 +8,7 @@ async function fileExists(filePath: string) {
         const res = await fs.promises.stat(filePath);
 
         return res.isFile();
-    } catch (e) {
+    } catch {
         return false;
     }
 }
@@ -28,7 +28,7 @@ describe('assets-manifest', () => {
 
     it('should contain list of all assets', async () => {
         const manifestPath = path.join(BUILD_PATH, 'webpack-assets.json');
-        const manifest = JSON.parse(await fs.promises.readFile(manifestPath, 'utf-8'));
+        const manifest = JSON.parse(await fs.promises.readFile(manifestPath, 'utf8'));
 
         expect(manifest).toMatchObject({
             worker: {
@@ -53,10 +53,7 @@ describe('server', () => {
 describe('client', () => {
     it('should create client entry', async () => {
         const assetsManifest = JSON.parse(
-            await fs.promises.readFile(
-                path.join(BUILD_PATH, 'assets/webpack-assets.json'),
-                'utf-8',
-            ),
+            await fs.promises.readFile(path.join(BUILD_PATH, 'assets/webpack-assets.json'), 'utf8'),
         );
 
         const mainJsPath = path.join(BUILD_PATH, assetsManifest.main.js);
@@ -66,15 +63,12 @@ describe('client', () => {
 
     it('should create valid css', async () => {
         const assetsManifest = JSON.parse(
-            await fs.promises.readFile(
-                path.join(BUILD_PATH, 'assets/webpack-assets.json'),
-                'utf-8',
-            ),
+            await fs.promises.readFile(path.join(BUILD_PATH, 'assets/webpack-assets.json'), 'utf8'),
         );
 
         const moduleCssPath = path.join(BUILD_PATH, assetsManifest.main.css);
 
         expect(await fileExists(moduleCssPath)).toBe(true);
-        expect(await fs.promises.readFile(moduleCssPath, 'utf-8')).toMatchSnapshot();
+        expect(await fs.promises.readFile(moduleCssPath, 'utf8')).toMatchSnapshot();
     });
 });

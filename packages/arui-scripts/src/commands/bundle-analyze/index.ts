@@ -37,7 +37,6 @@ const bundleAnalyzerStatsOptions: BundleAnalyzerStatsOptions = {
         ? webpackClientConfig
         : [webpackClientConfig];
 
-    /* eslint-disable no-param-reassign */
     const promises = clientWebpackConfigs.map(async (webpackConfig, i) => {
         const tmpDir = await makeTmpDir(i.toString());
         const webpackStatsOptions: RspackOptionsNormalized['stats'] = {
@@ -55,7 +54,7 @@ const bundleAnalyzerStatsOptions: BundleAnalyzerStatsOptions = {
                 analyzerMode: 'server',
                 openAnalyzer: true,
                 logLevel: 'info',
-            }) as unknown as WebpackPluginInstance, // webpack-bundle-analyzer has incorrect types
+            }), // webpack-bundle-analyzer has incorrect types
             new RsdoctorRspackPlugin({}),
         ];
         webpackConfig.stats = webpackStatsOptions;
@@ -69,7 +68,7 @@ const bundleAnalyzerStatsOptions: BundleAnalyzerStatsOptions = {
 
     rspack(clientWebpackConfigs).run((err, stats) => {
         if (err) {
-            console.error('Bundle analysis failed with error: ', err);
+            console.error('Bundle analysis failed with error:', err);
             process.exit(1);
         }
 
@@ -86,7 +85,7 @@ const bundleAnalyzerStatsOptions: BundleAnalyzerStatsOptions = {
                         children: false,
                         warnings: true,
                         errors: true,
-                    }) as unknown as string,
+                    }),
                 );
             }
         }

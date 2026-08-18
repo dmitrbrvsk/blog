@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import { tryResolve } from '../util/resolve';
 
@@ -8,7 +8,7 @@ export function readConfigFile(cwd: string) {
     if (appConfigPath) {
         // Мы не можем использовать импорты, нам нужен именно require, потому что мы не знаем заранее не только путь до файла,
         // но и то, на каком языке он написан
-        // eslint-disable-next-line import/no-dynamic-require, global-require, @typescript-eslint/no-var-requires
+        // eslint-disable-next-line import/no-dynamic-require
         let appSettings = require(appConfigPath);
 
         // ts-node импортирует esModules, из них надо вытягивать default именно так

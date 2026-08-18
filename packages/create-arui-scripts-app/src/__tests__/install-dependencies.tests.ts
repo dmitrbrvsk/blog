@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 
 const spawnMock = jest.fn();
 
-jest.mock('child_process', () => ({
+jest.mock('node:child_process', () => ({
     spawn: (...args: unknown[]) => spawnMock(...args),
 }));
 

@@ -1,6 +1,3 @@
-/* eslint-disable global-require */
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 import chalk from 'chalk';
 import { Command } from 'commander';
 
@@ -23,7 +20,7 @@ export function createCli(): Command {
             : '',
     );
 
-    commands.forEach((cmd) => {
+    for (const cmd of commands) {
         const command = program.command(cmd.name).description(cmd.description).action(cmd.load);
 
         if (cmd.passthrough) {
@@ -34,7 +31,7 @@ export function createCli(): Command {
         if (cmd.help) {
             command.addHelpText('after', `\n${chalk.dim(cmd.help)}`);
         }
-    });
+    }
 
     return program;
 }
