@@ -2,7 +2,7 @@
 
 ## Требования окружения
 
-- Node.js `20+` (рекомендуется `22 LTS`)
+- Node.js `22.12+` (требование `arui-presets-lint`, на котором работают линтеры)
 - Yarn `4.5.3+`
 
 ## Быстрый старт
@@ -22,6 +22,7 @@ yarn lint
 - собрать локально пакет `arui-scripts`: `yarn workspace arui-scripts build`
 
 Если вы меняете поведение CLI, то необходимо обновить документацию:
+
 - `packages/arui-scripts/docs/commands.md`
 - `packages/arui-scripts/docs/cli.md`
 - `packages/arui-scripts/README.md`
@@ -29,6 +30,7 @@ yarn lint
 Если меняется генератор проектов: `packages/create-arui-scripts-app/README.md`.
 
 ## Выпуск релизной версии
+
 Данный проект использует [changesets](https://github.com/changesets/changesets/tree/main) для управления релизами.
 Каждый пул-реквест, который должен выпустить новый релиз должен содержать файл с описанием изменений в формате changesets.
 Для этого нужно выполнить команду `yarn changeset` и ответить на вопросы интерактивного интерфейса (выбор опций делается пробелом).
@@ -47,5 +49,6 @@ yarn lint
 После мержа пул реквеста в мастер, будет создан пул-реквест с новым релизом. После мержа этого пул-реквеста в мастер, будет создан новый релиз в npm.
 
 ## Выпуск snapshot-версии
+
 Snapshot-версия может быть полезна для тестирования изменений перед релизом. Для ее выпуска можно воспользоваться ручным запуском
 github action [Create snapshot release of packages](https://github.com/core-ds/arui-scripts/actions?query=workflow%3A%22Create+snapshot+release+of+packages%22). Перед запуском github action необходимо не забыть создать changeset командой `yarn changeset`
