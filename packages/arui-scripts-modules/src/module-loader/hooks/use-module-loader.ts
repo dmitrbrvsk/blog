@@ -78,7 +78,7 @@ export function useModuleLoader<ModuleExportType, GetResourcesParams>({
             }
         }
 
-        run();
+        void run();
 
         return function moduleCleanUp() {
             unmountFn?.();

@@ -15,20 +15,23 @@ describe('readAssetsManifest', () => {
     });
 
     it('should return js and css assets', async () => {
-        (readFile as unknown as jest.Mock).mockImplementationOnce((path, options, done) =>
-            done(
-                null,
-                JSON.stringify({
-                    vendor: {
-                        js: 'vendor.js',
-                        css: 'vendor.css',
-                    },
-                    main: {
-                        js: ['main1.js', 'main2.js'],
-                        css: 'main.css',
-                    },
-                }),
-            ),
+        type ReadFileCallback = (error: Error | null, data: string) => void;
+
+        (readFile as unknown as jest.Mock).mockImplementationOnce(
+            (path: string, options: string, done: ReadFileCallback) =>
+                done(
+                    null,
+                    JSON.stringify({
+                        vendor: {
+                            js: 'vendor.js',
+                            css: 'vendor.css',
+                        },
+                        main: {
+                            js: ['main1.js', 'main2.js'],
+                            css: 'main.css',
+                        },
+                    }),
+                ),
         );
 
         const result = await readAssetsManifest(['vendor', 'main']);

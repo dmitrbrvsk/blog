@@ -24,7 +24,7 @@ export function fetchAppManifest(url: string) {
                 reject(createParseError(ERROR_DESCRIPTION, url, error));
             }
         });
-        xhr.onerror = () => reject(createNetworkError(ERROR_DESCRIPTION, url));
+        xhr.addEventListener('error', () => reject(createNetworkError(ERROR_DESCRIPTION, url)));
         xhr.send();
     });
 }

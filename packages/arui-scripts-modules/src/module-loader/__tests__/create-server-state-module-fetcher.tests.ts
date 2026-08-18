@@ -12,7 +12,6 @@ describe('createServerStateModuleFetcher', () => {
         addEventListener: jest.fn((type: string, listener: () => void) => {
             listeners.set(type, listener);
         }),
-        onerror: null as null | (() => void),
         statusText: 'status',
         responseText: '{}',
         status: 200,
@@ -42,7 +41,7 @@ describe('createServerStateModuleFetcher', () => {
             params: undefined,
         };
 
-        fetchServerResources(fetchParams);
+        void fetchServerResources(fetchParams);
 
         expect(mockXHR.open).toHaveBeenCalledWith(
             'POST',
@@ -81,7 +80,7 @@ describe('createServerStateModuleFetcher', () => {
             params: undefined,
         });
 
-        mockXHR.onerror?.();
+        listeners.get('error')?.();
 
         await expect(promise).rejects.toThrow(
             /Module resources request for test failed: network error while requesting https:\/\/test\.com\/api\/getModuleResources/,

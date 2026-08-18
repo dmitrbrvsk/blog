@@ -11,7 +11,6 @@ function createXhrMock() {
         addEventListener: jest.fn((type: string, listener: () => void) => {
             listeners.set(type, listener);
         }),
-        onerror: jest.fn(),
         status: 200,
         responseText: '',
         statusText: '',
@@ -72,7 +71,7 @@ describe('fetchAppManifest', () => {
     it('should reject promise if request was errored', async () => {
         const manifestPromise = fetchAppManifest('http://test/manifest.json');
 
-        xhrMock.onerror();
+        xhrMock.listeners.get('error')?.();
 
         await expect(manifestPromise).rejects.toThrow(
             /App manifest request failed: network error while requesting http:\/\/test\/manifest\.json/,

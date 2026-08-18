@@ -209,9 +209,13 @@ export function createModuleLoader<
 
         return {
             unmount: () => {
-                lifecycleHooks.onBeforeModuleUnmount?.(moduleId, moduleResources, loadedModule);
+                void lifecycleHooks.onBeforeModuleUnmount?.(
+                    moduleId,
+                    moduleResources,
+                    loadedModule,
+                );
                 unmount();
-                lifecycleHooks.onAfterModuleUnmount?.(moduleId, moduleResources, loadedModule);
+                void lifecycleHooks.onAfterModuleUnmount?.(moduleId, moduleResources, loadedModule);
             },
             module: loadedModule,
             moduleResources,

@@ -2,6 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 import { useModuleLoader } from '../use-module-loader';
 
+// expect.any типизирован как any, поэтому приводим матчер к ожидаемому типу
+const anyAbortSignal = expect.any(AbortSignal) as AbortSignal;
+
 describe('useModuleLoader', () => {
     it('should return the module and resources when the loader resolves', async () => {
         const moduleExport = { foo: 'bar' };
@@ -26,7 +29,7 @@ describe('useModuleLoader', () => {
 
         expect(loader).toHaveBeenCalledWith({
             getResourcesParams: loaderParams,
-            abortSignal: expect.any(AbortSignal),
+            abortSignal: anyAbortSignal,
         });
     });
 
@@ -67,7 +70,7 @@ describe('useModuleLoader', () => {
         });
         expect(loader).toHaveBeenCalledWith({
             getResourcesParams: loaderParams,
-            abortSignal: expect.any(AbortSignal),
+            abortSignal: anyAbortSignal,
         });
 
         rerender({ loader, loaderParams: { id: 'my-module' } });

@@ -14,10 +14,9 @@ export function createGetModulesExpress(modules: ModulesConfig<[Request]>): Rout
             const response = await modulesMethodSettings.handler(req.body, req);
 
             res.send(response);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
+        } catch (error: unknown) {
             res.status(500).send({
-                error: e.message,
+                error: error instanceof Error ? error.message : String(error),
                 status: 500,
             });
         }

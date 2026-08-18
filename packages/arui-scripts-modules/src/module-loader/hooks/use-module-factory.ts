@@ -29,7 +29,7 @@ export type UseModuleFactoryParams<
     /**
      * Функция, который позволяет дополнить/изменить серверный стейт модуля перед вызовом фабрики
      */
-    getFactoryParams?: (params: ServerState) => ServerState;
+    getFactoryParams?: (params: ServerState) => ServerState | Promise<ServerState>;
 };
 
 export type UseModuleFactoryResult<ModuleExportType> = {
@@ -121,7 +121,7 @@ export function useModuleFactory<
             }
         }
 
-        run();
+        void run();
 
         return function moduleCleanUp() {
             unmountFn?.();

@@ -15,7 +15,7 @@ export async function getAppManifest() {
         const manifestPath = path.join(process.cwd(), '.build/webpack-assets.json');
         const fileContent = await readFile(manifestPath, 'utf8');
 
-        appManifest = JSON.parse(fileContent);
+        appManifest = JSON.parse(fileContent) as AruiAppManifest;
     }
 
     return appManifest;

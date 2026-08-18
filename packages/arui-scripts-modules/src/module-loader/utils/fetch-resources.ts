@@ -114,9 +114,7 @@ export function getResourcesTargetNodes({
         const possibleCssTarget = document.querySelector(cssTargetSelector);
 
         if (possibleCssTarget) {
-            cssResourcesTargetNode = possibleCssTarget.shadowRoot
-                ? possibleCssTarget.shadowRoot
-                : possibleCssTarget;
+            cssResourcesTargetNode = possibleCssTarget.shadowRoot ?? possibleCssTarget;
         }
     }
 

@@ -44,7 +44,7 @@ export function createServerStateModuleFetcher<GetResourcesParams = undefined>({
                     reject(createParseError(errorDescription, url, error));
                 }
             });
-            xhr.onerror = () => reject(createNetworkError(errorDescription, url));
+            xhr.addEventListener('error', () => reject(createNetworkError(errorDescription, url)));
             xhr.send(JSON.stringify(params));
         });
     };
