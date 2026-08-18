@@ -46,9 +46,9 @@ const changelogHeaderRegExp = /^###? \[\d+\.\d+\.\d+]\([^)]+\) \(\d{4}-\d{2}-\d{
 
     const addVersionDescription = async () => {
         const [features, bugFixes, breakingChanges] = await Promise.all([
-            readFile(changelogFeaturesPath, 'utf-8'),
-            readFile(changelogBugfixesPath, 'utf-8'),
-            readFile(changelogBreakingChangesPath, 'utf-8'),
+            readFile(changelogFeaturesPath, 'utf8'),
+            readFile(changelogBugfixesPath, 'utf8'),
+            readFile(changelogBreakingChangesPath, 'utf8'),
         ]).then((files) => files.map((content) => content.trim()));
 
         ws.write(getVersionDescription({ features, bugFixes, breakingChanges }));

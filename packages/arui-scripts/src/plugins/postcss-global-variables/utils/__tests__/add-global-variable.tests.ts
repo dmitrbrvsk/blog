@@ -19,7 +19,7 @@ describe('addGlobalVariable', () => {
     it('Должен рекурсивно добавлять вложенные переменные', () => {
         const mockRootSelector = new Rule({ selector: ':root' });
         const mockRootSelectorWithSpace = new Rule({ selector: ':root' });
-        const mockRootSelectorWithNewLine = new Rule({ selector: ':root' });
+        const mockRootSelectorWithNewline = new Rule({ selector: ':root' });
 
         const parsedVariables = {
             '--color-primary': 'var(--color-secondary)',
@@ -31,7 +31,7 @@ describe('addGlobalVariable', () => {
             '--color-secondary': '#00ff00',
         };
 
-        const parsedVariablesWithNewLine = {
+        const parsedVariablesWithNewline = {
             '--color-primary': 'var(\n  --color-secondary\n  )',
             '--color-secondary': '#00ff00',
         };
@@ -44,8 +44,8 @@ describe('addGlobalVariable', () => {
         );
         addGlobalVariable(
             'var(--color-primary)',
-            mockRootSelectorWithNewLine,
-            parsedVariablesWithNewLine,
+            mockRootSelectorWithNewline,
+            parsedVariablesWithNewline,
         );
 
         expect(mockRootSelector.nodes).toMatchObject([
@@ -58,7 +58,7 @@ describe('addGlobalVariable', () => {
             { prop: '--color-secondary', value: '#00ff00' },
         ]);
 
-        expect(mockRootSelectorWithNewLine.nodes).toMatchObject([
+        expect(mockRootSelectorWithNewline.nodes).toMatchObject([
             { prop: '--color-primary', value: 'var(\n  --color-secondary\n  )' },
             { prop: '--color-secondary', value: '#00ff00' },
         ]);

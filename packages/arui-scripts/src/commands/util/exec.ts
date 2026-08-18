@@ -8,7 +8,7 @@ export function exec(command: string) {
                 return resolve(code);
             }
 
-            return reject(code);
+            return reject(new Error(`Command failed with exit code ${code}: ${command}`));
         });
     });
 }

@@ -99,25 +99,26 @@ export async function prepareFilesForDocker({
         addNodeModulesToDockerIgnore &&
         (await getAndModifyDockerIgnoreContent(dockerIgnoreFilePath));
 
-    await Promise.all(
-        [
-            fs.writeFile(path.join(pathToTempDir, 'Dockerfile'), dockerfile, 'utf8'),
-            fs.writeFile(path.join(pathToTempDir, nginxConfigFileName), nginxConf, 'utf8'),
-            nginxBaseConf &&
-                fs.writeFile(
-                    path.join(pathToTempDir, baseNginxConfigFileName),
-                    nginxBaseConf,
-                    'utf8',
-                ),
-            fs.writeFile(path.join(pathToTempDir, 'start.sh'), startScript, {
-                encoding: 'utf8',
-                mode: 0o555,
-            }),
-            addNodeModulesToDockerIgnore &&
-                dockerIgnoreFileContent &&
-                fs.writeFile(dockerIgnoreFilePath, dockerIgnoreFileContent, 'utf-8'),
-        ].filter(Boolean),
-    );
+    const writeTasks = [
+        fs.writeFile(path.join(pathToTempDir, 'Dockerfile'), dockerfile, 'utf8'),
+        fs.writeFile(path.join(pathToTempDir, nginxConfigFileName), nginxConf, 'utf8'),
+        fs.writeFile(path.join(pathToTempDir, 'start.sh'), startScript, {
+            encoding: 'utf8',
+            mode: 0o555,
+        }),
+    ];
+
+    if (nginxBaseConf) {
+        writeTasks.push(
+            fs.writeFile(path.join(pathToTempDir, baseNginxConfigFileName), nginxBaseConf, 'utf8'),
+        );
+    }
+
+    if (addNodeModulesToDockerIgnore && dockerIgnoreFileContent) {
+        writeTasks.push(fs.writeFile(dockerIgnoreFilePath, dockerIgnoreFileContent, 'utf8'));
+    }
+
+    await Promise.all(writeTasks);
 }
 
 export function dockerVersionSatisfies(request: string) {

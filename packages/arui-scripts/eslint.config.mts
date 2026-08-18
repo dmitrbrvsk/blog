@@ -29,7 +29,9 @@ export default defineConfig(eslintConfig, [
             // проект - cli-тулза, и она должна писать в консоль
             'no-console': 'off',
             'import-x/no-cycle': 'off', // TODO: 7 ошибок, возможно их можно убрать
-            'no-restricted-imports': 'off', // TODO: 5 ошибок с импортом lodash.merge. Убрать отдельным пр
+            // TODO: 5 ошибок с импортом lodash.merge. Убрать отдельным пр
+            'no-restricted-imports': 'off',
+            '@typescript-eslint/no-restricted-imports': 'off',
         },
     },
 ]);

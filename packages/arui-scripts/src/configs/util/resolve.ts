@@ -3,7 +3,9 @@ import path from 'node:path';
 export function tryResolve(...args: [id: string, options?: { paths?: string[] | undefined }]) {
     try {
         return require.resolve(...args);
-    } catch {}
+    } catch {
+        // модуль не найден - возвращаем undefined
+    }
 }
 
 /**

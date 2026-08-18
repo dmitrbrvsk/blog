@@ -34,11 +34,12 @@ export function calculateDependentContext(config: AppConfigs, context: AppContex
             '@babel/runtime/package.json',
         );
 
-        babelRuntimeVersion = JSON.parse(
-            fs.readFileSync(pathToProjectBabelRuntime, 'utf8'),
+        babelRuntimeVersion = (
+            JSON.parse(fs.readFileSync(pathToProjectBabelRuntime, 'utf8')) as { version: string }
         ).version;
     } catch {
-        babelRuntimeVersion = require('@babel/runtime/package.json').version;
+        babelRuntimeVersion = (require('@babel/runtime/package.json') as { version: string })
+            .version;
     }
 
     const allDictionaryPath = config.dictionaryCompression.dictionaryPath.map((p) => {

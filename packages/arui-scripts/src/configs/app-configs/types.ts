@@ -127,11 +127,23 @@ export type CompatModuleConfig = CompatModuleConfigBase & {
 };
 
 /**
+ * package.json приложения. Кроме известных arui-scripts полей может содержать
+ * произвольные ключи, поэтому описан с индексной сигнатурой
+ */
+export type AppPackageJson = {
+    name: string;
+    version: string;
+    aruiScripts?: PackageSettings;
+    proxy?: AppConfigs['proxy'];
+    jest?: Record<string, unknown>;
+    [key: string]: unknown;
+};
+
+/**
  * Внутренний контекст arui-scripts
  */
 export type AppContext = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    appPackage: any;
+    appPackage: AppPackageJson;
     name: string;
     normalizedName: string;
     version: string;

@@ -3,7 +3,7 @@ import { Command } from 'commander';
 
 import { commands } from './commands-registry';
 
-const { version } = require('../../package.json');
+const { version } = require('../../package.json') as { version: string };
 
 export function createCli(): Command {
     const program = new Command('arui-scripts');

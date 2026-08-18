@@ -23,6 +23,14 @@ type HashableObject = {
     updateHash(hash: Hash): void;
 };
 
+type RawSourceInstance = InstanceType<Compiler['webpack']['sources']['RawSource']>;
+
+/** Payload, который плагин складывает в кеш компиляции */
+type CompressionCacheOutput = {
+    source?: RawSourceInstance;
+    compressed?: Buffer;
+};
+
 /*
 Based on compression-webpack-plugin, https://github.com/webpack-contrib/compression-webpack-plugin/tree/master
   MIT License http://www.opensource.org/licenses/mit-license.php
@@ -74,10 +82,9 @@ export class CustomCompressionPlugin {
                             name,
                             algorithm: this.options.algorithm,
                         }),
-                        cache.getLazyHashedEtag(asset.source as HashableObject),
+                        cache.getLazyHashedEtag(asset.source as unknown as HashableObject),
                     );
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const output = ((await cacheItem.getPromise()) || {}) as any;
+                    const output: CompressionCacheOutput = (await cacheItem.getPromise()) || {};
 
                     let buffer;
 
@@ -125,13 +132,14 @@ export class CustomCompressionPlugin {
                     }
                     const { name, source, buffer, output, cacheItem, relatedName } = asset;
 
-                    if (!output.source) {
-                        if (!output.compressed) {
+                    let compressedSource = output.source;
+
+                    if (!compressedSource) {
+                        let { compressed } = output;
+
+                        if (!compressed) {
                             try {
-                                output.compressed = await this.runCompressionAlgorithm(
-                                    buffer,
-                                    name,
-                                );
+                                compressed = await this.runCompressionAlgorithm(buffer, name);
                             } catch (error) {
                                 compilation.errors.push(error as RspackError);
 
@@ -139,15 +147,15 @@ export class CustomCompressionPlugin {
                             }
                         }
 
-                        if (output.compressed.length / buffer.length > this.options.minRatio) {
-                            await cacheItem.storePromise({ compressed: output.compressed });
+                        if (compressed.length / buffer.length > this.options.minRatio) {
+                            await cacheItem.storePromise({ compressed });
 
                             return;
                         }
 
-                        output.source = new RawSource(output.compressed);
+                        compressedSource = new RawSource(compressed);
 
-                        await cacheItem.storePromise(output);
+                        await cacheItem.storePromise({ compressed, source: compressedSource });
                     }
 
                     const newFilename = compilation.getPath(
@@ -160,7 +168,7 @@ export class CustomCompressionPlugin {
                         related: { [relatedName]: newFilename },
                     });
 
-                    compilation.emitAsset(newFilename, output.source, newInfo);
+                    compilation.emitAsset(newFilename, compressedSource, newInfo);
                 })(),
             );
         }

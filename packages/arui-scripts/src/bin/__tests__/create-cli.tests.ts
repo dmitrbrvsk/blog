@@ -3,7 +3,7 @@ import { type Command, CommanderError } from 'commander';
 import { commands } from '../commands-registry';
 import { createCli } from '../create-cli';
 
-const { version } = require('../../../package.json');
+const { version } = require('../../../package.json') as { version: string };
 
 type Captured = { out: string; err: string };
 

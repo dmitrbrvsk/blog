@@ -84,10 +84,11 @@ function getMinimizeConfig(mode: 'dev' | 'prod') {
             minimizer: [
                 new CssMinimizerPlugin({
                     minimizerOptions: {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- некорректные типы у cssMinimizerPlugin
                         preset: (() => ({
                             plugins: [require('postcss-discard-duplicates')],
-                            // некорректные типы у cssMinimizerPlugin
-                        })) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- некорректные типы у cssMinimizerPlugin
+                        })) as any,
                     },
                 }),
             ],
@@ -153,7 +154,7 @@ export const createSingleClientWebpackConfig = (
                           vendor: {
                               test: /node_modules/,
                               chunks: 'initial',
-                              // Почему то rspack предоставляет некорректные типы для этой функции.
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- rspack предоставляет некорректные типы для этой функции
                               name: ((
                                   _: unknown,
                                   chunks: Array<{ name: string }>,
@@ -166,7 +167,8 @@ export const createSingleClientWebpackConfig = (
                                   const allChunksNames = chunks.map((item) => item.name).join('~');
 
                                   return `${cacheGroupKey}-${allChunksNames}`;
-                              }) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rspack предоставляет некорректные типы для этой функции
+                              }) as any,
                               priority: 10,
                               enforce: true,
                           },

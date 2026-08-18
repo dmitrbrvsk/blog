@@ -39,7 +39,7 @@ const postCssPrefix: PluginCreator<PostCssPrefixOptions> = (options) => {
 
             root.walkRules((rule) => {
                 const hasParent = !!rule.parent;
-                const parentIsAtRule = rule.parent && rule.parent.type === 'atrule';
+                const parentIsAtRule = rule.parent?.type === 'atrule';
                 const parentIsKeyframe =
                     parentIsAtRule &&
                     KEYFRAME_RULES.has((rule.parent as Container & { name: string }).name);

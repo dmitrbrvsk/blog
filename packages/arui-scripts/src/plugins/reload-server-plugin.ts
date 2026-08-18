@@ -12,9 +12,6 @@ export class ReloadServerPlugin {
     done: null | (() => void) = null;
 
     constructor({ script } = defaultOptions) {
-        this.done = null;
-        this.workers = [];
-
         cluster.setupMaster({
             exec: path.resolve(process.cwd(), script),
         });

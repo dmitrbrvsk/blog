@@ -161,13 +161,16 @@ let overrides: OverrideFile[] = [];
 
 overrides = configs.overridesPath.map((path) => {
     try {
-        // eslint-disable-next-line import-x/no-dynamic-require
-        const requireResult = require(path);
+        // eslint-disable-next-line import-x/no-dynamic-require -- путь до overrides известен только в рантайме
+        const requireResult = require(path) as OverrideFile & {
+            __esModule?: boolean;
+            default?: OverrideFile;
+        };
 
-        // eslint-disable-next-line no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle -- поле добавляет транспайлер
         if (requireResult.__esModule) {
             // ts-node импортирует esModules, из них надо вытягивать default именно так
-            return normalizeDeprecatedOverrideKeys(requireResult.default);
+            return normalizeDeprecatedOverrideKeys(requireResult.default ?? {});
         }
 
         return normalizeDeprecatedOverrideKeys(requireResult);

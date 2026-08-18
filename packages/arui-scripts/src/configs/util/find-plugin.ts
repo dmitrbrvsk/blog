@@ -81,7 +81,7 @@ type PluginsListServer = {
         options: ConstructorParameters<typeof RunScriptWebpackPlugin>[number];
     };
     ReloadServerPlugin: {
-        done: (...props: unknown[]) => unknown | null;
+        done: (...props: unknown[]) => unknown;
         workers: Worker[];
     };
     CaseSensitivePathsPlugin: {

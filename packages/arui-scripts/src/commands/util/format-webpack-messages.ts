@@ -1,4 +1,5 @@
 import { type StatsCompilation } from '@rspack/core';
+import chalk from 'chalk';
 
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -13,8 +14,6 @@ import { type StatsCompilation } from '@rspack/core';
 // Some custom utilities to prettify Webpack output.
 // This is quite hacky and hopefully won't be needed when Webpack fixes this.
 // https://github.com/webpack/webpack/issues/2878
-
-const chalk = require('chalk');
 
 const friendlySyntaxErrorLabel = 'Syntax error:';
 
@@ -77,7 +76,7 @@ function formatMessage(message: string | { message: string }) {
     lines[0] = lines[0].replace(/^(.*) \d+:\d+-\d+$/, '$1');
 
     // Cleans up verbose "module not found" messages for files and packages.
-    if (lines[1] && lines[1].indexOf('Module not found: ') === 0) {
+    if (lines[1]?.startsWith('Module not found: ')) {
         lines = [
             lines[0],
             lines[1]

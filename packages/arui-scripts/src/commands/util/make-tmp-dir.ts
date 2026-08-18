@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import util from 'node:util';
+import { promisify } from 'node:util';
 
-const nodeMakeTmpDir = util.promisify(fs.mkdtemp);
+const nodeMakeTmpDir = promisify(fs.mkdtemp);
 
 /**
  * Создает и возвращает временную папку

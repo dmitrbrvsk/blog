@@ -11,7 +11,6 @@ process.env.PUBLIC_URL = '';
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.
 process.on('unhandledRejection', (err) => {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw err;
 });
 
@@ -23,7 +22,7 @@ const runJest = async () => {
 
     argv.push('--config', JSON.stringify(jestConfig));
 
-    jestRunner.run(argv);
+    void jestRunner.run(argv);
 };
 
 runJest().catch((error) => {

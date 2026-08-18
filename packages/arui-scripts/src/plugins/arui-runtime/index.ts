@@ -22,11 +22,21 @@ export class AruiRuntimePlugin {
  * без использования синтаксиса, который не поддерживается браузерами.
  * Более того, мы не можем использовать импорты или require внутри, это так же сломает сборку.
  */
+type AruiRuntimeScope = {
+    $ARUI?: {
+        scriptSource?: HTMLScriptElement;
+    };
+};
+
 export function getInsertCssRuntimeMethod(): (linkTag: HTMLLinkElement) => void {
     /* eslint-disable no-var,vars-on-top */
     return function insertCssRuntime(linkTag) {
-        if (__webpack_require__?.$ARUI.scriptSource) {
-            var { scriptSource } = __webpack_require__.$ARUI;
+        // $ARUI в рантайм добавляет RuntimeModule этого плагина, в типах webpack его нет
+        var aruiScope = __webpack_require__ as unknown as AruiRuntimeScope;
+
+        var scriptSource = aruiScope.$ARUI?.scriptSource;
+
+        if (scriptSource) {
             var targetElementSelector = scriptSource.dataset.resourcesTargetSelector;
 
             if (targetElementSelector) {

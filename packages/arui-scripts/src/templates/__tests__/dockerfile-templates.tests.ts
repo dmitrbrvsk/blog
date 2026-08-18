@@ -1,3 +1,7 @@
+type DockerfileTemplateModule = {
+    dockerfileTemplate: string;
+};
+
 describe('dockerfile.template (normal mode)', () => {
     function getTemplate(deleteNpm: boolean) {
         jest.resetModules();
@@ -13,7 +17,7 @@ describe('dockerfile.template (normal mode)', () => {
             },
         }));
 
-        return require('../dockerfile.template').dockerfileTemplate;
+        return (require('../dockerfile.template') as DockerfileTemplateModule).dockerfileTemplate;
     }
 
     it('should add npm removal step when deleteNpm is enabled', () => {
@@ -49,7 +53,8 @@ describe('dockerfile-compiled.template (compiled mode)', () => {
             getYarnBinSymlinkCommand: () => '',
         }));
 
-        return require('../dockerfile-compiled.template').dockerfileTemplate;
+        return (require('../dockerfile-compiled.template') as DockerfileTemplateModule)
+            .dockerfileTemplate;
     }
 
     it('should add npm removal step when deleteNpm is enabled', () => {
@@ -102,7 +107,8 @@ describe('dockerfile-compiled.template with yarn 2+ symlink', () => {
                 yarnPath ? `ln -sf /src/${yarnPath} /usr/local/bin/yarn && \\\n    ` : '',
         }));
 
-        return require('../dockerfile-compiled.template').dockerfileTemplate;
+        return (require('../dockerfile-compiled.template') as DockerfileTemplateModule)
+            .dockerfileTemplate;
     }
 
     it('should add symlink when yarn 2+ with yarnPath', () => {

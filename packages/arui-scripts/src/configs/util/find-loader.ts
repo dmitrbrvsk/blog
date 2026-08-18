@@ -1,5 +1,13 @@
 import { type Configuration, type RuleSetRule } from '@rspack/core';
 
+function isTestEqual(test: RuleSetRule['test'], testRule: string) {
+    if (typeof test === 'string' || test instanceof RegExp) {
+        return String(test) === testRule;
+    }
+
+    return false;
+}
+
 export function findLoader(config: Configuration, testRule: string): RuleSetRule | undefined {
     for (const rule of config.module?.rules ?? []) {
         if (rule === '...' || !rule) {
@@ -8,13 +16,13 @@ export function findLoader(config: Configuration, testRule: string): RuleSetRule
             continue;
         }
 
-        if (rule.test && rule.test.toString() === testRule) {
+        if (isTestEqual(rule.test, testRule)) {
             return rule;
         }
 
         if (rule.oneOf) {
             for (const oneOfRule of rule.oneOf) {
-                if (oneOfRule && oneOfRule.test && oneOfRule?.test?.toString() === testRule) {
+                if (oneOfRule && isTestEqual(oneOfRule.test, testRule)) {
                     return oneOfRule;
                 }
             }

@@ -24,9 +24,7 @@ export function getLocalIdent(
         .replaceAll('/', '_')
         .replaceAll('=', '');
 
-    let baseName: string;
-
-    baseName = isIndexModule
+    const baseName = isIndexModule
         ? path.basename(path.dirname(context.resourcePath))
         : path.basename(context.resourcePath, '.module.css');
 

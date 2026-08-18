@@ -6,6 +6,7 @@ import { getEnvConfigContent } from './get-env-config';
 export class ClientConfigPlugin {
     protected cachedContent: string | null = null;
 
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- apply - часть контракта плагина rspack
     apply(compiler: Compiler) {
         const pluginName = ClientConfigPlugin.name;
 

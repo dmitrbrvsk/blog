@@ -163,8 +163,12 @@ function addPrefixCssRule(rule: rspack.RuleSetRule | undefined, prefix: string) 
         return;
     }
 
-    postCssLoader.options.postcssOptions.plugins = [
-        ...postCssLoader.options.postcssOptions.plugins,
+    const postCssOptions = postCssLoader.options as {
+        postcssOptions: { plugins: unknown[] };
+    };
+
+    postCssOptions.postcssOptions.plugins = [
+        ...postCssOptions.postcssOptions.plugins,
         postCssPrefix({ prefix: `${prefix} ` }),
     ];
 }

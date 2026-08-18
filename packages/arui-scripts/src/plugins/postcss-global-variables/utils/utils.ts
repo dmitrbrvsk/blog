@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { type AtRule, Declaration, type Helpers, type Root, Rule } from 'postcss';
-// eslint-disable-next-line import-x/no-extraneous-dependencies
 import mediaParser from 'postcss-media-query-parser';
 
 export const getMediaQueryName = (rule: AtRule) => rule.params.split(' ', 1)[0];
@@ -13,7 +12,7 @@ export function parseImport(root: Root, postcssHelpers: Helpers, filePath: strin
         resolvedPath = path.resolve(filePath);
     } catch (err) {
         throw new Error(
-            `Failed to read ${filePath} with error ${err instanceof Error ? err.message : err}`,
+            `Failed to read ${filePath} with error ${err instanceof Error ? err.message : String(err)}`,
         );
     }
 
