@@ -1,0 +1,14 @@
+{
+    // Проект только для корневых конфигов: у каждого пакета свой tsconfig.json,
+    // а typescript-eslint через projectService ищет ближайший к файлу
+    "compilerOptions": {
+        "target": "es2023",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "strict": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        "types": ["node"]
+    },
+    "include": ["*.ts", "*.mts"]
+}

@@ -6,8 +6,9 @@
     "devDependencies": {
         "@changesets/changelog-github": "^0.4.8",
         "@changesets/cli": "^2.26.2",
-        "arui-presets-lint": "8.8.1",
+        "arui-presets-lint": "11.1.1",
         "conventional-changelog-cli": "3.0.0",
+        "prettier": "3.9.6",
         "turbo": "2.9.14"
     },
     "scripts": {
@@ -15,12 +16,12 @@
         "npm-publish": "yarn workspaces foreach --all --no-private npm publish --access public --tolerate-republish && yarn changeset tag",
         "build": "turbo run build",
         "test": "turbo run build build:app test validate",
-        "lint": "turbo run lint"
+        "lint": "turbo run lint && yarn lint:unused && yarn lint:secrets",
+        "lint:unused": "arui-presets-lint knip",
+        "lint:unused:fix": "arui-presets-lint knip --fix",
+        "lint:secrets": "arui-presets-lint secretlint"
     },
     "prettier": "arui-presets-lint/prettier",
-    "eslintConfig": {
-        "extends": "./node_modules/arui-presets-lint/eslint"
-    },
     "stylelint": {
         "extends": "arui-presets-lint/stylelint"
     },

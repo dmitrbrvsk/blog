@@ -162,6 +162,19 @@
         "lint:fix": "yarn lint:scripts --fix && yarn format",
         "audit": "yarn npm audit --severity high --environment production"
     },
+    "stylelint": {
+        "extends": "arui-presets-lint/stylelint",
+        "rules": {
+            "selector-pseudo-class-no-unknown": [
+                true,
+                {
+                    "ignorePseudoClasses": [
+                        "global"
+                    ]
+                }
+            ]
+        }
+    },
     "peerDependencies": {
         "imagemin-gifsicle": "^7.0.0",
         "imagemin-mozjpeg": "^10.0.0",
