@@ -1,6 +1,5 @@
-import { type KnipConfig } from 'knip';
-
 import baseConfig from 'arui-presets-lint/knip';
+import { type KnipConfig } from 'knip';
 
 /**
  * Точки входа из корневого конфига knip не наследуются воркспейсами,
