@@ -102,6 +102,11 @@ describe('createProgram', () => {
         await expect(parseFlags(['--no-router'])).resolves.toEqual({ useRouter: false });
     });
 
+    it('--git и --no-git управляют git init', async () => {
+        await expect(parseFlags(['--git'])).resolves.toEqual({ git: true });
+        await expect(parseFlags(['--no-git'])).resolves.toEqual({ git: false });
+    });
+
     it('add <feature> вызывает add-обработчик, а не init', async () => {
         await expect(parseAdd(['add', 'lint'])).resolves.toEqual({ feature: 'lint', flags: {} });
         await expect(

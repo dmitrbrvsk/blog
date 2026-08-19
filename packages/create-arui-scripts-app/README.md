@@ -27,6 +27,7 @@ npx create-arui-scripts-app my-app --yes
 
 - `-y` / `--yes` - без интерактивных вопросов, взять значения по умолчанию
 - `--force` - перезаписать существующие файлы шаблона
+- `--git` / `--no-git` - `git init` и первый коммит (по умолчанию включено)
 - `--name <name>` - имя npm-пакета
 - `--rtk` / `--no-rtk` - React + RTK или только React
 - `--ssr` / `--client-only` - SSR или только клиент
