@@ -119,6 +119,11 @@ describe('createProgram', () => {
         await expect(parseFlags(['--modules', 'none'])).resolves.toEqual({ moduleRole: 'none' });
     });
 
+    it('--mobile-desktop и --no-mobile-desktop управляют dualEntries', async () => {
+        await expect(parseFlags(['--mobile-desktop'])).resolves.toEqual({ dualEntries: true });
+        await expect(parseFlags(['--no-mobile-desktop'])).resolves.toEqual({ dualEntries: false });
+    });
+
     it('add <feature> вызывает add-обработчик, а не init', async () => {
         await expect(parseAdd(['add', 'lint'])).resolves.toEqual({ feature: 'lint', flags: {} });
         await expect(

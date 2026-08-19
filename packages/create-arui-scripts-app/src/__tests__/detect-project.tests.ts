@@ -59,6 +59,21 @@ describe('detectProject', () => {
             e2eFramework: 'playwright',
             testRunner: 'vitest',
             dockerRegistry: 'reg.example',
+            dualEntries: false,
         });
+    });
+
+    it('определяет dualEntries по desktop/mobile точкам входа', async () => {
+        await runInit({
+            cwd: tempDir,
+            targetDirArg: 'app',
+            flags: { yes: true, dualEntries: true },
+            aruiScriptsVersion: '23.0.1',
+        });
+
+        const detected = await detectProject(path.join(tempDir, 'app'), '1.0.0');
+
+        expect(detected.answers.dualEntries).toBe(true);
+        expect(detected.answers.clientOnly).toBe(false);
     });
 });

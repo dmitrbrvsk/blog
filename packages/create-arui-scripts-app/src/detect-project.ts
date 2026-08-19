@@ -79,6 +79,10 @@ export async function detectProject(
         ((await exists(targetDir, 'src/index.tsx')) &&
             !(await exists(targetDir, 'src/client/index.tsx')));
 
+    answers.dualEntries =
+        (await exists(targetDir, 'src/desktop/index.tsx')) ||
+        (await exists(targetDir, 'src/client/desktop/index.tsx'));
+
     const client = clientBaseDir(answers);
 
     answers.useRtk =
