@@ -1,0 +1,34 @@
+# arui-scripts-docker
+
+## 15.2.3
+
+### Patch Changes
+
+-   [#492](https://github.com/core-ds/arui-scripts/pull/492) [`44e3c41`](https://github.com/core-ds/arui-scripts/commit/44e3c41095efba487321a25c2e882f9018ef5e7d) Thanks [@dmitrbrvsk](https://github.com/dmitrbrvsk)! - исправление сборки docker образа с alpine v3.23: добавлен CFLAGS для игнорирования предупреждения GCC 15 при сборке nginx
+
+## 15.2.2
+
+### Patch Changes
+
+-   [#486](https://github.com/core-ds/arui-scripts/pull/486) [`efab87d`](https://github.com/core-ds/arui-scripts/commit/efab87d534dc12cff4fdbd1c111165c08b991417) Thanks [@dmitrbrvsk](https://github.com/dmitrbrvsk)! - обновление версии alpine, добавляем openssl libcrypto3 libssl3
+
+## 15.2.1
+
+### Patch Changes
+
+-   [#429](https://github.com/core-ds/arui-scripts/pull/429) [`bc0ef71`](https://github.com/core-ds/arui-scripts/commit/bc0ef718c17f474d3c87e39529ec2b6b27a8dc66) Thanks [@ngg-dev](https://github.com/ngg-dev)! - отключено предупреждение из-за GCC 15 после обновления до alpine 3.23
+
+## 15.2.0
+
+### Minor Changes
+
+-   [#394](https://github.com/core-ds/arui-scripts/pull/394) [`8d1b63a`](https://github.com/core-ds/arui-scripts/commit/8d1b63a22561742294389a98b10ce7daa76ec1d9) Thanks [@mrAnomalyy](https://github.com/mrAnomalyy)! - Обновляем зафиксированный uid пользователя nginx при его создании на 100, группа 101 (для дальнейшего использования в кубере, требования ДКБ).
+
+-   [#393](https://github.com/core-ds/arui-scripts/pull/393) [`cb239f4`](https://github.com/core-ds/arui-scripts/commit/cb239f4959cdd37a2a189bcef99c46456ed699a6) Thanks [@mrAnomalyy](https://github.com/mrAnomalyy)! - Фиксируем uid пользователя nginx при его создании (для дальнейшего использования в кубере, требования ДКБ)
+
+## 15.1.0
+
+### Minor Changes
+
+-   [#198](https://github.com/core-ds/arui-scripts/pull/198) [`c2d6b5d`](https://github.com/core-ds/arui-scripts/commit/c2d6b5d6a54363f32b2e4f80863e6bd477c42c80) Thanks [@heymdall-legal](https://github.com/heymdall-legal)! - Добавлен новый вид базовых образов - slim версии уже существовавших.
+    В slim версиях отсутствуют многочисленные модули nginx, которые обычно не нужны в проектах.

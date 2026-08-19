@@ -1,0 +1,29 @@
+name: 'Dependency review'
+on:
+  pull_request:
+    paths:
+      - packages/arui-scripts/**
+      - packages/create-arui-scripts-app/**
+
+permissions:
+  discussions: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: yarn install
+        run: |
+          yarn install --immutable
+      - name: Run Audit
+        id: audit
+        run: |
+          yarn turbo audit

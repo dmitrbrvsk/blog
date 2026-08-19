@@ -1,0 +1,33 @@
+@import '~@alfalab/core-components/vars/index.css';
+
+.root {
+    padding: 10px;
+}
+@media (--tablet) {
+    .root {
+        padding: var(--gap-xl);
+    }
+}
+
+@media (--desktop) {
+    .root {
+        padding: var(--gap-2xl);
+    }
+}
+
+@media (--mobile) {
+    .root {
+        padding: var(--gap-xs);
+    }
+}
+
+.title {
+    color: var(--button-accent-base-bg-color);
+    border-radius: var(--border-radius-pill);
+}
+
+.inlineSvgIcon {
+    width: 22px;
+    height: 22px;
+    background: url('./clock.svg') no-repeat;
+}

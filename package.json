@@ -1,0 +1,33 @@
+{
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@changesets/changelog-github": "^0.4.8",
+        "@changesets/cli": "^2.26.2",
+        "arui-presets-lint": "8.8.1",
+        "conventional-changelog-cli": "3.0.0",
+        "turbo": "2.9.14"
+    },
+    "scripts": {
+        "publish-packages": "yarn test && changeset version && yarn npm-publish",
+        "npm-publish": "yarn workspaces foreach --all --no-private npm publish --access public --tolerate-republish && yarn changeset tag",
+        "build": "turbo run build",
+        "test": "turbo run build build:app test validate",
+        "lint": "turbo run lint"
+    },
+    "prettier": "arui-presets-lint/prettier",
+    "eslintConfig": {
+        "extends": "./node_modules/arui-presets-lint/eslint"
+    },
+    "stylelint": {
+        "extends": "arui-presets-lint/stylelint"
+    },
+    "commitlint": {
+        "extends": [
+            "./node_modules/arui-presets-lint/commitlint"
+        ]
+    },
+    "packageManager": "yarn@4.13.0"
+}

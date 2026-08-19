@@ -1,0 +1,119 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`client should create valid css 1`] = `
+".postcss-features{
+    margin-block:24px;
+}
+
+    .postcss-features__paragraph{
+        font-size:12px;
+        line-height:16px;
+        font-weight:700;
+        letter-spacing:1.25px;
+        text-transform:uppercase;
+
+        padding-inline-start:12px;
+        padding-block:2px;
+        box-shadow:0 0 4px rgba(0, 0, 0, 0.02), 0 -2px 4px rgba(0, 0, 0, 0.04), 0 -2px 4px rgba(0, 0, 0, 0.16);
+        color:rgb(236, 142, 133);
+        background-color:#cd1501;
+    }
+
+.styles-module-paragraph-xATBD{
+    font-size:12px;
+    line-height:16px;
+    font-weight:700;
+    letter-spacing:1.25px;
+    text-transform:uppercase;
+
+    padding-inline-start:12px;
+    padding-block:2px;
+    box-shadow:0 0 4px rgba(0, 0, 0, 0.02), 0 -2px 4px rgba(0, 0, 0, 0.04), 0 -2px 4px rgba(0, 0, 0, 0.16);
+    color:rgb(236, 142, 133);
+    background-color:#cd1501;
+}
+
+@media not screen and (min-width: 1024px){
+    .styles-module-mediaTest-XSYFb{
+        color:red;
+    }
+}
+
+@media (min-width: 1024px),(max-width: 599px){
+    .styles-module-mediaTest2-snIxp{
+        color:red;
+    }
+}
+
+@media (min-width: 1280px){
+    .styles-module-mediaTest3-NP4vm{
+        color:red;
+    }
+}
+
+body{
+    background:aliceblue;
+}
+
+.btn{
+    border-radius:5px;
+    border:0;
+    margin:10px;
+    padding:15px;
+    color:#f00;
+    background:linear-gradient(345deg, #aacac2, #3929bb);
+    background-size:400% 400%;
+    animation:Insanity 2s ease infinite;
+}
+
+@keyframes Insanity{
+    0%{
+        background-position:0 50%;
+    }
+    50%{
+        background-position:100% 50%;
+    }
+    100%{
+        background-position:0 50%;
+    }
+}
+
+.icon{
+    padding-left:5px;
+    vertical-align:middle;
+}
+
+.app-module-root-B6jGk{
+    padding:10px;
+}
+@media (min-width: 600px) and (max-width: 1023px){
+    .app-module-root-B6jGk{
+        padding:24px;
+    }
+}
+
+@media (min-width: 1024px){
+    .app-module-root-B6jGk{
+        padding:32px;
+    }
+}
+
+@media (max-width: 599px){
+    .app-module-root-B6jGk{
+        padding:8px;
+    }
+}
+
+.app-module-title-ja29j{
+    color:#202022;
+    border-radius:99px;
+}
+
+.app-module-inlineSvgIcon-DphVo{
+    width:22px;
+    height:22px;
+    background:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjJweCIgaGVpZ2h0PSIyMnB4IiB2aWV3Qm94PSIwIDAgMjIgMjIiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8ZyBpZD0iRG9uZSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9InJhdGVzX21vYjM3NV9hY3R1YWxfd2l0aG91dGljb25zIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtMTkuMDAwMDAwLCAtMzM1LjAwMDAwMCkiIGZpbGw9IiMwYjFmMzUiPgogICAgICAgICAgICA8ZyBpZD0iR3JvdXAtNC1Db3B5LTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4LjAwMDAwMCwgMzI0LjAwMDAwMCkiPgogICAgICAgICAgICAgICAgPGcgaWQ9Imljb25fc2VydmljZXNfaGlzdG9yeV9fbSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsIDEwLjAwMDAwMCkiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMiwyMyBDMTguMDc1MTMyMiwyMyAyMywxOC4wNzUxMzIyIDIzLDEyIEMyMyw1LjkyNDg2Nzc1IDE4LjA3NTEzMjIsMSAxMiwxIEM1LjkyNDg2Nzc1LDEgMSw1LjkyNDg2Nzc1IDEsMTIgQzEsMTguMDc1MTMyMiA1LjkyNDg2Nzc1LDIzIDEyLDIzIEwxMiwyMyBaIE0xMiwyMiBDNi40NzcxNTI1LDIyIDIsMTcuNTIyODQ3NSAyLDEyIEMyLDYuNDc3MTUyNSA2LjQ3NzE1MjUsMiAxMiwyIEMxNy41MjI4NDc1LDIgMjIsNi40NzcxNTI1IDIyLDEyIEMyMiwxNy41MjI4NDc1IDE3LjUyMjg0NzUsMjIgMTIsMjIgTDEyLDIyIFoiIGlkPSJPdmFsLTg3IiBmaWxsLXJ1bGU9Im5vbnplcm8iPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMTMsMTEuMzE0NjMwOCBMMTMsNy45OTA3Nzc5NyBDMTMsNy40NTA5NzUxOCAxMi41NTIyODQ3LDcgMTIsNyBDMTEuNDQzODY0OCw3IDExLDcuNDQzNTg2NDEgMTEsNy45OTA3Nzc5NyBMMTEsMTEuNjIwMzcyMyBDMTAuOTUwMTgwMiwxMS44MDg1MDY1IDEwLjk1NzU1MjYsMTIuMDAzNTAxOCAxMS4wMTU1Nzc1LDEyLjE4MjQ1NTIgQzExLjA5NDA1NTMsMTIuNjE0NjM2OCAxMS40NjAyMjk4LDEyLjk1Njc4MjcgMTEuOTEyNTc0MSwxMi45OTYyMDYyIEwxNi40NTY2MzcsMTUuNjE5NzIyMSBDMTYuOTQwNzk2NywxNS44OTkyNTE5IDE3LjU0NTE2MTUsMTUuNzMxMjA1IDE3LjgyMTMwMzksMTUuMjUyOTEyNCBDMTguMDk5MzcxNSwxNC43NzEyODUyIDE3LjkzNDE3OTMsMTQuMTYzMzgwNSAxNy40NTY2MzcsMTMuODg3NjcxMyBMMTMsMTEuMzE0NjMwOCBaIiBpZD0iUmVjdGFuZ2xlLTM3OCIgb3BhY2l0eT0iMC4zIj48L3BhdGg+CiAgICAgICAgICAgICAgICA8L2c+CiAgICAgICAgICAgIDwvZz4KICAgICAgICA8L2c+CiAgICA8L2c+Cjwvc3ZnPgo=) no-repeat;
+}
+
+"
+`;
