@@ -19,7 +19,16 @@ import {
     type PackageManager,
 } from './install-dependencies';
 import { getQuestions } from './questions';
-import { type InitAnswers, type TemplateContext } from './types';
+import { type InitAnswers } from './types';
+import {
+    formatStack,
+    printBanner,
+    printDone,
+    printDryRun,
+    printNextSteps as printCommandList,
+    printOk,
+    printWarn,
+} from './ui';
 import { validateProjectName } from './validate-project-name';
 import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions';
 import {
@@ -28,9 +37,6 @@ import {
     STATIC_ASSET_PATHS,
     writeFiles,
 } from './write-files';
-
-// eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-const { version: cliVersion } = require('../package.json');
 
 export type RunInitOptions = {
     // аргумент `[dir]` из командной строки
@@ -50,7 +56,7 @@ export async function runInit(options: RunInitOptions = {}): Promise<void> {
     const aruiScriptsVersion = options.aruiScriptsVersion ?? DEFAULT_ARUI_SCRIPTS_VERSION;
     const flags = options.flags ?? {};
 
-    printBanner();
+    printBanner('Создаем новый проект — ответьте на несколько вопросов.');
 
     const initAnswers = await resolveAnswers(defaultName, flags);
 
@@ -85,7 +91,13 @@ export async function runInit(options: RunInitOptions = {}): Promise<void> {
     await writeFiles(targetDir, files);
     const assetsCount = await copyStaticAssets(targetDir);
 
-    printSuccess(context, targetDir, Object.keys(files).length + assetsCount);
+    printDone('Готово!', [
+        chalk.dim(`проект «${context.name}» создан`),
+        chalk.dim(targetDir),
+        `${chalk.dim(`${Object.keys(files).length + assetsCount} файлов`)} ${chalk.dim(
+            '·',
+        )} ${formatStack(context)}`,
+    ]);
 
     const packageManager = detectPackageManager();
     const gitCreated = await tryInitGit(targetDir, flags.git !== false);
@@ -120,13 +132,11 @@ async function tryInitGit(targetDir: string, enabled: boolean): Promise<boolean>
 
     try {
         await initGitRepository(targetDir);
-        console.log(`  ${chalk.green('✔')} ${chalk.dim('git init')}`);
+        printOk('git init');
 
         return true;
     } catch (error) {
-        console.log(
-            `  ${chalk.yellow('!')} ${chalk.dim('git init не удался, продолжаем без git')}`,
-        );
+        printWarn(chalk.dim('git init не удался, продолжаем без git'));
 
         if (error instanceof Error && error.message) {
             console.log(`  ${chalk.dim(error.message)}`);
@@ -139,9 +149,9 @@ async function tryInitGit(targetDir: string, enabled: boolean): Promise<boolean>
 async function tryInitialCommit(targetDir: string): Promise<void> {
     try {
         await createInitialCommit(targetDir);
-        console.log(`  ${chalk.green('✔')} ${chalk.dim('Initial commit')}`);
+        printOk('Initial commit');
     } catch (error) {
-        console.log(`  ${chalk.yellow('!')} ${chalk.dim('не удалось создать первый коммит')}`);
+        printWarn(chalk.dim('не удалось создать первый коммит'));
 
         if (error instanceof Error && error.message) {
             console.log(`  ${chalk.dim(error.message)}`);
@@ -151,10 +161,10 @@ async function tryInitialCommit(targetDir: string): Promise<void> {
 
 async function tryInstallLefthook(targetDir: string): Promise<void> {
     if (!hasGitRepository(targetDir)) {
-        console.log(
-            `  ${chalk.dim(
+        printWarn(
+            chalk.dim(
                 'lefthook: пропущено (нет .git). После git init выполните: npx --no-install lefthook install',
-            )}`,
+            ),
         );
 
         return;
@@ -287,49 +297,6 @@ function mergePromptAnswers(base: InitAnswers, answers: prompts.Answers<string>)
     return merged;
 }
 
-function printDryRun(targetDir: string, plannedFiles: string[]): void {
-    console.log();
-    console.log(`  ${chalk.bold('[dry-run]')} файлы не будут записаны`);
-    console.log(`  ${chalk.dim(targetDir)}`);
-    plannedFiles.forEach((file) => {
-        console.log(`  ${chalk.dim('•')} ${file}`);
-    });
-    console.log(`  ${chalk.dim(`${plannedFiles.length} файлов`)}`);
-    console.log();
-}
-
-function printBanner(): void {
-    console.log();
-    console.log(
-        `  ${chalk.bgCyan.black.bold(' create-arui-scripts-app ')} ${chalk.dim(`v${cliVersion}`)}`,
-    );
-    console.log(`  ${chalk.dim('Создаем новый проект - ответьте на несколько вопросов.')}`);
-    console.log();
-}
-
-function printSuccess(context: TemplateContext, targetDir: string, fileCount: number): void {
-    const stack = [
-        chalk.cyan(context.useRtk ? 'React + RTK' : 'React'),
-        chalk.dim(context.clientOnly ? 'clientOnly' : 'SSR'),
-        ...(context.dualEntries ? [chalk.dim('mobile/desktop')] : []),
-        chalk.dim(context.codeLoader),
-        chalk.dim(context.testRunner),
-        ...(context.e2eFramework !== 'none' ? [chalk.dim(context.e2eFramework)] : []),
-        ...(context.useRouter ? [chalk.dim('router')] : []),
-        ...(context.moduleRole !== 'none' ? [chalk.dim(context.moduleRole)] : []),
-        ...(context.useLint ? [chalk.dim('lint')] : []),
-    ].join(chalk.dim(' · '));
-
-    console.log();
-    console.log(
-        `  ${chalk.green('✔')} ${chalk.bold('Готово!')} ${chalk.dim(
-            `проект «${context.name}» создан`,
-        )}`,
-    );
-    console.log(`    ${chalk.dim(targetDir)}`);
-    console.log(`    ${chalk.dim(`${fileCount} файлов`)} ${chalk.dim('·')} ${stack}`);
-}
-
 // Путь для подсказки `cd`: null — цель совпадает с cwd, а относительный — если цель внутри cwd, иначе берем абсолютный
 export function resolveCdPath(baseCwd: string, targetDir: string): string | null {
     const relativeDir = path.relative(baseCwd, targetDir);
@@ -374,10 +341,5 @@ function printNextSteps(
 
     steps.push(startCommand);
 
-    console.log();
-    console.log(`  ${chalk.bold('Дальше')}`);
-    steps.forEach((step, index) => {
-        console.log(`    ${chalk.dim(`${index + 1}.`)} ${chalk.cyan(step)}`);
-    });
-    console.log();
+    printCommandList(steps);
 }

@@ -17,6 +17,7 @@ import {
 } from './install-dependencies';
 import { mergeGitignore, mergePackageJson } from './merge-generated-files';
 import { ADD_FEATURES, type AddFeature, type E2eFramework, type InitAnswers } from './types';
+import { printBanner, printDone, printDryRun, printWarn } from './ui';
 import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions';
 import { writeFiles } from './write-files';
 
@@ -158,6 +159,8 @@ export async function runAdd(options: RunAddOptions): Promise<void> {
         throw new Error(`${FEATURE_LABELS[feature]} уже подключен в этом проекте.`);
     }
 
+    printBanner(`Добавляем ${FEATURE_LABELS[feature]} в существующий проект`);
+
     const resolvedFlags = await resolveAddFlags(feature, flags);
     const nextAnswers = applyFeature(detected.answers, feature, resolvedFlags);
 
@@ -214,35 +217,23 @@ export async function runAdd(options: RunAddOptions): Promise<void> {
     );
 
     if (skipped.length > 0 && !flags.force) {
-        console.log(
-            ` ${chalk.yellow(
-                '!',
-            )} Пропущены изменённые файлы (передайте --force, чтобы перезаписать):`,
-        );
-        skipped.forEach((file) => console.log(`   ${chalk.dim(file)}`));
+        printWarn('Пропущены изменённые файлы (передайте --force, чтобы перезаписать):');
+        skipped.forEach((file) => console.log(`     ${chalk.dim(file)}`));
     }
 
     const planned = Object.keys(filesToWrite).sort();
 
     if (flags.dryRun) {
-        console.log();
-        console.log(` ${chalk.bold('[dry-run]')} файлы не будут записаны`);
-        planned.forEach((file) => console.log(` ${chalk.dim('•')} ${file}`));
-        console.log(` ${chalk.dim(`${planned.length} файлов`)}`);
-        console.log();
+        printDryRun(targetDir, planned);
 
         return;
     }
 
     await writeFiles(targetDir, filesToWrite);
 
-    console.log();
-    console.log(
-        ` ${chalk.green('✔')} ${chalk.bold('Готово!')} ${chalk.dim(
-            `добавлен ${FEATURE_LABELS[feature]}`,
-        )}`,
-    );
-    console.log(` ${chalk.dim(`${Object.keys(filesToWrite).length} файлов обновлено`)}`);
+    printDone(`Добавлен ${FEATURE_LABELS[feature]}`, [
+        chalk.dim(`${Object.keys(filesToWrite).length} файлов обновлено`),
+    ]);
 
     if (nextAnswers.install) {
         const packageManager: PackageManager = detectPackageManager();
