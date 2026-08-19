@@ -1,4 +1,4 @@
-import { validateProjectName } from '../validate-project-name';
+import { validateProjectName } from '../validate-project-name.js';
 
 describe('validateProjectName', () => {
     it('принимает обычное npm-имя', () => {

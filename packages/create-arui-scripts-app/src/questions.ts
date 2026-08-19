@@ -1,7 +1,7 @@
 import type prompts from 'prompts';
 
-import { type CliFlags } from './defaults';
-import { validateProjectName } from './validate-project-name';
+import { type CliFlags } from './defaults.js';
+import { validateProjectName } from './validate-project-name.js';
 
 type QuestionType = prompts.PromptObject['type'];
 

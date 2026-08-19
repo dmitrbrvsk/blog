@@ -11,6 +11,7 @@
         "url": "https://github.com/core-ds/arui-scripts/issues"
     },
     "homepage": "https://github.com/core-ds/arui-scripts/tree/master/packages/create-arui-scripts-app#readme",
+    "type": "module",
     "bin": "./bin/create-arui-scripts-app.js",
     "main": "./build/run.js",
     "typings": "./build/run.d.ts",
@@ -22,7 +23,7 @@
     "scripts": {
         "sync:version": "node ./scripts/sync-arui-scripts-version.js",
         "build": "yarn sync:version && tsc --project tsconfig.json",
-        "test": "jest",
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest",
         "lint:scripts": "arui-presets-lint scripts",
         "format": "arui-presets-lint format",
         "format:check": "arui-presets-lint format:check",
@@ -31,7 +32,7 @@
         "audit": "yarn npm audit --severity high --environment production"
     },
     "dependencies": {
-        "chalk": "^2.4.2",
+        "chalk": "^6.0.0",
         "commander": "^12",
         "fs-extra": "6.0.1",
         "ora": "^5",

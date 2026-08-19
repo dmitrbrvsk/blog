@@ -1,46 +1,50 @@
-import { appComponentTemplate } from './templates/app-component.template';
-import { appStylesFileName, appStylesTemplate } from './templates/app-styles.template';
-import { appTestTemplate } from './templates/app-test.template';
-import { aruiScriptsConfigTemplate } from './templates/arui-scripts-config.template';
-import { clientEntryTemplate } from './templates/client-entry.template';
-import { postsApiTemplate, postsFetchTemplate, postsListTemplate } from './templates/data.template';
+import { appComponentTemplate } from './templates/app-component.template.js';
+import { appStylesFileName, appStylesTemplate } from './templates/app-styles.template.js';
+import { appTestTemplate } from './templates/app-test.template.js';
+import { aruiScriptsConfigTemplate } from './templates/arui-scripts-config.template.js';
+import { clientEntryTemplate } from './templates/client-entry.template.js';
+import {
+    postsApiTemplate,
+    postsFetchTemplate,
+    postsListTemplate,
+} from './templates/data.template.js';
 import {
     cypressConfigTemplate,
     cypressExampleSpecTemplate,
     cypressSupportCommandsTemplate,
     cypressSupportE2eTemplate,
-} from './templates/e2e-cypress.template';
+} from './templates/e2e-cypress.template.js';
 import {
     playwrightConfigTemplate,
     playwrightExampleSpecTemplate,
     playwrightHelpersTemplate,
-} from './templates/e2e-playwright.template';
+} from './templates/e2e-playwright.template.js';
 import {
     eslintConfigTemplate,
     knipConfigTemplate,
     lefthookConfigTemplate,
     secretlintConfigTemplate,
-} from './templates/lint.template';
+} from './templates/lint.template.js';
 import {
     gitignoreTemplate,
     globalDefinitionsTemplate,
     polyfillsTemplate,
     readmeTemplate,
     yarnrcTemplate,
-} from './templates/misc.template';
-import { hostModuleMounterTemplate, remoteModuleTemplate } from './templates/modules.template';
-import { packageJsonTemplate } from './templates/package-json.template';
+} from './templates/misc.template.js';
+import { hostModuleMounterTemplate, remoteModuleTemplate } from './templates/modules.template.js';
+import { packageJsonTemplate } from './templates/package-json.template.js';
 import {
     aboutPageTemplate,
     homePageTemplate,
     layoutTemplate,
     routesTemplate,
-} from './templates/router.template';
-import { serverEntryTemplate } from './templates/server-entry.template';
-import { storeHooksTemplate, storeIndexTemplate } from './templates/store.template';
-import { tsconfigTemplate } from './templates/tsconfig.template';
-import { vitestConfigTemplate } from './templates/vitest-config.template';
-import { type TemplateContext } from './types';
+} from './templates/router.template.js';
+import { serverEntryTemplate } from './templates/server-entry.template.js';
+import { storeHooksTemplate, storeIndexTemplate } from './templates/store.template.js';
+import { tsconfigTemplate } from './templates/tsconfig.template.js';
+import { vitestConfigTemplate } from './templates/vitest-config.template.js';
+import { type TemplateContext } from './types.js';
 
 export function clientBaseDir(ctx: { clientOnly: boolean }): string {
     return ctx.clientOnly ? 'src' : 'src/client';

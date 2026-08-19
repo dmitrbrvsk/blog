@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 export function tsconfigTemplate(ctx: TemplateContext): string {
     const types =

@@ -2,9 +2,9 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import { clientBaseDir } from './build-file-map';
-import { defaultAnswers } from './defaults';
-import { type CodeLoader, type E2eFramework, type InitAnswers, type TestRunner } from './types';
+import { clientBaseDir } from './build-file-map.js';
+import { defaultAnswers } from './defaults.js';
+import { type CodeLoader, type E2eFramework, type InitAnswers, type TestRunner } from './types.js';
 
 export type DetectedProject = {
     answers: InitAnswers;

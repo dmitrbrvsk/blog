@@ -5,9 +5,9 @@ import chalk from 'chalk';
 import ora from 'ora';
 import prompts from 'prompts';
 
-import { buildContext } from './build-context';
-import { buildFileMap } from './build-file-map';
-import { answersFromFlags, type CliFlags, hasAnswerFlags } from './defaults';
+import { buildContext } from './build-context.js';
+import { buildFileMap } from './build-file-map.js';
+import { answersFromFlags, type CliFlags, hasAnswerFlags } from './defaults.js';
 import {
     createInitialCommit,
     detectPackageManager,
@@ -17,9 +17,9 @@ import {
     installDependencies,
     installLefthook,
     type PackageManager,
-} from './install-dependencies';
-import { getQuestions } from './questions';
-import { type InitAnswers } from './types';
+} from './install-dependencies.js';
+import { getQuestions } from './questions.js';
+import { type InitAnswers } from './types.js';
 import {
     formatStack,
     printBanner,
@@ -28,15 +28,15 @@ import {
     printNextSteps as printCommandList,
     printOk,
     printWarn,
-} from './ui';
-import { validateProjectName } from './validate-project-name';
-import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions';
+} from './ui.js';
+import { validateProjectName } from './validate-project-name.js';
+import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions.js';
 import {
     copyStaticAssets,
     findConflictingFiles,
     STATIC_ASSET_PATHS,
     writeFiles,
-} from './write-files';
+} from './write-files.js';
 
 export type RunInitOptions = {
     // аргумент `[dir]` из командной строки

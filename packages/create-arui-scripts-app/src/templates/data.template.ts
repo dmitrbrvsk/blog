@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 const MOCK_POSTS = `const MOCK_POSTS: Post[] = [
     { id: 1, title: 'Первый пост' },

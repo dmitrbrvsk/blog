@@ -3,7 +3,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import { copyStaticAssets } from '../write-files';
+import { copyStaticAssets } from '../write-files.js';
 
 describe('copyStaticAssets', () => {
     it('копирует ассеты и возвращает количество скопированных файлов', async () => {

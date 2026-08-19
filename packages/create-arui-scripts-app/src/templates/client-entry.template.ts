@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 function wrapWithRouter(jsx: string, ctx: TemplateContext): string {
     if (!ctx.useRouter) {

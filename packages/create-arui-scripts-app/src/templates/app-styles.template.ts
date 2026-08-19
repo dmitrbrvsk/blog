@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 const CORE_COMPONENTS_VARS_IMPORT = "@import '@alfalab/core-components/vars';";
 

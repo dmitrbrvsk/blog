@@ -11,6 +11,12 @@ module.exports = {
     },
     overrides: [
         {
+            files: ['**/*.cjs'],
+            rules: {
+                '@typescript-eslint/no-var-requires': 'off',
+            },
+        },
+        {
             files: ['**/__tests__/**/*.{ts,tsx}'],
             rules: {
                 'import/no-extraneous-dependencies': 'off',

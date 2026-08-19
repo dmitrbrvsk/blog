@@ -9330,6 +9330,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "chalk@npm:6.0.0"
+  checksum: 10/bdcb895b9c848ddbce38f38df5a10a3e272d6c04d759161789c4a2fa5a1fa78bf9eecf4eef73433a2a3be7324d6da96c3c9baf5c80862f37683cc0b890597831
+  languageName: node
+  linkType: hard
+
 "char-regex@npm:^1.0.2":
   version: 1.0.2
   resolution: "char-regex@npm:1.0.2"
@@ -10122,7 +10129,7 @@ __metadata:
     "@types/prompts": "npm:^2.4.9"
     "@types/shelljs": "npm:^0.8.12"
     "@types/validate-npm-package-name": "npm:^3.0.3"
-    chalk: "npm:^2.4.2"
+    chalk: "npm:^6.0.0"
     commander: "npm:^12"
     fs-extra: "npm:6.0.1"
     jest: "npm:28.1.3"

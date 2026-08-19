@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 export function gitignoreTemplate(ctx?: TemplateContext): string {
     let e2eIgnores = '';

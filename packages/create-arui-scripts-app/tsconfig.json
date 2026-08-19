@@ -2,8 +2,9 @@
     "extends": "../arui-scripts/tsconfig.json",
     "compilerOptions": {
         "incremental": false,
-        "target": "ES2016",
-        "module": "commonjs",
+        "target": "ES2022",
+        "module": "Node16",
+        "moduleResolution": "Node16",
         "skipLibCheck": true,
         "outDir": "./build",
         "declaration": true,

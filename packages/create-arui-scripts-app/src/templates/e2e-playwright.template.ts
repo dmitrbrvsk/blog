@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 function baseUrl(ctx: TemplateContext): string {
     return `http://localhost:${ctx.clientServerPort}`;

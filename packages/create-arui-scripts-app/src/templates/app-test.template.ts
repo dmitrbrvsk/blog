@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 export function appTestTemplate(ctx: TemplateContext): string {
     const vitestImport =

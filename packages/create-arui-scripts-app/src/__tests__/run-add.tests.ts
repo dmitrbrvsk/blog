@@ -3,10 +3,10 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import { type CliFlags } from '../defaults';
-import { mergeGitignore, mergePackageJson } from '../merge-generated-files';
-import { runInit } from '../run';
-import { runAdd } from '../run-add';
+import { type CliFlags } from '../defaults.js';
+import { mergeGitignore, mergePackageJson } from '../merge-generated-files.js';
+import { runInit } from '../run.js';
+import { runAdd } from '../run-add.js';
 
 describe('mergePackageJson', () => {
     it('добавляет новые скрипты и зависимости, не затирая пользовательские', () => {

@@ -1,21 +1,17 @@
 import { EventEmitter } from 'events';
 
-const spawnMock = jest.fn();
+import { jest } from '@jest/globals';
 
-jest.mock('child_process', () => ({
-    spawn: (...args: unknown[]) => spawnMock(...args),
-}));
-
-// eslint-disable-next-line import/first
 import {
     createInitialCommit,
     initGitRepository,
     INITIAL_COMMIT_MESSAGE,
     installDependencies,
     installLefthook,
-} from '../install-dependencies';
+    type SpawnFn,
+} from '../install-dependencies.js';
 
-function fakeChild(exitCode: number) {
+function fakeChild(exitCode: number): ReturnType<SpawnFn> {
     const child = new EventEmitter() as EventEmitter & {
         stdout: EventEmitter;
         stderr: EventEmitter;
@@ -29,8 +25,11 @@ function fakeChild(exitCode: number) {
         child.emit('close', exitCode);
     });
 
-    return child;
+    return child as unknown as ReturnType<SpawnFn>;
 }
+
+const spawnMock = jest.fn(() => fakeChild(0));
+const spawnOptions = { spawn: spawnMock as SpawnFn };
 
 const originalPlatform = process.platform;
 
@@ -48,7 +47,7 @@ describe('installDependencies', () => {
         setPlatform('win32');
         spawnMock.mockImplementation(() => fakeChild(0));
 
-        await installDependencies('/target', 'yarn');
+        await installDependencies('/target', 'yarn', spawnOptions);
 
         expect(spawnMock).toHaveBeenCalledWith(
             'yarn',
@@ -61,7 +60,7 @@ describe('installDependencies', () => {
         setPlatform('linux');
         spawnMock.mockImplementation(() => fakeChild(0));
 
-        await installDependencies('/target', 'npm');
+        await installDependencies('/target', 'npm', spawnOptions);
 
         expect(spawnMock).toHaveBeenCalledWith(
             'npm',
@@ -74,7 +73,7 @@ describe('installDependencies', () => {
         setPlatform('linux');
         spawnMock.mockImplementation(() => fakeChild(1));
 
-        await expect(installDependencies('/target', 'npm')).rejects.toThrow(
+        await expect(installDependencies('/target', 'npm', spawnOptions)).rejects.toThrow(
             /кодом 1[\s\S]*some output/,
         );
     });
@@ -83,7 +82,7 @@ describe('installDependencies', () => {
         setPlatform('linux');
         spawnMock.mockImplementation(() => fakeChild(0));
 
-        await installLefthook('/target');
+        await installLefthook('/target', spawnOptions);
 
         expect(spawnMock).toHaveBeenCalledWith(
             'npx',
@@ -96,7 +95,7 @@ describe('installDependencies', () => {
         setPlatform('linux');
         spawnMock.mockImplementation(() => fakeChild(0));
 
-        await initGitRepository('/target');
+        await initGitRepository('/target', spawnOptions);
 
         expect(spawnMock).toHaveBeenCalledWith(
             'git',
@@ -109,7 +108,7 @@ describe('installDependencies', () => {
         setPlatform('linux');
         spawnMock.mockImplementation(() => fakeChild(0));
 
-        await createInitialCommit('/target');
+        await createInitialCommit('/target', spawnOptions);
 
         expect(spawnMock).toHaveBeenNthCalledWith(
             1,

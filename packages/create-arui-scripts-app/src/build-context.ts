@@ -1,4 +1,4 @@
-import { type InitAnswers, type TemplateContext } from './types';
+import { type InitAnswers, type TemplateContext } from './types.js';
 
 const VERSIONS = {
     react: '^19.0.0',

@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 function tsString(value: string): string {
     return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;

@@ -1,4 +1,4 @@
-import { formatFileTree } from '../ui';
+import { formatFileTree } from '../ui.js';
 
 describe('formatFileTree', () => {
     it('строит дерево с каталогами сверху', () => {

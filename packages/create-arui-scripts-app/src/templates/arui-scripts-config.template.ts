@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 // Безопасная вставка строки в конфиг (одинарные кавычки как у prettier)
 function tsString(value: string): string {

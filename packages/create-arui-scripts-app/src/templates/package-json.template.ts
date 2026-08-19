@@ -1,5 +1,5 @@
-import { NODE_ENGINE_RANGE } from '../node-engines';
-import { type TemplateContext } from '../types';
+import { NODE_ENGINE_RANGE } from '../node-engines.js';
+import { type TemplateContext } from '../types.js';
 
 function sortKeys(record: Record<string, string>): Record<string, string> {
     return Object.keys(record)

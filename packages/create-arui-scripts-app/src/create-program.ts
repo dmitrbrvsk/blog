@@ -1,18 +1,16 @@
 import { Command, Option } from 'commander';
 
-import { type CliFlags } from './defaults';
-import { runInit } from './run';
-import { type AddFlags, runAdd } from './run-add';
+import { CLI_VERSION } from './cli-meta.js';
+import { type CliFlags } from './defaults.js';
+import { runInit } from './run.js';
+import { type AddFlags, runAdd } from './run-add.js';
 import {
     ADD_FEATURES,
     type CodeLoader,
     type E2eFramework,
     type ModuleRole,
     type TestRunner,
-} from './types';
-
-// eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-const { version } = require('../package.json');
+} from './types.js';
 
 export type InitHandler = (dir: string | undefined, flags: CliFlags) => Promise<void>;
 export type AddHandler = (feature: string, flags: AddFlags) => Promise<void>;
@@ -50,7 +48,7 @@ export function createProgram(
     program
         .description('Создает шаблонный проект arui-scripts')
         .argument('[dir]', 'Директория проекта (по умолчанию - текущая)')
-        .version(version, '-v, --version', 'Показать версию')
+        .version(CLI_VERSION, '-v, --version', 'Показать версию')
         .option('-y, --yes', 'Без вопросов, значения по умолчанию')
         .option('--force', 'Перезаписать существующие файлы шаблона')
         .option('--name <name>', 'Имя проекта (npm package name)')

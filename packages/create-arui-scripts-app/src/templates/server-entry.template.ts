@@ -1,4 +1,4 @@
-import { type TemplateContext } from '../types';
+import { type TemplateContext } from '../types.js';
 
 export function serverEntryTemplate(ctx: TemplateContext): string {
     const reduxImport = ctx.useRtk ? "\nimport { Provider } from 'react-redux';" : '';

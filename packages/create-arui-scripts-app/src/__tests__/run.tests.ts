@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import prompts from 'prompts';
 
-import { resolveCdPath, runInit } from '../run';
+import { resolveCdPath, runInit } from '../run.js';
 
 describe('runInit', () => {
     let tempDir: string;

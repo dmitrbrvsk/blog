@@ -4,7 +4,7 @@ import {
     type InitAnswers,
     type ModuleRole,
     type TestRunner,
-} from './types';
+} from './types.js';
 
 export type CliFlags = {
     yes?: boolean;

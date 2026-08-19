@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import fs from 'fs-extra';
 
@@ -31,7 +32,7 @@ export async function writeFiles(targetDir: string, files: Record<string, string
 }
 
 // статические ассеты, которые копируются в проект как есть (к примеру, .yarn/releases)
-const STATIC_ASSETS_DIR = path.join(__dirname, '../assets');
+const STATIC_ASSETS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '../assets');
 
 // пути, которые создает copyStaticAssets в целевой директории (для проверки конфликтов)
 export const STATIC_ASSET_PATHS = ['.yarn'];

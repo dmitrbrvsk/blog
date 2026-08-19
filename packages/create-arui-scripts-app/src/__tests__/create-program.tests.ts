@@ -1,6 +1,6 @@
-import { createProgram } from '../create-program';
-import { type CliFlags } from '../defaults';
-import { type AddFlags } from '../run-add';
+import { createProgram } from '../create-program.js';
+import { type CliFlags } from '../defaults.js';
+import { type AddFlags } from '../run-add.js';
 
 async function parseFlags(args: string[]): Promise<CliFlags> {
     const calls: CliFlags[] = [];

@@ -1,27 +1,13 @@
 /* eslint-disable no-console */
 import chalk from 'chalk';
 
-import { type TemplateContext } from './types';
-
-// eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-const { version: cliVersion } = require('../package.json');
+import { CLI_VERSION } from './cli-meta.js';
+import { type TemplateContext } from './types.js';
 
 type TreeNode = {
     name: string;
     children?: Map<string, TreeNode>;
 };
-
-type ChalkRgb = {
-    rgb?: (r: number, g: number, b: number) => (text: string) => string;
-};
-
-function rgb(r: number, g: number, b: number, text: string): string {
-    if (typeof (chalk as ChalkRgb).rgb !== 'function') {
-        return chalk.cyan.bold(text);
-    }
-
-    return (chalk as Required<ChalkRgb>).rgb(r, g, b)(text);
-}
 
 function paintTitle(text: string): string {
     const from = [34, 211, 238];
@@ -35,7 +21,7 @@ function paintTitle(text: string): string {
             const g = Math.round(from[1] + (to[1] - from[1]) * t);
             const b = Math.round(from[2] + (to[2] - from[2]) * t);
 
-            return rgb(r, g, b, chalk.bold(char));
+            return chalk.rgb(r, g, b).bold(char);
         })
         .join('');
 }
@@ -149,7 +135,7 @@ export function printBanner(subtitle: string): void {
     console.log();
     console.log(
         `  ${chalk.cyan('╭─')} ${paintTitle('create-arui-scripts-app')}  ${chalk.dim(
-            `v${cliVersion}`,
+            `v${CLI_VERSION}`,
         )}`,
     );
     console.log(`  ${chalk.cyan('│')}  ${chalk.dim(subtitle)}`);

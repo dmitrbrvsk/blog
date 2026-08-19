@@ -6,20 +6,20 @@ import fs from 'fs-extra';
 import ora from 'ora';
 import prompts from 'prompts';
 
-import { buildContext } from './build-context';
-import { buildFileMap } from './build-file-map';
-import { detectProject } from './detect-project';
+import { buildContext } from './build-context.js';
+import { buildFileMap } from './build-file-map.js';
+import { detectProject } from './detect-project.js';
 import {
     detectPackageManager,
     installDependencies,
     installLefthook,
     type PackageManager,
-} from './install-dependencies';
-import { mergeGitignore, mergePackageJson } from './merge-generated-files';
-import { ADD_FEATURES, type AddFeature, type E2eFramework, type InitAnswers } from './types';
-import { printBanner, printDone, printDryRun, printWarn } from './ui';
-import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions';
-import { writeFiles } from './write-files';
+} from './install-dependencies.js';
+import { mergeGitignore, mergePackageJson } from './merge-generated-files.js';
+import { ADD_FEATURES, type AddFeature, type E2eFramework, type InitAnswers } from './types.js';
+import { printBanner, printDone, printDryRun, printWarn } from './ui.js';
+import { DEFAULT_ARUI_SCRIPTS_VERSION } from './versions.js';
+import { writeFiles } from './write-files.js';
 
 export type AddFlags = {
     yes?: boolean;

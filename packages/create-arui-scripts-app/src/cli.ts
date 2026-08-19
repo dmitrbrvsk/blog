@@ -1,5 +1,5 @@
-import { createProgram } from './create-program';
-import { printError } from './ui';
+import { createProgram } from './create-program.js';
+import { printError } from './ui.js';
 
 createProgram()
     .parseAsync(process.argv)

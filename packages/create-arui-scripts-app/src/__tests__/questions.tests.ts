@@ -1,6 +1,6 @@
 import prompts from 'prompts';
 
-import { getQuestions } from '../questions';
+import { getQuestions } from '../questions.js';
 
 describe('getQuestions', () => {
     it('пропускает serverPort в режиме clientOnly', async () => {

@@ -3,8 +3,8 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import { detectProject, parseAruiScriptsVersion } from '../detect-project';
-import { runInit } from '../run';
+import { detectProject, parseAruiScriptsVersion } from '../detect-project.js';
+import { runInit } from '../run.js';
 
 describe('parseAruiScriptsVersion', () => {
     it('снимает префикс диапазона', () => {

@@ -1,6 +1,6 @@
-import { buildContext } from '../build-context';
-import { buildFileMap } from '../build-file-map';
-import { type InitAnswers } from '../types';
+import { buildContext } from '../build-context.js';
+import { buildFileMap } from '../build-file-map.js';
+import { type InitAnswers } from '../types.js';
 
 const base: InitAnswers = {
     name: 'my-app',
