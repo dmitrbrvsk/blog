@@ -138,7 +138,7 @@ describe('buildFileMap', () => {
         expect(pkg.dependencies).toHaveProperty('react');
         expect(pkg.dependencies).not.toHaveProperty('arui-scripts');
         expect(pkg.devDependencies['arui-scripts']).toBe('^23.0.1');
-        expect(pkg.engines.node).toBe('>=24.11.1');
+        expect(pkg.engines.node).toBe('^22.12.0 || ^24.11.1 || ^26.0.0');
     });
 
     it('экранирует dockerRegistry и presets в конфиге', () => {

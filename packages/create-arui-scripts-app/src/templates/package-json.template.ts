@@ -1,3 +1,4 @@
+import { NODE_ENGINE_RANGE } from '../node-engines';
 import { type TemplateContext } from '../types';
 
 function sortKeys(record: Record<string, string>): Record<string, string> {
@@ -49,7 +50,7 @@ export function packageJsonTemplate(ctx: TemplateContext): string {
         private: true,
         scripts,
         engines: {
-            node: '>=24.11.1',
+            node: NODE_ENGINE_RANGE,
         },
     };
 
