@@ -98,6 +98,16 @@ export async function detectProject(
         (await exists(targetDir, `${client}/polyfills.ts`)) ||
         (await exists(targetDir, 'src/client/polyfills.ts')) ||
         (await exists(targetDir, 'src/polyfills.ts'));
+
+    if (await exists(targetDir, 'src/modules/example/index.tsx')) {
+        answers.moduleRole = 'remote';
+    } else if (
+        (await exists(targetDir, `${client}/components/remote-module.tsx`)) ||
+        (await exists(targetDir, 'src/client/components/remote-module.tsx')) ||
+        (await exists(targetDir, 'src/components/remote-module.tsx'))
+    ) {
+        answers.moduleRole = 'host';
+    }
     answers.reactCompiler = /experimentalReactCompiler:/.test(config);
     answers.testRunner = (
         (await exists(targetDir, 'vitest.config.ts')) ? 'vitest' : 'jest'

@@ -3,7 +3,13 @@ import { Command, Option } from 'commander';
 import { type CliFlags } from './defaults';
 import { runInit } from './run';
 import { type AddFlags, runAdd } from './run-add';
-import { ADD_FEATURES, type CodeLoader, type E2eFramework, type TestRunner } from './types';
+import {
+    ADD_FEATURES,
+    type CodeLoader,
+    type E2eFramework,
+    type ModuleRole,
+    type TestRunner,
+} from './types';
 
 // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
 const { version } = require('../package.json');
@@ -65,6 +71,9 @@ export function createProgram(
         )
         .option('--router', 'Подключить React Router')
         .option('--no-router', 'Без React Router')
+        .addOption(
+            new Option('--modules <role>', 'Module federation').choices(['none', 'host', 'remote']),
+        )
         .option('--css-modules', 'CSS-модули')
         .option('--no-css-modules', 'Обычный css')
         .option('--client-port <port>', 'Порт dev-сервера', (value) => Number(value))
@@ -158,6 +167,10 @@ export function mapOptsToFlags(opts: Record<string, unknown>): CliFlags {
 
     if (typeof opts.router === 'boolean') {
         flags.useRouter = opts.router;
+    }
+
+    if (opts.modules === 'none' || opts.modules === 'host' || opts.modules === 'remote') {
+        flags.moduleRole = opts.modules as ModuleRole;
     }
 
     if (typeof opts.lint === 'boolean') {
