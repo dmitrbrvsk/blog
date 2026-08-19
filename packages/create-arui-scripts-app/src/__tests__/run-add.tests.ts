@@ -180,4 +180,12 @@ describe('runAdd', () => {
         expect(await fs.readFile(appPath, 'utf8')).toBe('// custom app\n');
         expect(await fs.pathExists(path.join(target, 'src/client/store/index.ts'))).toBe(true);
     });
+
+    it('add --dry-run не пишет файлы', async () => {
+        const target = await scaffold();
+
+        await runAdd({ feature: 'lint', cwd: target, flags: { yes: true, dryRun: true } });
+
+        expect(await fs.pathExists(path.join(target, 'eslint.config.mts'))).toBe(false);
+    });
 });

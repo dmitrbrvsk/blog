@@ -62,6 +62,14 @@ export async function runInit(options: RunInitOptions = {}): Promise<void> {
 
     const context = buildContext(initAnswers, aruiScriptsVersion);
     const files = buildFileMap(context);
+    const plannedFiles = [...Object.keys(files).sort(), ...STATIC_ASSET_PATHS];
+
+    if (flags.dryRun) {
+        printDryRun(targetDir, plannedFiles);
+
+        return;
+    }
+
     const conflicts = await findConflictingFiles(targetDir, files, STATIC_ASSET_PATHS);
 
     if (conflicts.length > 0 && !flags.force) {
@@ -269,6 +277,17 @@ function mergePromptAnswers(base: InitAnswers, answers: prompts.Answers<string>)
     }
 
     return merged;
+}
+
+function printDryRun(targetDir: string, plannedFiles: string[]): void {
+    console.log();
+    console.log(`  ${chalk.bold('[dry-run]')} файлы не будут записаны`);
+    console.log(`  ${chalk.dim(targetDir)}`);
+    plannedFiles.forEach((file) => {
+        console.log(`  ${chalk.dim('•')} ${file}`);
+    });
+    console.log(`  ${chalk.dim(`${plannedFiles.length} файлов`)}`);
+    console.log();
 }
 
 function printBanner(): void {

@@ -26,6 +26,7 @@ export type AddFlags = {
     e2eFramework?: Exclude<E2eFramework, 'none'>;
     dockerRegistry?: string;
     install?: boolean;
+    dryRun?: boolean;
 };
 
 export type RunAddOptions = {
@@ -219,6 +220,18 @@ export async function runAdd(options: RunAddOptions): Promise<void> {
             )} Пропущены изменённые файлы (передайте --force, чтобы перезаписать):`,
         );
         skipped.forEach((file) => console.log(`   ${chalk.dim(file)}`));
+    }
+
+    const planned = Object.keys(filesToWrite).sort();
+
+    if (flags.dryRun) {
+        console.log();
+        console.log(` ${chalk.bold('[dry-run]')} файлы не будут записаны`);
+        planned.forEach((file) => console.log(` ${chalk.dim('•')} ${file}`));
+        console.log(` ${chalk.dim(`${planned.length} файлов`)}`);
+        console.log();
+
+        return;
     }
 
     await writeFiles(targetDir, filesToWrite);

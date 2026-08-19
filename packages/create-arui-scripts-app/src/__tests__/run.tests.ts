@@ -49,6 +49,20 @@ describe('runInit', () => {
         expect(await fs.pathExists(path.join(target, '.git'))).toBe(false);
     });
 
+    it('с --dry-run ничего не записывает', async () => {
+        const target = path.join(tempDir, 'app');
+
+        await runInit({
+            cwd: tempDir,
+            targetDirArg: 'app',
+            flags: { yes: true, dryRun: true },
+            aruiScriptsVersion: '23.0.1',
+        });
+
+        expect(await fs.pathExists(path.join(target, 'package.json'))).toBe(false);
+        expect(await fs.pathExists(target)).toBe(false);
+    });
+
     it('падает при конфликте файлов без --force', async () => {
         const target = path.join(tempDir, 'app');
 

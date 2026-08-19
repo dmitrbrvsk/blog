@@ -36,6 +36,7 @@ export function createProgram(
         )
         .option('--docker-registry <registry>', 'Docker registry для add docker')
         .option('--install', 'Установить зависимости после изменений')
+        .option('--dry-run', 'Показать файлы, ничего не записывать')
         .action(async (feature: string, opts: Record<string, unknown>) => {
             await onAdd(feature, mapAddOptsToFlags(opts));
         });
@@ -80,6 +81,7 @@ export function createProgram(
         .option('--no-install', 'Не устанавливать зависимости')
         .option('--git', 'git init и первый коммит')
         .option('--no-git', 'Не делать git init')
+        .option('--dry-run', 'Показать файлы, ничего не записывать')
         .showHelpAfterError('(используйте --help для справки)')
         .action(async (dir: string | undefined, opts: Record<string, unknown>) => {
             await onInit(dir, mapOptsToFlags(opts));
@@ -170,6 +172,10 @@ export function mapOptsToFlags(opts: Record<string, unknown>): CliFlags {
         flags.git = opts.git;
     }
 
+    if (opts.dryRun === true) {
+        flags.dryRun = true;
+    }
+
     return flags;
 }
 
@@ -194,6 +200,10 @@ export function mapAddOptsToFlags(opts: Record<string, unknown>): AddFlags {
 
     if (opts.install === true) {
         flags.install = true;
+    }
+
+    if (opts.dryRun === true) {
+        flags.dryRun = true;
     }
 
     return flags;

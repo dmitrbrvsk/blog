@@ -107,6 +107,10 @@ describe('createProgram', () => {
         await expect(parseFlags(['--no-git'])).resolves.toEqual({ git: false });
     });
 
+    it('--dry-run фиксирует dryRun', async () => {
+        await expect(parseFlags(['--dry-run'])).resolves.toEqual({ dryRun: true });
+    });
+
     it('add <feature> вызывает add-обработчик, а не init', async () => {
         await expect(parseAdd(['add', 'lint'])).resolves.toEqual({ feature: 'lint', flags: {} });
         await expect(
