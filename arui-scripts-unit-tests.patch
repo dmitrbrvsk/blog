@@ -1,0 +1,1583 @@
+diff --git a/packages/arui-scripts/src/bin/__tests__/commands-registry.tests.ts b/packages/arui-scripts/src/bin/__tests__/commands-registry.tests.ts
+new file mode 100644
+index 0000000..a87538d
+--- /dev/null
++++ b/packages/arui-scripts/src/bin/__tests__/commands-registry.tests.ts
+@@ -0,0 +1,40 @@
++import { commands } from '../commands-registry';
++
++describe('commands-registry', () => {
++    it('should expose unique CLI commands with loaders', () => {
++        const names = commands.map((command) => command.name);
++
++        expect(names).toEqual([
++            'start',
++            'start:prod',
++            'build',
++            'docker-build',
++            'docker-build:compiled',
++            'test',
++            'test:vitest',
++            'ensure-yarn',
++            'archive-build',
++            'bundle-analyze',
++            'changelog',
++        ]);
++        expect(new Set(names).size).toBe(names.length);
++
++        commands.forEach((command) => {
++            expect(command.description.length).toBeGreaterThan(0);
++            expect(typeof command.load).toBe('function');
++        });
++    });
++
++    it('should mark passthrough commands that forward args to inner tools', () => {
++        const passthrough = commands
++            .filter((command) => command.passthrough)
++            .map((command) => command.name);
++
++        expect(passthrough).toEqual([
++            'docker-build',
++            'docker-build:compiled',
++            'test',
++            'test:vitest',
++        ]);
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/client-assets-sizes.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/client-assets-sizes.tests.ts
+new file mode 100644
+index 0000000..17b7886
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/client-assets-sizes.tests.ts
+@@ -0,0 +1,50 @@
++import stripAnsi from 'strip-ansi';
++
++import { printAssetsSizes } from '../client-assets-sizes';
++
++jest.mock('../../../configs/app-configs', () => ({
++    configs: {
++        dictionaryCompression: {
++            dictionaryPath: [],
++        },
++    },
++}));
++
++describe('printAssetsSizes', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'log').mockImplementation(() => {});
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should print js/css sizes and ignore unrelated assets', () => {
++        const webpackStats = {
++            toJson: () => ({
++                assets: [
++                    { type: 'asset', name: 'main.abcdef.js', size: 1024 },
++                    { type: 'asset', name: 'main.abcdef.js.gz', size: 400 },
++                    { type: 'asset', name: 'main.abcdef.js.br', size: 300 },
++                    { type: 'asset', name: 'styles.123.css', size: 200 },
++                    { type: 'asset', name: 'logo.png', size: 50000 },
++                    { type: 'asset', name: 'dict.dict.br', size: 10 },
++                    { type: 'chunk', name: 'ignored.js', size: 1 },
++                ],
++            }),
++        };
++
++        printAssetsSizes(webpackStats as never);
++
++        const output = (console.log as jest.Mock).mock.calls
++            .map((call) => stripAnsi(String(call[0])))
++            .join('\n');
++
++        expect(output).toContain('Assets sizes:');
++        expect(output).toContain('main.js');
++        expect(output).toContain('styles.css');
++        expect(output).toContain('Total size:');
++        expect(output).not.toContain('logo.png');
++        expect(output).not.toContain('dict.dict.br');
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/exec.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/exec.tests.ts
+new file mode 100644
+index 0000000..9a07be5
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/exec.tests.ts
+@@ -0,0 +1,37 @@
++import shell from 'shelljs';
++
++import { exec } from '../exec';
++
++jest.mock('shelljs', () => ({
++    exec: jest.fn(),
++}));
++
++const mockedExec = shell.exec as unknown as jest.Mock;
++
++describe('exec', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'log').mockImplementation(() => {});
++        mockedExec.mockReset();
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should resolve when command exits with 0', async () => {
++        mockedExec.mockImplementation((_command: string, callback: (code: number) => void) => {
++            callback(0);
++        });
++
++        await expect(exec('echo ok')).resolves.toBe(0);
++        expect(mockedExec).toHaveBeenCalledWith('echo ok', expect.any(Function));
++    });
++
++    it('should reject when command exits with non-zero code', async () => {
++        mockedExec.mockImplementation((_command: string, callback: (code: number) => void) => {
++            callback(1);
++        });
++
++        await expect(exec('false')).rejects.toBe(1);
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/format-webpack-messages.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/format-webpack-messages.tests.ts
+new file mode 100644
+index 0000000..09e56d7
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/format-webpack-messages.tests.ts
+@@ -0,0 +1,47 @@
++import stripAnsi from 'strip-ansi';
++
++import { formatWebpackMessages } from '../format-webpack-messages';
++
++describe('formatWebpackMessages', () => {
++    it('should return empty collections when stats are missing', () => {
++        expect(formatWebpackMessages(undefined)).toEqual({ errors: [], warnings: [] });
++    });
++
++    it('should format export errors into a friendlier message', () => {
++        const result = formatWebpackMessages({
++            errors: [
++                {
++                    message: "export 'foo' was not found in './bar'",
++                },
++            ],
++            warnings: [],
++        });
++
++        expect(stripAnsi(result.errors[0])).toContain(
++            "Attempted import error: 'foo' is not exported from './bar'.",
++        );
++        expect(result.warnings).toEqual([]);
++    });
++
++    it('should keep only syntax errors when they are present', () => {
++        const result = formatWebpackMessages({
++            errors: [
++                { message: 'Something else went wrong' },
++                { message: 'Syntax error: Unexpected token (1:0)' },
++            ],
++            warnings: [],
++        });
++
++        expect(result.errors).toHaveLength(1);
++        expect(stripAnsi(result.errors[0])).toContain('Syntax error:');
++    });
++
++    it('should format object messages using the message field', () => {
++        const result = formatWebpackMessages({
++            errors: [],
++            warnings: [{ message: 'Module not found: Cannot find file: missing.css' }],
++        });
++
++        expect(stripAnsi(result.warnings[0])).toContain('Cannot find file: missing.css');
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/get-local-ident.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/get-local-ident.tests.ts
+new file mode 100644
+index 0000000..5fde8ac
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/get-local-ident.tests.ts
+@@ -0,0 +1,51 @@
++import { getLocalIdent } from '../get-local-ident';
++
++describe('getLocalIdent', () => {
++    const rootContext = '/project/src';
++
++    it('should use file basename for regular css modules', () => {
++        const className = getLocalIdent(
++            {
++                resourcePath: '/project/src/button.module.css',
++                rootContext,
++            },
++            '[hash:base64:5]',
++            'root',
++        );
++
++        expect(className).toMatch(/^button_root__[A-Za-z0-9_]{1,5}$/);
++    });
++
++    it('should use parent directory name for index.module.css', () => {
++        const className = getLocalIdent(
++            {
++                resourcePath: '/project/src/button/index.module.css',
++                rootContext,
++            },
++            '[hash:base64:5]',
++            'root',
++        );
++
++        expect(className).toMatch(/^button_root__[A-Za-z0-9_]{1,5}$/);
++    });
++
++    it('should produce a stable hash for the same file and class', () => {
++        const context = {
++            resourcePath: '/project/src/card.module.css',
++            rootContext,
++        };
++
++        expect(getLocalIdent(context, '', 'title')).toBe(getLocalIdent(context, '', 'title'));
++    });
++
++    it('should produce different hashes for different class names', () => {
++        const context = {
++            resourcePath: '/project/src/card.module.css',
++            rootContext,
++        };
++
++        expect(getLocalIdent(context, '', 'title')).not.toBe(
++            getLocalIdent(context, '', 'subtitle'),
++        );
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/make-tmp-dir.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/make-tmp-dir.tests.ts
+new file mode 100644
+index 0000000..0256f16
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/make-tmp-dir.tests.ts
+@@ -0,0 +1,16 @@
++import fs from 'fs';
++import os from 'os';
++import path from 'path';
++
++import { makeTmpDir } from '../make-tmp-dir';
++
++describe('makeTmpDir', () => {
++    it('should create a temporary directory with optional prefix', async () => {
++        const dir = await makeTmpDir('arui-scripts-test-');
++
++        expect(dir.startsWith(path.join(os.tmpdir(), 'arui-scripts-test-'))).toBe(true);
++        expect(fs.existsSync(dir)).toBe(true);
++
++        fs.rmSync(dir, { recursive: true, force: true });
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/print-build-error.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/print-build-error.tests.ts
+new file mode 100644
+index 0000000..0c686c6
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/print-build-error.tests.ts
+@@ -0,0 +1,35 @@
++import stripAnsi from 'strip-ansi';
++
++import { printBuildError } from '../print-build-error';
++
++describe('printBuildError', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'log').mockImplementation(() => {});
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should print error message for regular errors', () => {
++        printBuildError(new Error('boom'));
++
++        expect(console.log).toHaveBeenCalledWith('boom\n');
++    });
++
++    it('should print minification location for terser errors', () => {
++        const err = new Error('from Terser');
++
++        err.stack = 'Error: from Terser\n    at minify [src/app.js:10,4][bundle.js]';
++
++        printBuildError(err);
++
++        const output = (console.log as jest.Mock).mock.calls
++            .map((call) => stripAnsi(String(call[0])))
++            .join('\n');
++
++        expect(output).toContain('Failed to minify the code from this file');
++        expect(output).toContain('src/app.js:10:4');
++        expect(output).toContain('https://cra.link/failed-to-minify');
++    });
++});
+diff --git a/packages/arui-scripts/src/commands/util/__tests__/yarn.tests.ts b/packages/arui-scripts/src/commands/util/__tests__/yarn.tests.ts
+new file mode 100644
+index 0000000..74c8d17
+--- /dev/null
++++ b/packages/arui-scripts/src/commands/util/__tests__/yarn.tests.ts
+@@ -0,0 +1,129 @@
++import fs from 'fs';
++
++import shell from 'shelljs';
++
++import { configs } from '../../../configs/app-configs';
++import {
++    getInstallProductionCommand,
++    getPruningCommand,
++    getYarnBinSymlinkCommand,
++    getYarnPathFromRc,
++    getYarnVersion,
++} from '../yarn';
++
++jest.mock('../../../configs/app-configs', () => ({
++    configs: {
++        useYarn: true,
++        clientOnly: false,
++        cwd: '/project',
++    },
++}));
++
++jest.mock('shelljs', () => ({
++    which: jest.fn(),
++    exec: jest.fn(),
++    test: jest.fn(),
++}));
++
++jest.mock('fs', () => ({
++    readFileSync: jest.fn(),
++}));
++
++const mockedWhich = shell.which as unknown as jest.Mock;
++const mockedExec = shell.exec as unknown as jest.Mock;
++const mockedTest = shell.test as unknown as jest.Mock;
++const mockedReadFileSync = fs.readFileSync as unknown as jest.Mock;
++
++describe('yarn helpers', () => {
++    beforeEach(() => {
++        configs.useYarn = true;
++        configs.clientOnly = false;
++        mockedWhich.mockReturnValue('/usr/bin/yarn');
++        mockedExec.mockReturnValue('1.22.19');
++        mockedTest.mockReturnValue(false);
++        mockedReadFileSync.mockReset();
++    });
++
++    describe('getYarnVersion', () => {
++        it('should return 1 for classic yarn', () => {
++            expect(getYarnVersion()).toBe('1');
++        });
++
++        it('should return 2+ for berry yarn', () => {
++            mockedExec.mockReturnValue('4.13.0');
++
++            expect(getYarnVersion()).toBe('2+');
++        });
++
++        it('should return unavailable when yarn is not used', () => {
++            configs.useYarn = false;
++
++            expect(getYarnVersion()).toBe('unavailable');
++        });
++    });
++
++    describe('getPruningCommand', () => {
++        it('should skip pruning in client only mode', () => {
++            configs.clientOnly = true;
++
++            expect(getPruningCommand()).toContain('Skipping pruning');
++        });
++
++        it('should use yarn workspaces focus for berry', () => {
++            mockedExec.mockReturnValue('4.13.0');
++
++            expect(getPruningCommand()).toBe('yarn workspaces focus --production --all');
++        });
++
++        it('should use npm prune when yarn is unavailable', () => {
++            configs.useYarn = false;
++
++            expect(getPruningCommand()).toBe('npm prune --production');
++        });
++    });
++
++    describe('getInstallProductionCommand', () => {
++        it('should return classic yarn install command', () => {
++            expect(getInstallProductionCommand()).toContain('yarn install --production');
++        });
++
++        it('should return npm install when yarn is unavailable', () => {
++            configs.useYarn = false;
++
++            expect(getInstallProductionCommand()).toBe('npm install --production');
++        });
++    });
++
++    describe('getYarnPathFromRc', () => {
++        it('should return null when .yarnrc.yml is missing', () => {
++            mockedTest.mockReturnValue(false);
++
++            expect(getYarnPathFromRc()).toBeNull();
++        });
++
++        it('should parse yarnPath from .yarnrc.yml', () => {
++            mockedTest.mockReturnValue(true);
++            mockedReadFileSync.mockReturnValue(
++                'nodeLinker: node-modules\nyarnPath: .yarn/releases/yarn-4.18.0.cjs\n',
++            );
++
++            expect(getYarnPathFromRc()).toBe('.yarn/releases/yarn-4.18.0.cjs');
++        });
++    });
++
++    describe('getYarnBinSymlinkCommand', () => {
++        it('should return symlink command for berry with yarnPath', () => {
++            mockedExec.mockReturnValue('4.13.0');
++            mockedTest.mockReturnValue(true);
++            mockedReadFileSync.mockReturnValue("yarnPath: '.yarn/releases/yarn-4.18.0.cjs'\n");
++
++            expect(getYarnBinSymlinkCommand()).toContain(
++                'ln -sf /src/.yarn/releases/yarn-4.18.0.cjs /usr/local/bin/yarn',
++            );
++        });
++
++        it('should return empty string for classic yarn', () => {
++            expect(getYarnBinSymlinkCommand()).toBe('');
++        });
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/__tests__/modules.tests.ts b/packages/arui-scripts/src/configs/__tests__/modules.tests.ts
+new file mode 100644
+index 0000000..38ca8b1
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/__tests__/modules.tests.ts
+@@ -0,0 +1,73 @@
++import { configs } from '../app-configs';
++import {
++    getCssPrefixForModule,
++    haveExposedDefaultModules,
++    patchWebpackConfigForCompat,
++} from '../modules';
++
++describe('getCssPrefixForModule', () => {
++    it('should return explicit cssPrefix when provided', () => {
++        expect(
++            getCssPrefixForModule({ name: 'chat', entry: './chat.ts', cssPrefix: '.chat' }),
++        ).toBe('.chat');
++    });
++
++    it('should return undefined when cssPrefix is disabled', () => {
++        expect(
++            getCssPrefixForModule({ name: 'chat', entry: './chat.ts', cssPrefix: false }),
++        ).toBeUndefined();
++    });
++
++    it('should fall back to .module-{name}', () => {
++        expect(getCssPrefixForModule({ name: 'chat', entry: './chat.ts' })).toBe('.module-chat');
++    });
++});
++
++describe('haveExposedDefaultModules', () => {
++    const originalModules = configs.modules;
++
++    afterEach(() => {
++        configs.modules = originalModules;
++    });
++
++    it('should return exposes object when modules are configured', () => {
++        configs.modules = {
++            shared: {},
++            exposes: { Button: './src/button' },
++        };
++
++        expect(haveExposedDefaultModules()).toEqual({ Button: './src/button' });
++    });
++
++    it('should return falsy value when modules are not configured', () => {
++        configs.modules = null;
++
++        expect(haveExposedDefaultModules()).toBeFalsy();
++    });
++});
++
++describe('patchWebpackConfigForCompat', () => {
++    it('should merge externals, set publicPath to auto and uniqueName', () => {
++        const webpackConf = {
++            externals: { react: 'React' },
++            output: { filename: 'bundle.js' },
++        };
++
++        const result = patchWebpackConfigForCompat(
++            {
++                name: 'chat',
++                entry: './chat.ts',
++                cssPrefix: false,
++                externals: { lodash: '_' },
++            },
++            webpackConf,
++        );
++
++        expect(result.externals).toEqual({ react: 'React', lodash: '_' });
++        expect(result.output).toMatchObject({
++            filename: 'bundle.js',
++            publicPath: 'auto',
++            uniqueName: 'chat',
++        });
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/__tests__/process-assets-plugin-output.tests.ts b/packages/arui-scripts/src/configs/__tests__/process-assets-plugin-output.tests.ts
+new file mode 100644
+index 0000000..9afa394
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/__tests__/process-assets-plugin-output.tests.ts
+@@ -0,0 +1,71 @@
++import { MODULES_ENTRY_NAME } from '../modules';
++import { processAssetsPluginOutput } from '../process-assets-plugin-output';
++
++jest.mock('../app-configs', () => ({
++    configs: {
++        publicPath: 'assets/',
++        version: '1.2.3',
++        normalizedName: 'test_app',
++        modules: {
++            exposes: {
++                Button: './src/button',
++            },
++        },
++        compatModules: {
++            exposes: {},
++        },
++    },
++}));
++
++describe('processAssetsPluginOutput', () => {
++    it('should replace auto/ paths, add module entries and metadata', () => {
++        const result = JSON.parse(
++            processAssetsPluginOutput({
++                main: {
++                    js: 'auto/main.js',
++                    css: 'auto/main.css',
++                },
++            }),
++        );
++
++        expect(result.main).toEqual({
++            js: 'assets/main.js',
++            css: 'assets/main.css',
++        });
++        expect(result.Button).toEqual({
++            mode: 'default',
++            js: expect.stringContaining(MODULES_ENTRY_NAME),
++        });
++        // eslint-disable-next-line no-underscore-dangle
++        expect(result.__metadata__).toEqual({
++            version: '1.2.3',
++            name: 'test_app',
++        });
++    });
++
++    it('should throw when a module is defined both as module and compat', () => {
++        jest.resetModules();
++        jest.doMock('../app-configs', () => ({
++            configs: {
++                publicPath: 'assets/',
++                version: '1.2.3',
++                normalizedName: 'test_app',
++                modules: {
++                    exposes: {
++                        Button: './src/button',
++                    },
++                },
++                compatModules: {
++                    exposes: {
++                        Button: { entry: './compat-button.ts' },
++                    },
++                },
++            },
++        }));
++
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        const processOutput = require('../process-assets-plugin-output').processAssetsPluginOutput;
++
++        expect(() => processOutput({ main: { js: 'main.js' } })).toThrow(/Button/);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/calculate-dependent-config.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/calculate-dependent-config.tests.ts
+new file mode 100644
+index 0000000..5630ce2
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/calculate-dependent-config.tests.ts
+@@ -0,0 +1,103 @@
++import fs from 'fs';
++
++import { resolveNodeModuleRelativeTo } from '../../util/resolve';
++import { calculateDependentConfig, calculateDependentContext } from '../calculate-dependent-config';
++import { type AppConfigs, type AppContext } from '../types';
++
++jest.mock('fs', () => ({
++    ...jest.requireActual('fs'),
++    readFileSync: jest.fn(),
++    statSync: jest.fn(),
++}));
++
++jest.mock('../../util/resolve', () => ({
++    resolveNodeModuleRelativeTo: jest.fn(() => '/project/node_modules/@babel/runtime/package.json'),
++}));
++
++describe('calculateDependentConfig', () => {
++    it('should normalize string polyfills entry to an array', () => {
++        const config = {
++            clientPolyfillsEntry: './polyfills.ts',
++        } as unknown as AppConfigs;
++
++        expect(calculateDependentConfig(config).clientPolyfillsEntry).toEqual(['./polyfills.ts']);
++    });
++
++    it('should keep empty polyfills as an empty array', () => {
++        const config = {
++            clientPolyfillsEntry: null,
++        } as unknown as AppConfigs;
++
++        expect(calculateDependentConfig(config).clientPolyfillsEntry).toEqual([]);
++    });
++});
++
++describe('calculateDependentContext', () => {
++    const mockedReadFileSync = fs.readFileSync as unknown as jest.Mock;
++    const mockedStatSync = fs.statSync as unknown as jest.Mock;
++    const mockedResolve = resolveNodeModuleRelativeTo as unknown as jest.Mock;
++
++    beforeEach(() => {
++        mockedReadFileSync.mockReturnValue(JSON.stringify({ version: '7.23.0' }));
++        mockedStatSync.mockImplementation((filePath: string) => ({
++            isFile: () => filePath.endsWith('.dict'),
++        }));
++        mockedResolve.mockReturnValue('/project/node_modules/@babel/runtime/package.json');
++    });
++
++    afterEach(() => {
++        jest.clearAllMocks();
++    });
++
++    it('should derive output paths and split dictionary paths by file/dir', () => {
++        const config = {
++            assetsPath: 'assets',
++            buildPath: '.build',
++            statsOutputFilename: 'stats.json',
++            dictionaryCompression: {
++                dictionaryPath: ['dicts/app.dict', '/abs/prev-version', 'relative/dir'],
++            },
++        } as unknown as AppConfigs;
++        const context = {
++            cwd: '/project',
++        } as unknown as AppContext;
++
++        const result = calculateDependentContext(config, context);
++
++        expect(result.publicPath).toBe('assets/');
++        expect(result.serverOutputPath).toBe('/project/.build');
++        expect(result.clientOutputPath).toBe('/project/.build/assets');
++        expect(result.statsOutputPath).toBe('/project/.build/stats.json');
++        expect(result.watchIgnorePath).toEqual(['node_modules', '.build']);
++        expect(result.babelRuntimeVersion).toBe('7.23.0');
++        expect(result.compressionPredefinedDictionaryPath).toEqual([
++            expect.stringMatching(/dicts\/app\.dict$/),
++        ]);
++        expect(result.compressionPreviousVersionPath).toEqual([
++            '/abs/prev-version',
++            expect.stringMatching(/relative\/dir$/),
++        ]);
++    });
++
++    it('should fall back to installed @babel/runtime version when project copy is missing', () => {
++        mockedResolve.mockImplementation(() => {
++            throw new Error('not found');
++        });
++
++        const config = {
++            assetsPath: 'assets',
++            buildPath: '.build',
++            statsOutputFilename: 'stats.json',
++            dictionaryCompression: {
++                dictionaryPath: [],
++            },
++        } as unknown as AppConfigs;
++        const context = {
++            cwd: '/project',
++        } as unknown as AppContext;
++
++        const result = calculateDependentContext(config, context);
++
++        expect(result.babelRuntimeVersion).toEqual(expect.stringMatching(/^\d+\./));
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/get-defaults.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/get-defaults.tests.ts
+new file mode 100644
+index 0000000..e3816e2
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/get-defaults.tests.ts
+@@ -0,0 +1,32 @@
++import { getDefaultAppConfig, getDefaultAppContext, nginxConfigFileName } from '../get-defaults';
++
++describe('get-defaults', () => {
++    it('should expose nginx config file name', () => {
++        expect(nginxConfigFileName).toBe('nginx.conf');
++    });
++
++    it('should return baseline app config values', () => {
++        const config = getDefaultAppConfig();
++
++        expect(config.clientServerPort).toBe(8080);
++        expect(config.serverPort).toBe(3000);
++        expect(config.buildPath).toBe('.build');
++        expect(config.assetsPath).toBe('assets');
++        expect(config.codeLoader).toBe('swc');
++        expect(config.experimentalReactCompiler).toBe('disabled');
++        expect(config.clientOnly).toBe(false);
++        expect(config.keepCssVars).toBe(false);
++        expect(config.disableModulesSupport).toBe(false);
++    });
++
++    it('should derive context from package.json', () => {
++        const context = getDefaultAppContext();
++
++        expect(context.name).toBe('arui-scripts');
++        expect(context.normalizedName).toBe('arui_scripts');
++        expect(context.cwd).toBe(process.cwd());
++        expect(typeof context.useYarn).toBe('boolean');
++        expect(context.publicPath).toBe('');
++        expect(context.watchIgnorePath).toEqual([]);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/read-config-file.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/read-config-file.tests.ts
+new file mode 100644
+index 0000000..78f478a
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/read-config-file.tests.ts
+@@ -0,0 +1,48 @@
++import path from 'path';
++
++import { tryResolve } from '../../util/resolve';
++import { getConfigFilePath, readConfigFile } from '../read-config-file';
++
++jest.mock('../../util/resolve', () => ({
++    tryResolve: jest.fn(),
++}));
++
++const mockedTryResolve = tryResolve as unknown as jest.Mock;
++
++describe('getConfigFilePath', () => {
++    it('should resolve arui-scripts.config relative to cwd', () => {
++        mockedTryResolve.mockReturnValue('/project/arui-scripts.config.ts');
++
++        expect(getConfigFilePath('/project')).toBe('/project/arui-scripts.config.ts');
++        expect(mockedTryResolve).toHaveBeenCalledWith(
++            path.join('/project', '/arui-scripts.config'),
++        );
++    });
++});
++
++describe('readConfigFile', () => {
++    beforeEach(() => {
++        jest.resetModules();
++        mockedTryResolve.mockReset();
++    });
++
++    it('should return null when config file is not found', () => {
++        mockedTryResolve.mockReturnValue(undefined);
++
++        expect(readConfigFile('/project')).toBeNull();
++    });
++
++    it('should unwrap default export from es modules', () => {
++        mockedTryResolve.mockReturnValue('virtual-arui-scripts-config');
++        jest.doMock(
++            'virtual-arui-scripts-config',
++            () => ({
++                __esModule: true,
++                default: { serverPort: 4000 },
++            }),
++            { virtual: true },
++        );
++
++        expect(readConfigFile('/project')).toEqual({ serverPort: 4000 });
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/update-with-config-file.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/update-with-config-file.tests.ts
+new file mode 100644
+index 0000000..801d753
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/update-with-config-file.tests.ts
+@@ -0,0 +1,39 @@
++import { readConfigFile } from '../read-config-file';
++import { type AppConfigs, type AppContext } from '../types';
++import { updateWithConfigFile } from '../update-with-config-file';
++
++jest.mock('../read-config-file', () => ({
++    readConfigFile: jest.fn(),
++}));
++
++const mockedReadConfigFile = readConfigFile as unknown as jest.Mock;
++
++describe('updateWithConfigFile', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'warn').mockImplementation(() => {});
++        mockedReadConfigFile.mockReset();
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should return original config when config file is missing', () => {
++        mockedReadConfigFile.mockReturnValue(null);
++        const config = { serverPort: 3000 } as AppConfigs;
++        const context = { cwd: '/project' } as AppContext;
++
++        expect(updateWithConfigFile(config, context)).toBe(config);
++    });
++
++    it('should merge settings from config file', () => {
++        mockedReadConfigFile.mockReturnValue({ serverPort: 4000 });
++        const config = { serverPort: 3000, clientOnly: false } as AppConfigs;
++        const context = { cwd: '/project' } as AppContext;
++
++        expect(updateWithConfigFile(config, context)).toEqual({
++            serverPort: 4000,
++            clientOnly: false,
++        });
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/validate-config.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/validate-config.tests.ts
+new file mode 100644
+index 0000000..eff05bd
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/validate-config.tests.ts
+@@ -0,0 +1,43 @@
++import { type AppContextWithConfigs } from '../types';
++import { validateConfig } from '../validate-config';
++
++function createConfig(
++    overrides: Pick<AppContextWithConfigs, 'experimentalReactCompiler' | 'codeLoader'>,
++): AppContextWithConfigs {
++    return overrides as AppContextWithConfigs;
++}
++
++describe('validateConfig', () => {
++    it('should allow experimentalReactCompiler when codeLoader is swc', () => {
++        expect(() =>
++            validateConfig(
++                createConfig({
++                    experimentalReactCompiler: { compilationMode: 'infer' },
++                    codeLoader: 'swc',
++                }),
++            ),
++        ).not.toThrow();
++    });
++
++    it('should allow any codeLoader when experimentalReactCompiler is disabled', () => {
++        expect(() =>
++            validateConfig(
++                createConfig({
++                    experimentalReactCompiler: 'disabled',
++                    codeLoader: 'babel',
++                }),
++            ),
++        ).not.toThrow();
++    });
++
++    it('should throw when experimentalReactCompiler is enabled without swc', () => {
++        expect(() =>
++            validateConfig(
++                createConfig({
++                    experimentalReactCompiler: { compilationMode: 'infer' },
++                    codeLoader: 'babel',
++                }),
++            ),
++        ).toThrow(/experimentalReactCompiler/);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/validate-settings-keys.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/validate-settings-keys.tests.ts
+index a4c9aae..e2bd34a 100644
+--- a/packages/arui-scripts/src/configs/app-configs/__tests__/validate-settings-keys.tests.ts
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/validate-settings-keys.tests.ts
+@@ -1,6 +1,14 @@
+ import { validateSettingsKeys } from '../validate-settings-keys';
+ 
+ describe('validate-settings-keys', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'warn').mockImplementation(() => {});
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
+     it('should warn with console.warn if object contains unknown properties', () => {
+         const objectWithSettings = {
+             name: 'vasia',
+@@ -10,10 +18,23 @@ describe('validate-settings-keys', () => {
+             name: 'ivan',
+         };
+ 
+-        jest.spyOn(console, 'warn').mockImplementationOnce(() => {});
+-
+         validateSettingsKeys(baseSettings, objectWithSettings);
+ 
+         expect(console.warn).toHaveBeenCalledTimes(1);
++        expect(console.warn).toHaveBeenCalledWith(
++            expect.stringContaining('Неизвестная настройка "country"'),
++        );
++    });
++
++    it('should include custom source in the warning message', () => {
++        validateSettingsKeys({ name: 'ivan' }, { unknown: true }, 'package.json');
++
++        expect(console.warn).toHaveBeenCalledWith('Неизвестная настройка "unknown" в package.json');
++    });
++
++    it('should not warn when all keys exist in the base config', () => {
++        validateSettingsKeys({ name: 'ivan', country: 'russia' }, { name: 'vasia' });
++
++        expect(console.warn).not.toHaveBeenCalled();
+     });
+ });
+diff --git a/packages/arui-scripts/src/configs/app-configs/__tests__/warn-about-deprecations.tests.ts b/packages/arui-scripts/src/configs/app-configs/__tests__/warn-about-deprecations.tests.ts
+new file mode 100644
+index 0000000..2a9ac67
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/app-configs/__tests__/warn-about-deprecations.tests.ts
+@@ -0,0 +1,49 @@
++import { type AppContextWithConfigs } from '../types';
++import { warnAboutDeprecations } from '../warn-about-deprecations';
++
++describe('warnAboutDeprecations', () => {
++    beforeEach(() => {
++        jest.spyOn(console, 'warn').mockImplementation(() => {});
++    });
++
++    afterEach(() => {
++        jest.restoreAllMocks();
++    });
++
++    it('should convert object proxy config to array form', () => {
++        const config = {
++            proxy: {
++                '/api': 'http://localhost:3001',
++                '/ws': { target: 'http://localhost:3002', ws: true },
++            },
++        } as unknown as AppContextWithConfigs;
++
++        warnAboutDeprecations(config);
++
++        expect(config.proxy).toEqual([
++            { context: '/api', target: 'http://localhost:3001' },
++            { context: '/ws', target: 'http://localhost:3002', ws: true },
++        ]);
++        expect(console.warn).toHaveBeenCalled();
++    });
++
++    it('should not mutate proxy when it is already an array', () => {
++        const proxy = [{ context: '/api', target: 'http://localhost:3001' }];
++        const config = { proxy } as AppContextWithConfigs;
++
++        warnAboutDeprecations(config);
++
++        expect(config.proxy).toBe(proxy);
++    });
++
++    it('should copy disableDevWebpackTypecheck to disableDevRspackTypecheck', () => {
++        const config = {
++            disableDevWebpackTypecheck: false,
++        } as AppContextWithConfigs;
++
++        warnAboutDeprecations(config);
++
++        expect(config.disableDevRspackTypecheck).toBe(false);
++        expect(console.warn).toHaveBeenCalled();
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/client-env-config/__tests__/add-env-to-html-template.tests.ts b/packages/arui-scripts/src/configs/client-env-config/__tests__/add-env-to-html-template.tests.ts
+new file mode 100644
+index 0000000..ea9be8d
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/client-env-config/__tests__/add-env-to-html-template.tests.ts
+@@ -0,0 +1,21 @@
++import { addEnvToHtmlTemplate } from '../add-env-to-html-template';
++
++jest.mock('../get-env-config', () => ({
++    getEnvConfigContent: jest.fn(() => '{"API_URL":"https://example.com"}'),
++}));
++
++describe('addEnvToHtmlTemplate', () => {
++    it('should replace envConfig placeholder with env config content', () => {
++        const html = '<script type="application/json"><%= envConfig %></script>';
++
++        expect(addEnvToHtmlTemplate(html)).toBe(
++            '<script type="application/json">{"API_URL":"https://example.com"}</script>',
++        );
++    });
++
++    it('should return html unchanged when placeholder is missing', () => {
++        const html = '<div id="react-app"></div>';
++
++        expect(addEnvToHtmlTemplate(html)).toBe(html);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/client-env-config/__tests__/get-env-config.tests.ts b/packages/arui-scripts/src/configs/client-env-config/__tests__/get-env-config.tests.ts
+new file mode 100644
+index 0000000..415968b
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/client-env-config/__tests__/get-env-config.tests.ts
+@@ -0,0 +1,72 @@
++/* eslint-disable no-template-curly-in-string */
++import { replaceTemplateVariables } from '../get-env-config';
++
++describe('replaceTemplateVariables', () => {
++    it('should replace ${VAR} placeholders with provided values', () => {
++        expect(
++            replaceTemplateVariables('{"api":"${API_URL}","env":"${NODE_ENV}"}', {
++                API_URL: 'https://example.com',
++                NODE_ENV: 'test',
++            }),
++        ).toBe('{"api":"https://example.com","env":"test"}');
++    });
++
++    it('should replace missing variables with an empty string', () => {
++        expect(replaceTemplateVariables('value=${MISSING}', {})).toBe('value=');
++    });
++
++    it('should leave $VAR without braces unchanged', () => {
++        expect(replaceTemplateVariables('keep=$FOO and ${BAR}', { BAR: 'ok' })).toBe(
++            'keep=$FOO and ok',
++        );
++    });
++});
++
++describe('getEnvConfigContent', () => {
++    beforeEach(() => {
++        jest.resetModules();
++        jest.restoreAllMocks();
++    });
++
++    it('should return {} when env-config.json does not exist', () => {
++        jest.doMock('fs', () => ({
++            existsSync: () => false,
++            readFileSync: jest.fn(),
++        }));
++        jest.doMock('../../app-configs', () => ({
++            configs: { cwd: '/tmp/missing-env-config' },
++        }));
++
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        const { getEnvConfigContent } = require('../get-env-config');
++
++        expect(getEnvConfigContent()).toBe('{}');
++    });
++
++    it('should interpolate env variables from env-config.json and cache the result', () => {
++        const readFileSync = jest.fn(() => '{"api":"${API_URL}"}');
++
++        jest.doMock('fs', () => ({
++            existsSync: () => true,
++            readFileSync,
++        }));
++        jest.doMock('../../app-configs', () => ({
++            configs: { cwd: '/tmp/project' },
++        }));
++
++        const originalApiUrl = process.env.API_URL;
++
++        process.env.API_URL = 'https://api.test';
++
++        try {
++            // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++            const { getEnvConfigContent } = require('../get-env-config');
++
++            expect(getEnvConfigContent()).toBe('{"api":"https://api.test"}');
++            expect(getEnvConfigContent()).toBe('{"api":"https://api.test"}');
++            expect(readFileSync).toHaveBeenCalledTimes(1);
++        } finally {
++            process.env.API_URL = originalApiUrl;
++        }
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/apply-overrides.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/apply-overrides.tests.ts
+index 028f8f7..d2138f9 100644
+--- a/packages/arui-scripts/src/configs/util/__tests__/apply-overrides.tests.ts
++++ b/packages/arui-scripts/src/configs/util/__tests__/apply-overrides.tests.ts
+@@ -54,6 +54,25 @@ it('should call override function and update config', () => {
+     expect(override).toHaveBeenCalledWith({}, { overridesPath: ['overrides'] }, undefined);
+ });
+ 
++it('should map deprecated webpack override keys to rspack keys', () => {
++    const override = jest.fn(() => 'rspack value');
++
++    jest.spyOn(console, 'warn').mockImplementation(() => {});
++    jest.doMock(
++        'overrides',
++        () => ({
++            webpackClient: override,
++        }),
++        { virtual: true },
++    );
++
++    const { applyOverrides } = require('../apply-overrides');
++
++    expect(applyOverrides('rspackClient', {})).toBe('rspack value');
++    expect(override).toHaveBeenCalled();
++    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('webpackClient'));
++});
++
+ it('should call multiple override functions and update config with latest value', () => {
+     const override1 = jest.fn(() => 'new value');
+     const override2 = jest.fn(() => 'new value2');
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/check-node-version.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/check-node-version.tests.ts
+new file mode 100644
+index 0000000..435733a
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/__tests__/check-node-version.tests.ts
+@@ -0,0 +1,14 @@
++import { checkNodeVersion } from '../check-node-version';
++
++describe('checkNodeVersion', () => {
++    const currentMajor = parseInt(process.versions.node.split('.')[0], 10);
++
++    it('should return true when current major version is greater or equal', () => {
++        expect(checkNodeVersion(currentMajor)).toBe(true);
++        expect(checkNodeVersion(currentMajor - 1)).toBe(true);
++    });
++
++    it('should return false when required major version is higher', () => {
++        expect(checkNodeVersion(currentMajor + 1)).toBe(false);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/find-loader.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/find-loader.tests.ts
+new file mode 100644
+index 0000000..438d2cb
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/__tests__/find-loader.tests.ts
+@@ -0,0 +1,56 @@
++import { type Configuration, type RuleSetRule } from '@rspack/core';
++
++import { findLoader } from '../find-loader';
++
++describe('findLoader', () => {
++    it('should return top-level rule with matching test', () => {
++        const cssRule: RuleSetRule = { test: /\.css$/, use: ['css-loader'] };
++        const config: Configuration = {
++            module: {
++                rules: [cssRule],
++            },
++        };
++
++        expect(findLoader(config, '/\\.css$/')).toBe(cssRule);
++    });
++
++    it('should return nested oneOf rule with matching test', () => {
++        const cssModulesRule: RuleSetRule = { test: /\.module\.css$/, use: ['css-loader'] };
++        const config: Configuration = {
++            module: {
++                rules: [
++                    {
++                        oneOf: [cssModulesRule, { test: /\.svg$/, type: 'asset' }],
++                    },
++                ],
++            },
++        };
++
++        expect(findLoader(config, '/\\.module\\.css$/')).toBe(cssModulesRule);
++    });
++
++    it('should skip webpack "..." fallback entries and empty rules', () => {
++        const jsRule: RuleSetRule = { test: /\.js$/, use: ['swc-loader'] };
++        const config: Configuration = {
++            module: {
++                rules: ['...', undefined, false, jsRule],
++            },
++        };
++
++        expect(findLoader(config, '/\\.js$/')).toBe(jsRule);
++    });
++
++    it('should return undefined when no rule matches', () => {
++        const config: Configuration = {
++            module: {
++                rules: [{ test: /\.css$/, use: ['css-loader'] }],
++            },
++        };
++
++        expect(findLoader(config, '/\\.scss$/')).toBeUndefined();
++    });
++
++    it('should return undefined when module.rules is missing', () => {
++        expect(findLoader({}, '/\\.css$/')).toBeUndefined();
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/get-entry.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/get-entry.tests.ts
+new file mode 100644
+index 0000000..eb70c2d
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/__tests__/get-entry.tests.ts
+@@ -0,0 +1,41 @@
++import { getEntry } from '../get-entry';
++
++describe('getEntry', () => {
++    const prependHot = (entry: string[], prefix: string) => [prefix, ...entry];
++
++    it('should wrap a string entry with getSingleEntry', () => {
++        expect(getEntry('./src/index.ts', (entry) => ['hot', ...entry])).toEqual([
++            'hot',
++            './src/index.ts',
++        ]);
++    });
++
++    it('should wrap an array entry with getSingleEntry', () => {
++        expect(getEntry(['./a.ts', './b.ts'], (entry) => ['polyfill', ...entry])).toEqual([
++            'polyfill',
++            './a.ts',
++            './b.ts',
++        ]);
++    });
++
++    it('should map each named entry in an object', () => {
++        const result = getEntry(
++            {
++                main: './src/index.ts',
++                admin: ['./src/admin.ts'],
++            },
++            (entry) => ['hot', ...entry],
++        );
++
++        expect(result).toEqual({
++            main: ['hot', './src/index.ts'],
++            admin: ['hot', './src/admin.ts'],
++        });
++    });
++
++    it('should pass additional arguments to getSingleEntry', () => {
++        const result = getEntry('index.ts', prependHot, 'webpack-hot');
++
++        expect(result).toEqual(['webpack-hot', 'index.ts']);
++    });
++});
+diff --git a/packages/arui-scripts/src/configs/util/__tests__/resolve.tests.ts b/packages/arui-scripts/src/configs/util/__tests__/resolve.tests.ts
+new file mode 100644
+index 0000000..6e00f5b
+--- /dev/null
++++ b/packages/arui-scripts/src/configs/util/__tests__/resolve.tests.ts
+@@ -0,0 +1,24 @@
++import path from 'path';
++
++import { resolveNodeModuleRelativeTo, tryResolve } from '../resolve';
++
++describe('tryResolve', () => {
++    it('should return an absolute path for an existing module', () => {
++        const resolved = tryResolve('jest');
++
++        expect(resolved).toEqual(expect.stringContaining('jest'));
++        expect(path.isAbsolute(resolved as string)).toBe(true);
++    });
++
++    it('should return undefined when module cannot be resolved', () => {
++        expect(tryResolve('definitely-not-a-real-package-name-xyz')).toBeUndefined();
++    });
++});
++
++describe('resolveNodeModuleRelativeTo', () => {
++    it('should resolve module path relative to the given project root', () => {
++        expect(resolveNodeModuleRelativeTo('/project', 'lodash')).toBe(
++            path.resolve('/project/node_modules/lodash'),
++        );
++    });
++});
+diff --git a/packages/arui-scripts/src/plugins/__tests__/postcss-prefix-selector.tests.ts b/packages/arui-scripts/src/plugins/__tests__/postcss-prefix-selector.tests.ts
+new file mode 100644
+index 0000000..60f75cf
+--- /dev/null
++++ b/packages/arui-scripts/src/plugins/__tests__/postcss-prefix-selector.tests.ts
+@@ -0,0 +1,34 @@
++import postcss from 'postcss';
++
++import { postCssPrefix } from '../postcss-prefix-selector';
++
++describe('postCssPrefix', () => {
++    async function transform(css: string, prefix = '.app ') {
++        const result = await postcss([postCssPrefix({ prefix })]).process(css, { from: undefined });
++
++        return result.css;
++    }
++
++    it('should prefix regular selectors', async () => {
++        const css = await transform('.button { color: red; }');
++
++        expect(css).toContain('.app .button');
++    });
++
++    it('should wrap :root with prefix only to encapsulate css variables', async () => {
++        const css = await transform(':root { --color: red; }');
++
++        expect(css).toContain('.app');
++        expect(css).toContain('--color: red');
++        expect(css).not.toContain(':root');
++    });
++
++    it('should not prefix keyframe selectors', async () => {
++        const css = await transform('@keyframes fade { from { opacity: 0; } to { opacity: 1; } }');
++
++        expect(css).toContain('from {');
++        expect(css).toContain('to {');
++        expect(css).not.toContain('.app from');
++        expect(css).not.toContain('.app to');
++    });
++});
+diff --git a/packages/arui-scripts/src/plugins/__tests__/turn-off-split-remote-entry.tests.ts b/packages/arui-scripts/src/plugins/__tests__/turn-off-split-remote-entry.tests.ts
+new file mode 100644
+index 0000000..741a567
+--- /dev/null
++++ b/packages/arui-scripts/src/plugins/__tests__/turn-off-split-remote-entry.tests.ts
+@@ -0,0 +1,85 @@
++import { type Compiler } from '@rspack/core';
++
++import { TurnOffSplitRemoteEntry } from '../turn-off-split-remote-entry';
++
++function createChunk(name: string, isOnlyInitial = false) {
++    return {
++        name,
++        isOnlyInitial: () => isOnlyInitial,
++    };
++}
++
++type ChunkFilter = (chunk: ReturnType<typeof createChunk>) => boolean;
++
++describe('TurnOffSplitRemoteEntry', () => {
++    it('should skip when splitChunks is disabled', () => {
++        const plugin = new TurnOffSplitRemoteEntry('remoteApp');
++        const compiler = {
++            options: {
++                optimization: {
++                    splitChunks: false,
++                },
++            },
++        } as unknown as Compiler;
++
++        expect(() => plugin.apply(compiler)).not.toThrow();
++    });
++
++    it('should keep remote entry out of splitChunks.chunks=all', () => {
++        const plugin = new TurnOffSplitRemoteEntry('remoteApp');
++        const splitChunks = {
++            chunks: 'all' as const,
++            cacheGroups: {
++                vendors: {
++                    chunks: 'all' as const,
++                },
++            },
++        };
++        const compiler = {
++            options: {
++                optimization: {
++                    splitChunks,
++                },
++            },
++        } as unknown as Compiler;
++
++        plugin.apply(compiler);
++
++        expect(typeof splitChunks.chunks).toBe('function');
++        expect((splitChunks.chunks as unknown as ChunkFilter)(createChunk('remoteApp'))).toBe(
++            false,
++        );
++        expect((splitChunks.chunks as unknown as ChunkFilter)(createChunk('main'))).toBe(true);
++        expect(typeof splitChunks.cacheGroups.vendors.chunks).toBe('function');
++        expect(
++            (splitChunks.cacheGroups.vendors.chunks as unknown as ChunkFilter)(
++                createChunk('remoteApp'),
++            ),
++        ).toBe(false);
++    });
++
++    it('should wrap custom chunks function and still exclude remote entry', () => {
++        const plugin = new TurnOffSplitRemoteEntry('remoteApp');
++        const prevChunks = jest.fn((chunk: { name: string }) => chunk.name === 'vendors');
++        const splitChunks = {
++            cacheGroups: {
++                custom: {
++                    chunks: prevChunks,
++                },
++            },
++        };
++        const compiler = {
++            options: {
++                optimization: {
++                    splitChunks,
++                },
++            },
++        } as unknown as Compiler;
++
++        plugin.apply(compiler);
++
++        expect(splitChunks.cacheGroups.custom.chunks(createChunk('remoteApp'))).toBe(false);
++        expect(splitChunks.cacheGroups.custom.chunks(createChunk('vendors'))).toBe(true);
++        expect(prevChunks).toHaveBeenCalled();
++    });
++});
+diff --git a/packages/arui-scripts/src/plugins/postcss-global-variables/utils/__tests__/parse-media-query.tests.ts b/packages/arui-scripts/src/plugins/postcss-global-variables/utils/__tests__/parse-media-query.tests.ts
+new file mode 100644
+index 0000000..b2c9296
+--- /dev/null
++++ b/packages/arui-scripts/src/plugins/postcss-global-variables/utils/__tests__/parse-media-query.tests.ts
+@@ -0,0 +1,25 @@
++import { type AtRule, type Root } from 'postcss';
++
++import { parseMediaQuery } from '../utils';
++
++describe('parseMediaQuery', () => {
++    it('should collect custom-media rules by name', () => {
++        const desktop = { params: '--desktop (min-width: 1024px)' } as AtRule;
++        const mobile = { params: '--mobile (max-width: 767px)' } as AtRule;
++        const parsedCustomMedia: Record<string, AtRule> = {};
++        const importedFile = {
++            walkAtRules: (name: string, callback: (rule: AtRule) => void) => {
++                expect(name).toBe('custom-media');
++                callback(desktop);
++                callback(mobile);
++            },
++        } as unknown as Root;
++
++        parseMediaQuery(importedFile, parsedCustomMedia);
++
++        expect(parsedCustomMedia).toEqual({
++            '--desktop': desktop,
++            '--mobile': mobile,
++        });
++    });
++});
+diff --git a/packages/arui-scripts/src/templates/__tests__/html.template.tests.ts b/packages/arui-scripts/src/templates/__tests__/html.template.tests.ts
+new file mode 100644
+index 0000000..f8ea421
+--- /dev/null
++++ b/packages/arui-scripts/src/templates/__tests__/html.template.tests.ts
+@@ -0,0 +1,18 @@
++describe('html.template', () => {
++    it('should contain react root and env-config placeholder', () => {
++        jest.resetModules();
++        jest.doMock('../../configs/app-configs', () => ({
++            configs: {
++                overridesPath: [],
++            },
++        }));
++
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        const { htmlTemplate } = require('../html.template');
++
++        expect(htmlTemplate).toContain('id="react-app"');
++        expect(htmlTemplate).toContain('<%= envConfig %>');
++        expect(htmlTemplate).toContain('id="env-settings"');
++        expect(htmlTemplate).toContain('<!doctype html>');
++    });
++});
+diff --git a/packages/arui-scripts/src/templates/__tests__/nginx.conf.template.tests.ts b/packages/arui-scripts/src/templates/__tests__/nginx.conf.template.tests.ts
+new file mode 100644
+index 0000000..d8605e2
+--- /dev/null
++++ b/packages/arui-scripts/src/templates/__tests__/nginx.conf.template.tests.ts
+@@ -0,0 +1,54 @@
++describe('nginx.conf.template', () => {
++    function getTemplate(config: Record<string, unknown>) {
++        jest.resetModules();
++        jest.doMock('../../configs/app-configs', () => ({
++            configs: {
++                clientServerPort: 8080,
++                serverPort: 3000,
++                clientOnly: false,
++                publicPath: 'assets/',
++                nginxRootPath: '/src',
++                buildPath: '.build',
++                dictionaryCompression: {
++                    enablePreviousVersionHeaders: false,
++                },
++                overridesPath: [],
++                ...config,
++            },
++        }));
++
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        return require('../nginx.conf.template').nginxConfTemplate as string;
++    }
++
++    it('should listen on clientServerPort and proxy to serverPort by default', () => {
++        const template = getTemplate({});
++
++        expect(template).toContain('listen 8080');
++        expect(template).toContain('proxy_pass http://127.0.0.1:3000');
++        expect(template).not.toContain('index index.html');
++    });
++
++    it('should serve static files in clientOnly mode', () => {
++        const template = getTemplate({ clientOnly: true });
++
++        expect(template).toContain('root /src/.build');
++        expect(template).toContain('index index.html');
++        expect(template).not.toContain('proxy_pass');
++    });
++
++    it('should enable brotli dictionary headers when configured', () => {
++        const template = getTemplate({
++            dictionaryCompression: { enablePreviousVersionHeaders: true },
++        });
++
++        expect(template).toContain('brotli_auto_dictionary on;');
++    });
++
++    it('should disable cache for remoteEntry.js', () => {
++        const template = getTemplate({});
++
++        expect(template).toContain('location = /assets/remoteEntry.js');
++        expect(template).toContain('no-store, no-cache, must-revalidate');
++    });
++});
+diff --git a/packages/arui-scripts/src/templates/__tests__/start.template.tests.ts b/packages/arui-scripts/src/templates/__tests__/start.template.tests.ts
+new file mode 100644
+index 0000000..91a334a
+--- /dev/null
++++ b/packages/arui-scripts/src/templates/__tests__/start.template.tests.ts
+@@ -0,0 +1,33 @@
++describe('start.template', () => {
++    function getTemplate(clientOnly: boolean) {
++        jest.resetModules();
++        jest.doMock('../../configs/app-configs', () => ({
++            configs: {
++                clientOnly,
++                buildPath: '.build',
++                serverOutput: 'server.js',
++                overridesPath: [],
++            },
++        }));
++
++        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
++        return require('../start.template').startScript as string;
++    }
++
++    it('should start nginx and node in isomorphic mode', () => {
++        const template = getTemplate(false);
++
++        expect(template).toContain('nginx &');
++        expect(template).toContain('exec node --max-old-space-size=');
++        expect(template).toContain('./.build/server.js');
++    });
++
++    it('should only start nginx and substitute env-config in clientOnly mode', () => {
++        const template = getTemplate(true);
++
++        expect(template).toContain('env-config.json');
++        expect(template).toContain('<%= envConfig %>');
++        expect(template).toContain('nginx');
++        expect(template).not.toContain('exec node');
++    });
++});
