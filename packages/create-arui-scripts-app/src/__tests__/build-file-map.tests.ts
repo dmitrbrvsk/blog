@@ -178,7 +178,7 @@ describe('buildFileMap', () => {
     it('App построен на core-components, конфиг подключает тему', () => {
         const files = map();
 
-        expect(files['src/client/components/app.tsx']).toContain('@alfalab/core-components/button');
+        expect(files['src/client/components/app.tsx']).toContain('@alfalab/core-components/gap');
         expect(files['src/client/components/app.tsx']).toContain(
             '@alfalab/core-components/typography',
         );
@@ -222,17 +222,28 @@ describe('buildFileMap', () => {
         );
     });
 
-    it('useRtk создает store/* и оборачивает index.tsx в Provider', () => {
+    it('useRtk создает store с RTK Query и оборачивает index.tsx в Provider', () => {
         const files = map({ useRtk: true });
 
-        expect(files['src/client/store/index.ts']).toBeDefined();
+        expect(files['src/client/store/index.ts']).toContain('postsApi');
         expect(files['src/client/store/hooks.ts']).toBeDefined();
-        expect(files['src/client/store/counter-slice.ts']).toBeDefined();
+        expect(files['src/client/store/posts-api.ts']).toContain('fakeBaseQuery');
+        expect(files['src/client/store/counter-slice.ts']).toBeUndefined();
+        expect(files['src/client/api/posts.ts']).toBeUndefined();
         expect(files['src/client/index.tsx']).toContain('Provider');
+        expect(files['src/client/components/posts-list.tsx']).toContain('useGetPostsQuery');
+        expect(files['package.json']).not.toContain('@tanstack/react-query');
     });
 
-    it('без RTK store-файлы не создаются', () => {
-        expect(map({ useRtk: false })['src/client/store/index.ts']).toBeUndefined();
+    it('без RTK подключает TanStack Query и мок fetchPosts', () => {
+        const files = map({ useRtk: false });
+
+        expect(files['src/client/store/index.ts']).toBeUndefined();
+        expect(files['src/client/api/posts.ts']).toContain('fetchPosts');
+        expect(files['src/client/components/posts-list.tsx']).toContain('useQuery');
+        expect(files['src/client/index.tsx']).toContain('QueryClientProvider');
+        expect(files['src/server/index.tsx']).toContain('QueryClientProvider');
+        expect(files['package.json']).toContain('@tanstack/react-query');
     });
 
     it('vitest создает vitest.config.ts и ставит скрипт test:vitest', () => {
@@ -348,6 +359,7 @@ describe('buildFileMap', () => {
         expect(files['src/client/routes.tsx']).toContain('AppRoutes');
         expect(files['src/client/components/layout.tsx']).toContain('Outlet');
         expect(files['src/client/pages/home.tsx']).toContain('HomePage');
+        expect(files['src/client/pages/home.tsx']).toContain('PostsList');
         expect(files['src/client/pages/about.tsx']).toContain('AboutPage');
         expect(files['src/client/components/app.tsx']).toContain('AppRoutes');
         expect(files['src/client/index.tsx']).toContain('BrowserRouter');

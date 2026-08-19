@@ -65,7 +65,7 @@ Playwright; с `--yes` берётся Playwright. Для `add docker` registry �
 
 ## Что настраивает мастер
 
-- **React 19** из коробки, опционально **React + RTK** (Redux Toolkit)
+- **React 19** из коробки, опционально **React + RTK Query**; без RTK — **TanStack Query**
 - режим **SSR** (клиент + сервер, клиент в `src/client/`) или **clientOnly** (статика)
 - опционально отдельные точки входа **mobile / desktop** (`clientEntry: { mobile, desktop }`)
 - SSR-сервер на **Hapi** с рендерингом приложения (`renderToString`) и гидрацией на клиенте
@@ -88,7 +88,8 @@ npx create-arui-scripts-app my-app --yes --lint --install
 Генерируются `package.json`, `arui-scripts.config.ts`, `tsconfig.json`, клиентская точка входа,
 пример компонента со стилями и тестом, `global-definitions.d.ts`, `.gitignore`, `README.md`,
 `.yarnrc.yml` (с `nodeLinker: node-modules`),
-а также в зависимости от ответов - серверная точка входа на Hapi, store на RTK, полифилы,
+а также в зависимости от ответов - серверная точка входа на Hapi, store на RTK Query или TanStack Query,
+пример списка постов, полифилы,
 `vitest.config.ts`, e2e-каркас (Playwright или Cypress), роуты React Router и конфиги
 `arui-presets-lint` (`eslint.config.mts`, `knip.ts`, `.secretlintrc.json`, `lefthook.yml`).
 

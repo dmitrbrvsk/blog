@@ -16,6 +16,7 @@ const VERSIONS = {
     scriptsServer: '^1.3.1',
     reduxToolkit: '^2.5.0',
     reactRedux: '^9.2.0',
+    tanstackQuery: '^5.83.0',
     coreJs: '^3.32.0',
     reactCompilerRuntime: '^1.0.0',
     jest: '^29.7.0',
@@ -56,6 +57,8 @@ export function buildContext(answers: InitAnswers, aruiScriptsVersion: string): 
     if (answers.useRtk) {
         dependencies['@reduxjs/toolkit'] = VERSIONS.reduxToolkit;
         dependencies['react-redux'] = VERSIONS.reactRedux;
+    } else {
+        dependencies['@tanstack/react-query'] = VERSIONS.tanstackQuery;
     }
 
     if (answers.useRouter) {

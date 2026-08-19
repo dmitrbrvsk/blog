@@ -23,10 +23,6 @@ export function App() {
     const rootClass = ctx.cssModules ? '{styles.root}' : "'app'";
     const titleClass = ctx.cssModules ? '{styles.title}' : "'app__title'";
     const appNameLiteral = tsString(ctx.name);
-
-    const coreImports = `import { Button } from '@alfalab/core-components/button';
-import { Gap } from '@alfalab/core-components/gap';
-import { Typography } from '@alfalab/core-components/typography';`;
     const hostImport =
         ctx.moduleRole === 'host' ? "\nimport { RemoteModule } from './remote-module';" : '';
     const hostBlock =
@@ -36,65 +32,26 @@ import { Typography } from '@alfalab/core-components/typography';`;
             <RemoteModule />`
             : '';
 
-    const view = (count: string) => `        <div className=${rootClass}>
+    return `import React from 'react';
+
+import { Gap } from '@alfalab/core-components/gap';
+import { Typography } from '@alfalab/core-components/typography';
+${hostImport}
+
+import { PostsList } from './posts-list';
+
+${styleImport}
+
+const appName = ${appNameLiteral};
+
+export function App() {
+    return (
+        <div className=${rootClass}>
             <Typography.Title view='medium' tag='h1' className=${titleClass}>
                 {appName}
             </Typography.Title>
             <Gap size={16} />
-            <Typography.Text view='primary-medium'>Счетчик: {${count}}</Typography.Text>
-            <Gap size={16} />`;
-
-    if (ctx.useRtk) {
-        return `import React from 'react';
-
-${coreImports}
-${hostImport}
-
-import { decrement, increment } from '../store/counter-slice';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-
-${styleImport}
-
-const appName = ${appNameLiteral};
-
-export function App() {
-    const count = useAppSelector((state) => state.counter.value);
-    const dispatch = useAppDispatch();
-
-    return (
-${view('count')}
-            <Button view='accent' size={48} onClick={() => dispatch(increment())}>
-                +1
-            </Button>{' '}
-            <Button view='secondary' size={48} onClick={() => dispatch(decrement())}>
-                -1
-            </Button>${hostBlock}
-        </div>
-    );
-}
-`;
-    }
-
-    return `import React, { useState } from 'react';
-
-${coreImports}
-${hostImport}
-
-${styleImport}
-
-const appName = ${appNameLiteral};
-
-export function App() {
-    const [count, setCount] = useState(0);
-
-    return (
-${view('count')}
-            <Button view='accent' size={48} onClick={() => setCount((prev) => prev + 1)}>
-                +1
-            </Button>{' '}
-            <Button view='secondary' size={48} onClick={() => setCount((prev) => prev - 1)}>
-                -1
-            </Button>${hostBlock}
+            <PostsList />${hostBlock}
         </div>
     );
 }

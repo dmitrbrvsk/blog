@@ -3,6 +3,7 @@ import { appStylesFileName, appStylesTemplate } from './templates/app-styles.tem
 import { appTestTemplate } from './templates/app-test.template';
 import { aruiScriptsConfigTemplate } from './templates/arui-scripts-config.template';
 import { clientEntryTemplate } from './templates/client-entry.template';
+import { postsApiTemplate, postsFetchTemplate, postsListTemplate } from './templates/data.template';
 import {
     cypressConfigTemplate,
     cypressExampleSpecTemplate,
@@ -36,11 +37,7 @@ import {
     routesTemplate,
 } from './templates/router.template';
 import { serverEntryTemplate } from './templates/server-entry.template';
-import {
-    counterSliceTemplate,
-    storeHooksTemplate,
-    storeIndexTemplate,
-} from './templates/store.template';
+import { storeHooksTemplate, storeIndexTemplate } from './templates/store.template';
 import { tsconfigTemplate } from './templates/tsconfig.template';
 import { vitestConfigTemplate } from './templates/vitest-config.template';
 import { type TemplateContext } from './types';
@@ -73,6 +70,7 @@ export function buildFileMap(ctx: TemplateContext): Record<string, string> {
         [`${client}/components/app.tsx`]: appComponentTemplate(ctx),
         [`${client}/components/${appStylesFileName(ctx)}`]: appStylesTemplate(ctx),
         [`${client}/components/__tests__/app.test.ts`]: appTestTemplate(ctx),
+        [`${client}/components/posts-list.tsx`]: postsListTemplate(ctx),
     };
 
     clientEntryPaths(ctx).forEach((entryPath) => {
@@ -94,7 +92,9 @@ export function buildFileMap(ctx: TemplateContext): Record<string, string> {
     if (ctx.useRtk) {
         files[`${client}/store/index.ts`] = storeIndexTemplate();
         files[`${client}/store/hooks.ts`] = storeHooksTemplate();
-        files[`${client}/store/counter-slice.ts`] = counterSliceTemplate();
+        files[`${client}/store/posts-api.ts`] = postsApiTemplate();
+    } else {
+        files[`${client}/api/posts.ts`] = postsFetchTemplate();
     }
 
     if (ctx.useRouter) {

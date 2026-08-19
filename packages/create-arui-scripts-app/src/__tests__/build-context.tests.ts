@@ -62,6 +62,14 @@ describe('buildContext', () => {
 
         expect(ctx.dependencies).toHaveProperty('@reduxjs/toolkit');
         expect(ctx.dependencies).toHaveProperty('react-redux');
+        expect(ctx.dependencies).not.toHaveProperty('@tanstack/react-query');
+    });
+
+    it('без RTK добавляет @tanstack/react-query', () => {
+        const ctx = buildContext({ ...base, useRtk: false }, '23.0.1');
+
+        expect(ctx.dependencies).toHaveProperty('@tanstack/react-query');
+        expect(ctx.dependencies).not.toHaveProperty('@reduxjs/toolkit');
     });
 
     it('polyfills добавляют core-js', () => {

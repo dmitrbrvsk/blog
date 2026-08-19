@@ -1,15 +1,16 @@
 export function storeIndexTemplate(): string {
     return `import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
-import { counterReducer } from './counter-slice';
+import { postsApi } from './posts-api';
 
 const rootReducer = combineReducers({
-    counter: counterReducer,
+    [postsApi.reducerPath]: postsApi.reducer,
 });
 
 export function makeStore(preloadedState?: Partial<RootState>) {
     return configureStore({
         reducer: rootReducer,
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(postsApi.middleware),
         preloadedState,
     });
 }
@@ -27,34 +28,5 @@ import type { AppDispatch, RootState } from './index';
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
-`;
-}
-
-export function counterSliceTemplate(): string {
-    return `import { createSlice } from '@reduxjs/toolkit';
-
-type CounterState = {
-    value: number;
-};
-
-const initialState: CounterState = {
-    value: 0,
-};
-
-const counterSlice = createSlice({
-    name: 'counter',
-    initialState,
-    reducers: {
-        increment: (state) => {
-            state.value += 1;
-        },
-        decrement: (state) => {
-            state.value -= 1;
-        },
-    },
-});
-
-export const { decrement, increment } = counterSlice.actions;
-export const counterReducer = counterSlice.reducer;
 `;
 }

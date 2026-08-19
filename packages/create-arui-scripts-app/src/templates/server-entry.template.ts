@@ -2,6 +2,9 @@ import { type TemplateContext } from '../types';
 
 export function serverEntryTemplate(ctx: TemplateContext): string {
     const reduxImport = ctx.useRtk ? "\nimport { Provider } from 'react-redux';" : '';
+    const queryImport = ctx.useRtk
+        ? ''
+        : "\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';";
     const routerImport = ctx.useRouter ? "\nimport { StaticRouter } from 'react-router';" : '';
     const storeImport = ctx.useRtk ? "\nimport { makeStore } from '../client/store';" : '';
 
@@ -27,6 +30,10 @@ export function serverEntryTemplate(ctx: TemplateContext): string {
             inner = `<Provider store={store}>
                     ${inner}
                 </Provider>`;
+        } else {
+            inner = `<QueryClientProvider client={queryClient}>
+                    ${inner}
+                </QueryClientProvider>`;
         }
 
         if (ctx.useRouter) {
@@ -49,6 +56,7 @@ export function serverEntryTemplate(ctx: TemplateContext): string {
 
             return renderPage(appHtml, assets, preloadedState);`
         : `            const assets = await readAssetsManifest();
+            const queryClient = new QueryClient();
             const appHtml = renderToString(${appJsx});
 
             return renderPage(appHtml, assets);`;
@@ -60,7 +68,7 @@ export function serverEntryTemplate(ctx: TemplateContext): string {
         : '';
 
     return `import React from 'react';
-import { renderToString } from 'react-dom/server';${reduxImport}${routerImport}
+import { renderToString } from 'react-dom/server';${reduxImport}${queryImport}${routerImport}
 import Hapi from '@hapi/hapi';
 import Inert from '@hapi/inert';
 import path from 'node:path';

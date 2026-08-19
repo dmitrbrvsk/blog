@@ -23,11 +23,11 @@ export function getQuestions(defaultName: string, prefill: CliFlags = {}): promp
             message: 'Стек проекта',
             initial: 0,
             choices: [
-                { title: 'React', value: false, description: 'Только React и хуки' },
+                { title: 'React', value: false, description: 'React и TanStack Query' },
                 {
                     title: 'React + RTK',
                     value: true,
-                    description: 'Redux Toolkit для управления состоянием',
+                    description: 'Redux Toolkit и RTK Query для данных',
                 },
             ],
         },

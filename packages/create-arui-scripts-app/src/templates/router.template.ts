@@ -43,8 +43,7 @@ export function homePageTemplate(ctx: TemplateContext): string {
     const titleClass = ctx.cssModules ? '{styles.title}' : "'app__title'";
     const appNameLiteral = tsString(ctx.name);
 
-    const coreImports = `import { Button } from '@alfalab/core-components/button';
-import { Gap } from '@alfalab/core-components/gap';
+    const coreImports = `import { Gap } from '@alfalab/core-components/gap';
 import { Typography } from '@alfalab/core-components/typography';`;
     const hostImport =
         ctx.moduleRole === 'host'
@@ -57,69 +56,25 @@ import { Typography } from '@alfalab/core-components/typography';`;
             <RemoteModule />`
             : '';
 
-    if (ctx.useRtk) {
-        return `import React from 'react';
+    return `import React from 'react';
 
 ${coreImports}
 ${hostImport}
 
-import { decrement, increment } from '../store/counter-slice';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { PostsList } from '../components/posts-list';
 
 ${styleImport}
 
 const appName = ${appNameLiteral};
 
 export function HomePage() {
-    const count = useAppSelector((state) => state.counter.value);
-    const dispatch = useAppDispatch();
-
     return (
         <div className=${rootClass}>
             <Typography.Title view='medium' tag='h1' className=${titleClass}>
                 {appName}
             </Typography.Title>
             <Gap size={16} />
-            <Typography.Text view='primary-medium'>Счетчик: {count}</Typography.Text>
-            <Gap size={16} />
-            <Button view='accent' size={48} onClick={() => dispatch(increment())}>
-                +1
-            </Button>{' '}
-            <Button view='secondary' size={48} onClick={() => dispatch(decrement())}>
-                -1
-            </Button>${hostBlock}
-        </div>
-    );
-}
-`;
-    }
-
-    return `import React, { useState } from 'react';
-
-${coreImports}
-${hostImport}
-
-${styleImport}
-
-const appName = ${appNameLiteral};
-
-export function HomePage() {
-    const [count, setCount] = useState(0);
-
-    return (
-        <div className=${rootClass}>
-            <Typography.Title view='medium' tag='h1' className=${titleClass}>
-                {appName}
-            </Typography.Title>
-            <Gap size={16} />
-            <Typography.Text view='primary-medium'>Счетчик: {count}</Typography.Text>
-            <Gap size={16} />
-            <Button view='accent' size={48} onClick={() => setCount((prev) => prev + 1)}>
-                +1
-            </Button>{' '}
-            <Button view='secondary' size={48} onClick={() => setCount((prev) => prev - 1)}>
-                -1
-            </Button>${hostBlock}
+            <PostsList />${hostBlock}
         </div>
     );
 }
