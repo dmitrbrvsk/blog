@@ -1,5 +1,6 @@
 import { createProgram } from '../create-program';
 import { type CliFlags } from '../defaults';
+import { type AddFlags } from '../run-add';
 
 async function parseFlags(args: string[]): Promise<CliFlags> {
     const calls: CliFlags[] = [];
@@ -7,6 +8,26 @@ async function parseFlags(args: string[]): Promise<CliFlags> {
     const program = createProgram(async (_dir, flags) => {
         calls.push(flags);
     });
+
+    program.exitOverride();
+    program.configureOutput({ writeOut: () => {}, writeErr: () => {} });
+
+    await program.parseAsync(args, { from: 'user' });
+
+    return calls[0];
+}
+
+async function parseAdd(args: string[]): Promise<{ feature: string; flags: AddFlags }> {
+    const calls: Array<{ feature: string; flags: AddFlags }> = [];
+
+    const program = createProgram(
+        async () => {
+            throw new Error('init handler should not run');
+        },
+        async (feature, flags) => {
+            calls.push({ feature, flags });
+        },
+    );
 
     program.exitOverride();
     program.configureOutput({ writeOut: () => {}, writeErr: () => {} });
@@ -79,5 +100,21 @@ describe('createProgram', () => {
     it('--router и --no-router управляют useRouter', async () => {
         await expect(parseFlags(['--router'])).resolves.toEqual({ useRouter: true });
         await expect(parseFlags(['--no-router'])).resolves.toEqual({ useRouter: false });
+    });
+
+    it('add <feature> вызывает add-обработчик, а не init', async () => {
+        await expect(parseAdd(['add', 'lint'])).resolves.toEqual({ feature: 'lint', flags: {} });
+        await expect(
+            parseAdd(['add', 'e2e', '--e2e-framework', 'cypress', '--force']),
+        ).resolves.toEqual({
+            feature: 'e2e',
+            flags: { e2eFramework: 'cypress', force: true },
+        });
+        await expect(
+            parseAdd(['add', 'docker', '--docker-registry', 'reg.example', '--yes']),
+        ).resolves.toEqual({
+            feature: 'docker',
+            flags: { dockerRegistry: 'reg.example', yes: true },
+        });
     });
 });

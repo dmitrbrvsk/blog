@@ -44,7 +44,7 @@ import { tsconfigTemplate } from './templates/tsconfig.template';
 import { vitestConfigTemplate } from './templates/vitest-config.template';
 import { type TemplateContext } from './types';
 
-export function clientBaseDir(ctx: TemplateContext): string {
+export function clientBaseDir(ctx: { clientOnly: boolean }): string {
     return ctx.clientOnly ? 'src' : 'src/client';
 }
 

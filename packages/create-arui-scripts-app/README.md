@@ -38,6 +38,27 @@ npx create-arui-scripts-app my-app --yes
 - `--docker-registry` / `--presets` - docker registry и preset
 - `--polyfills` / `--react-compiler` / `--lint` / `--install` - и соответствующие `--no-*`
 
+## Команда add
+
+Добавляет фичу в уже созданный проект, не пересобирая его с нуля:
+
+```bash
+npx create-arui-scripts-app add lint
+npx create-arui-scripts-app add e2e --e2e-framework playwright
+npx create-arui-scripts-app add router
+npx create-arui-scripts-app add rtk
+npx create-arui-scripts-app add docker --docker-registry registry.example.com
+```
+
+Доступны: `lint`, `e2e`, `router`, `rtk`, `docker`.
+
+`add` дописывает зависимости и скрипты в `package.json`, создаёт недостающие файлы
+и обновляет шаблонные (`app.tsx`, точки входа и т.д.), если они не менялись.
+Изменённые вручную файлы пропускаются, пока не передан `--force`.
+
+Для `add e2e` без `--e2e-framework` в интерактивном режиме CLI спросит Cypress или
+Playwright; с `--yes` берётся Playwright. Для `add docker` registry обязателен.
+
 ## Что настраивает мастер
 
 - **React 19** из коробки, опционально **React + RTK** (Redux Toolkit)

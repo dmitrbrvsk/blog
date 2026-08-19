@@ -2,17 +2,43 @@ import { Command, Option } from 'commander';
 
 import { type CliFlags } from './defaults';
 import { runInit } from './run';
-import { type CodeLoader, type E2eFramework, type TestRunner } from './types';
+import { type AddFlags, runAdd } from './run-add';
+import { ADD_FEATURES, type CodeLoader, type E2eFramework, type TestRunner } from './types';
 
 // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
 const { version } = require('../package.json');
 
 export type InitHandler = (dir: string | undefined, flags: CliFlags) => Promise<void>;
+export type AddHandler = (feature: string, flags: AddFlags) => Promise<void>;
 
 const defaultInitHandler: InitHandler = (dir, flags) => runInit({ targetDirArg: dir, flags });
+const defaultAddHandler: AddHandler = (feature, flags) => runAdd({ feature, flags });
 
-export function createProgram(onInit: InitHandler = defaultInitHandler): Command {
+export function createProgram(
+    onInit: InitHandler = defaultInitHandler,
+    onAdd: AddHandler = defaultAddHandler,
+): Command {
     const program = new Command('create-arui-scripts-app');
+
+    program.enablePositionalOptions();
+
+    program
+        .command('add')
+        .description('Добавляет фичу в существующий проект arui-scripts')
+        .argument('<feature>', `Фича: ${ADD_FEATURES.join(' | ')}`)
+        .option('-y, --yes', 'Без вопросов, значения по умолчанию')
+        .option('--force', 'Перезаписать существующие файлы шаблона')
+        .addOption(
+            new Option('--e2e-framework <framework>', 'e2e фреймворк для add e2e').choices([
+                'cypress',
+                'playwright',
+            ]),
+        )
+        .option('--docker-registry <registry>', 'Docker registry для add docker')
+        .option('--install', 'Установить зависимости после изменений')
+        .action(async (feature: string, opts: Record<string, unknown>) => {
+            await onAdd(feature, mapAddOptsToFlags(opts));
+        });
 
     program
         .description('Создает шаблонный проект arui-scripts')
@@ -136,6 +162,32 @@ export function mapOptsToFlags(opts: Record<string, unknown>): CliFlags {
 
     if (typeof opts.install === 'boolean') {
         flags.install = opts.install;
+    }
+
+    return flags;
+}
+
+export function mapAddOptsToFlags(opts: Record<string, unknown>): AddFlags {
+    const flags: AddFlags = {};
+
+    if (opts.yes === true) {
+        flags.yes = true;
+    }
+
+    if (opts.force === true) {
+        flags.force = true;
+    }
+
+    if (opts.e2eFramework === 'cypress' || opts.e2eFramework === 'playwright') {
+        flags.e2eFramework = opts.e2eFramework;
+    }
+
+    if (typeof opts.dockerRegistry === 'string') {
+        flags.dockerRegistry = opts.dockerRegistry;
+    }
+
+    if (opts.install === true) {
+        flags.install = true;
     }
 
     return flags;

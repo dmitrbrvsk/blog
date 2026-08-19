@@ -1,6 +1,9 @@
 export type CodeLoader = 'swc' | 'babel' | 'tsc';
 export type TestRunner = 'jest' | 'vitest';
 export type E2eFramework = 'cypress' | 'playwright' | 'none';
+export type AddFeature = 'lint' | 'e2e' | 'router' | 'rtk' | 'docker';
+
+export const ADD_FEATURES: AddFeature[] = ['lint', 'e2e', 'router', 'rtk', 'docker'];
 
 export type InitAnswers = {
     name: string;
