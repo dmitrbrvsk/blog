@@ -1,0 +1,48 @@
+name: Build docker nginx images
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - packages/alpine-node-nginx/**
+      - .github/workflows/alpine-nginx-slim.yml
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        versions:
+          [{ alpine: '3.23', dockerfile: Dockerfile-nginx-slim, tag: 'nginx-1.27.1-slim' }]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get git short SHA
+        id: git_info
+        run: echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v6
+        with:
+          context: packages/alpine-node-nginx/
+          file: packages/alpine-node-nginx/${{ matrix.versions.dockerfile }}
+          push: true
+          build-args: |
+            ALPINE_VERSION=${{ matrix.versions.alpine }}
+          tags: |
+            alfabankui/arui-scripts:${{ matrix.versions.tag }}
+            alfabankui/arui-scripts:${{ matrix.versions.tag }}-${{ steps.git_info.outputs.short_sha }}
+          cache-from: type=gha,scope=nginx-slim-${{ matrix.versions.alpine }}
+          cache-to: type=gha,mode=max,scope=nginx-slim-${{ matrix.versions.alpine }}
